@@ -1,8 +1,10 @@
 "use client";
 
 import { useMemo, useRef, useCallback, useState } from "react";
-import { ArrowLeft, ArrowRight, Play, Loader2, Folder, File, AlertTriangle, FileQuestion, Trash2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Play, Loader2, Folder, File, AlertTriangle, FileQuestion, Trash2, ChevronDown } from "lucide-react";
 import { Button } from "@/src/renderer/components/ui/button";
+import { Card, CardContent } from "@/src/renderer/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/src/renderer/components/ui/collapsible";
 import { Badge } from "@/src/renderer/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/src/renderer/components/ui/select";
 import { Switch } from "@/src/renderer/components/ui/switch";
@@ -188,208 +190,231 @@ export function StepPreview({
       {/* Stats */}
       <div className="mb-4 flex gap-4 text-sm text-muted-foreground">
         <span>{stats.dirCount} {text.dirCount}</span>
+        <span>·</span>
         <span>{stats.fileCount} {text.fileCount}</span>
       </div>
 
-      {/* Conflict warning section */}
-      {conflictResult?.hasConflicts && (
-        <div className="mb-4 rounded-lg border border-yellow-500/50 bg-yellow-50 p-4 dark:bg-yellow-950/20">
-          <div className="mb-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
-              <span className="text-sm font-semibold text-yellow-700 dark:text-yellow-300">
-                {text.conflictDetected} ({conflictResult.conflicts.length})
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onSetAllConflictResolutions('skip')}
-              >
-                {text.skipAll}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onSetAllConflictResolutions('overwrite')}
-              >
-                {text.overwriteAll}
-              </Button>
-            </div>
-          </div>
+      <Card>
+        <CardContent className="space-y-4 pt-6">
+          {/* Conflict warning section */}
+          {conflictResult?.hasConflicts && (
+            <Collapsible>
+              <div className="rounded-lg border border-muted bg-muted/50">
+                <CollapsibleTrigger className="flex w-full items-center justify-between p-3 text-left transition-colors hover:bg-muted/30 [&[data-state=open]>svg]:rotate-180">
+                  <div className="flex items-center gap-2 border-l-4 border-yellow-500 pl-2">
+                    <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                    <span className="text-sm font-semibold">
+                      {text.conflictDetected} ({conflictResult.conflicts.length})
+                    </span>
+                  </div>
+                  <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200" />
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <div className="border-t px-3 pb-3 pt-2">
+                    <div className="mb-2 flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onSetAllConflictResolutions('skip')}
+                      >
+                        {text.skipAll}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onSetAllConflictResolutions('overwrite')}
+                      >
+                        {text.overwriteAll}
+                      </Button>
+                    </div>
 
-          <div className="space-y-2">
-            {conflictResult.conflicts.map((conflict) => (
-              <div
-                key={conflict.taskIndex}
-                className="flex items-center gap-3 rounded-md border bg-background p-2 text-xs"
-              >
-                <Badge variant={conflict.isSameFile ? 'secondary' : 'destructive'}>
-                  {conflict.isSameFile ? text.duplicate : text.conflict}
-                </Badge>
+                    <div className="space-y-1.5">
+                      {conflictResult.conflicts.map((conflict) => (
+                        <div
+                          key={conflict.taskIndex}
+                          className="flex items-center gap-3 rounded-md border bg-background p-1.5 text-xs"
+                        >
+                          <Badge variant={conflict.isSameFile ? 'secondary' : 'destructive'}>
+                            {conflict.isSameFile ? text.duplicate : text.conflict}
+                          </Badge>
 
-                <span className="flex-1 truncate font-mono">
-                  {conflict.task.target.replace(plan.destPath + '/', '')}
-                </span>
+                          <span className="flex-1 truncate font-mono">
+                            {conflict.task.target.replace(plan.destPath + '/', '')}
+                          </span>
 
-                <span className="shrink-0 text-muted-foreground">
-                  {text.source}: {formatFileSize(conflict.sourceInfo.size)}
-                </span>
+                          <span className="shrink-0 text-muted-foreground">
+                            {text.source}: {formatFileSize(conflict.sourceInfo.size)}
+                          </span>
 
-                <span className="shrink-0 text-muted-foreground">
-                  {text.target}: {formatFileSize(conflict.targetInfo.size)}
-                </span>
+                          <span className="shrink-0 text-muted-foreground">
+                            {text.target}: {formatFileSize(conflict.targetInfo.size)}
+                          </span>
 
-                <Select
-                  value={conflictResolutions[conflict.taskIndex] || 'overwrite'}
-                  onValueChange={(val) => onSetConflictResolution(conflict.taskIndex, val as ConflictResolution)}
-                >
-                  <SelectTrigger className="h-7 w-24 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="overwrite">{text.overwrite}</SelectItem>
-                    <SelectItem value="skip">{text.skip}</SelectItem>
-                    <SelectItem value="abort">{text.abort}</SelectItem>
-                  </SelectContent>
-                </Select>
+                          <Select
+                            value={conflictResolutions[conflict.taskIndex] || 'overwrite'}
+                            onValueChange={(val) => onSetConflictResolution(conflict.taskIndex, val as ConflictResolution)}
+                          >
+                            <SelectTrigger className="h-7 w-24 text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="overwrite">{text.overwrite}</SelectItem>
+                              <SelectItem value="skip">{text.skip}</SelectItem>
+                              <SelectItem value="abort">{text.abort}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </CollapsibleContent>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Unmatched files section */}
-      {unmatchedFiles.length > 0 && (
-        <div className="mb-4 rounded-lg border border-orange-500/50 bg-orange-50 p-4 dark:bg-orange-950/20">
-          <div className="mb-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <FileQuestion className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-              <span className="text-sm font-semibold text-orange-700 dark:text-orange-300">
-                {text.unmatchedFiles} ({unmatchedFiles.length})
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">{text.removeAll}</span>
-              <Switch
-                checked={filesToRemove.length === unmatchedFiles.length && unmatchedFiles.length > 0}
-                onCheckedChange={(checked) => onSetAllFilesToRemove(checked)}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            {unmatchedFiles.map((file) => (
-              <div
-                key={file.path}
-                className="flex items-center gap-3 rounded-md border bg-background p-2 text-xs"
-              >
-                <Switch
-                  checked={filesToRemove.includes(file.path)}
-                  onCheckedChange={() => onToggleFileRemoval(file.path)}
-                />
-                <Badge variant="outline">{file.type}</Badge>
-                <span className="flex-1 truncate font-mono">{file.name}</span>
-                <span className="shrink-0 text-muted-foreground">
-                  {formatFileSize(file.size)}
-                </span>
-                {filesToRemove.includes(file.path) && (
-                  <Trash2 className="h-3 w-3 text-destructive" />
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Left-Right two-panel comparison */}
-      <div className="grid grid-cols-2 gap-4">
-        {/* Left panel: original structure */}
-        <div className="rounded-lg border p-4">
-          <div className="mb-2 flex items-center gap-2 text-sm font-semibold">
-            <ArrowLeft className="h-4 w-4" />
-            {text.originalStructure}
-          </div>
-          <PathDisplay path={plan.sourcePath} />
-          <div
-            ref={leftRef}
-            className="max-h-[28rem] space-y-px overflow-y-auto overflow-x-auto"
-            onScroll={() => handleScroll("left")}
-          >
-            {rows.map((row, i) =>
-              row.type === "file" ? (
-                <div
-                  key={i}
-                  className={`flex items-center gap-1.5 whitespace-nowrap py-0.5 text-xs text-muted-foreground ${
-                    conflictedTargets.has(plan.destPath + '/' + (row.target || '')) ? 'rounded bg-yellow-100 dark:bg-yellow-900/30' : ''
-                  }`}
-                  style={indent(row.depth + 1)}
-                >
-                  <File className="h-3 w-3 shrink-0" />
-                  <span className="font-mono">{row.source}</span>
-                </div>
-              ) : (
-                <div key={i} className="h-6" />
-              ),
-            )}
-          </div>
-        </div>
-
-        {/* Right panel: new structure */}
-        <div className="rounded-lg border p-4">
-          <div className="mb-2 flex items-center gap-2 text-sm font-semibold">
-            <ArrowRight className="h-4 w-4" />
-            {text.newStructure}
-          </div>
-          <PathDisplay path={plan.destPath} />
-          <div
-            ref={rightRef}
-            className="max-h-[28rem] space-y-px overflow-y-auto overflow-x-auto"
-            onScroll={() => handleScroll("right")}
-          >
-            {rows.map((row, i) =>
-              row.type === "dir" ? (
-                <div
-                  key={i}
-                  className="flex items-center gap-1.5 whitespace-nowrap py-0.5 text-sm font-medium"
-                  style={indent(row.depth)}
-                >
-                  <Folder className="h-3.5 w-3.5 text-muted-foreground" />
-                  {row.dirName}
-                </div>
-              ) : (
-                <div
-                  key={i}
-                  className={`flex items-center gap-1.5 whitespace-nowrap py-0.5 text-xs text-muted-foreground ${
-                    conflictedTargets.has(plan.destPath + '/' + (row.target || '')) ? 'rounded bg-yellow-100 dark:bg-yellow-900/30' : ''
-                  }`}
-                  style={indent(row.depth + 1)}
-                >
-                  <File className="h-3 w-3 shrink-0" />
-                  <span className="font-mono">{row.target}</span>
-                </div>
-              ),
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Actions */}
-      <div className="mt-6 flex justify-between">
-        <Button variant="outline" onClick={onBack}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          {text.back}
-        </Button>
-        <Button variant="default" onClick={onExecute} disabled={executing}>
-          {executing ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Play className="mr-2 h-4 w-4" />
+            </Collapsible>
           )}
-          {executing ? text.executing : text.confirmExecute}
-        </Button>
-      </div>
+
+          {/* Unmatched files section */}
+          {unmatchedFiles.length > 0 && (
+            <Collapsible>
+              <div className="rounded-lg border border-muted bg-muted/50">
+                <CollapsibleTrigger className="flex w-full items-center justify-between p-3 text-left transition-colors hover:bg-muted/30 [&[data-state=open]>svg]:rotate-180">
+                  <div className="flex items-center gap-2 border-l-4 border-orange-500 pl-2">
+                    <FileQuestion className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                    <span className="text-sm font-semibold">
+                      {text.unmatchedFiles} ({unmatchedFiles.length})
+                    </span>
+                  </div>
+                  <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200" />
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <div className="border-t px-3 pb-3 pt-2">
+                    <div className="mb-2 flex items-center justify-end gap-2">
+                      <span className="text-xs text-muted-foreground">{text.removeAll}</span>
+                      <Switch
+                        checked={filesToRemove.length === unmatchedFiles.length && unmatchedFiles.length > 0}
+                        onCheckedChange={(checked) => onSetAllFilesToRemove(checked)}
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      {unmatchedFiles.map((file) => (
+                        <div
+                          key={file.path}
+                          className="flex items-center gap-3 rounded-md border bg-background p-1.5 text-xs"
+                        >
+                          <Switch
+                            checked={filesToRemove.includes(file.path)}
+                            onCheckedChange={() => onToggleFileRemoval(file.path)}
+                          />
+                          <Badge variant="outline">{file.type}</Badge>
+                          <span className="flex-1 truncate font-mono">{file.name}</span>
+                          <span className="shrink-0 text-muted-foreground">
+                            {formatFileSize(file.size)}
+                          </span>
+                          {filesToRemove.includes(file.path) && (
+                            <Trash2 className="h-3 w-3 text-destructive" />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </CollapsibleContent>
+              </div>
+            </Collapsible>
+          )}
+
+          {/* Left-Right two-panel comparison */}
+          <div className="grid grid-cols-2 gap-4">
+            {/* Left panel: original structure */}
+            <Card>
+              <CardContent className="pt-6">
+                <div className="mb-2 flex items-center gap-2 text-sm font-semibold">
+                  <ArrowLeft className="h-4 w-4" />
+                  {text.originalStructure}
+                </div>
+                <PathDisplay path={plan.sourcePath} />
+                <div
+                  ref={leftRef}
+                  className="max-h-[28rem] space-y-0.5 overflow-y-auto overflow-x-auto"
+                  onScroll={() => handleScroll("left")}
+                >
+                  {rows.map((row, i) =>
+                    row.type === "file" ? (
+                      <div
+                        key={i}
+                        className={`flex items-center gap-1.5 whitespace-nowrap py-0.5 text-xs text-muted-foreground ${
+                          conflictedTargets.has(plan.destPath + '/' + (row.target || '')) ? 'rounded bg-yellow-100 dark:bg-yellow-900/30' : ''
+                        }`}
+                        style={indent(row.depth + 1)}
+                      >
+                        <File className="h-3 w-3 shrink-0" />
+                        <span className="font-mono">{row.source}</span>
+                      </div>
+                    ) : (
+                      <div key={i} className="h-6" />
+                    ),
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Right panel: new structure */}
+            <Card>
+              <CardContent className="pt-6">
+                <div className="mb-2 flex items-center gap-2 text-sm font-semibold">
+                  <ArrowRight className="h-4 w-4" />
+                  {text.newStructure}
+                </div>
+                <PathDisplay path={plan.destPath} />
+                <div
+                  ref={rightRef}
+                  className="max-h-[28rem] space-y-0.5 overflow-y-auto overflow-x-auto"
+                  onScroll={() => handleScroll("right")}
+                >
+                  {rows.map((row, i) =>
+                    row.type === "dir" ? (
+                      <div
+                        key={i}
+                        className="flex items-center gap-1.5 whitespace-nowrap py-0.5 text-sm font-medium"
+                        style={indent(row.depth)}
+                      >
+                        <Folder className="h-3.5 w-3.5 text-muted-foreground" />
+                        {row.dirName}
+                      </div>
+                    ) : (
+                      <div
+                        key={i}
+                        className={`flex items-center gap-1.5 whitespace-nowrap py-0.5 text-xs text-muted-foreground ${
+                          conflictedTargets.has(plan.destPath + '/' + (row.target || '')) ? 'rounded bg-yellow-100 dark:bg-yellow-900/30' : ''
+                        }`}
+                        style={indent(row.depth + 1)}
+                      >
+                        <File className="h-3 w-3 shrink-0" />
+                        <span className="font-mono">{row.target}</span>
+                      </div>
+                    ),
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Actions */}
+          <div className="flex justify-between">
+            <Button variant="outline" onClick={onBack}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              {text.back}
+            </Button>
+            <Button variant="default" onClick={onExecute} disabled={executing}>
+              {executing ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Play className="mr-2 h-4 w-4" />
+              )}
+              {executing ? text.executing : text.confirmExecute}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </>
   );
 }
