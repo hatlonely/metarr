@@ -81,6 +81,7 @@ const zh = {
   target: '目标路径',
   operationType: '操作',
   path: '路径',
+  cleanedSourceDir: '已清理空源目录',
 } as const;
 
 const en = {
@@ -166,6 +167,7 @@ const en = {
   target: 'Target',
   operationType: 'Operation',
   path: 'Path',
+  cleanedSourceDir: 'Cleaned up empty source directory',
 } as const;
 
 export type Locale = 'zh' | 'en';

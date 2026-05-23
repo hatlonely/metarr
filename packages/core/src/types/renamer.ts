@@ -26,4 +26,5 @@ export interface RenameOptions {
 export interface ExecutionResult {
   succeeded: RenameTask[];
   failed: { task: RenameTask; error: Error }[];
+  cleanedSourcePath?: string;
 }

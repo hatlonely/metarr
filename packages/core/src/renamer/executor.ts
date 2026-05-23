@@ -1,6 +1,15 @@
-import { rename, mkdir } from 'node:fs/promises';
+import { rename, mkdir, rm, readdir } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import type { RenamePlan, RenameTask, ExecutionResult } from '../types/index.js';
+
+async function isDirEmpty(dirPath: string): Promise<boolean> {
+  try {
+    const entries = await readdir(dirPath);
+    return entries.length === 0;
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Execute a rename plan: create directories and move/rename files.
@@ -26,5 +35,16 @@ export async function executeRenamePlan(plan: RenamePlan): Promise<ExecutionResu
     }
   }
 
-  return { succeeded, failed };
+  // Clean up empty source directory
+  let cleanedSourcePath: string | undefined;
+  if (succeeded.length > 0 && plan.sourcePath && await isDirEmpty(plan.sourcePath)) {
+    try {
+      await rm(plan.sourcePath, { recursive: true, force: true });
+      cleanedSourcePath = plan.sourcePath;
+    } catch {
+      // Ignore cleanup failure
+    }
+  }
+
+  return { succeeded, failed, cleanedSourcePath };
 }

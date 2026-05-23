@@ -235,6 +235,11 @@ export async function renameAction(source: string, options: RenameCommandOptions
       console.log(`  ${chalk.red('✗')} ${task.description}: ${error.message}`);
     }
   }
+
+  if (result.cleanedSourcePath) {
+    console.log();
+    console.log(chalk.gray(`  已清理空源目录: ${result.cleanedSourcePath}`));
+  }
 }
 
 async function askMediaType(): Promise<MediaType> {

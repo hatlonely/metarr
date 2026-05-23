@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, XCircle, RotateCcw } from "lucide-react";
+import { CheckCircle2, XCircle, RotateCcw, Trash2 } from "lucide-react";
 import { Button } from "@/src/renderer/components/ui/button";
 import {
   Table,
@@ -48,6 +48,13 @@ export function StepExecute({ locale, result, onContinue }: StepExecuteProps) {
           </CardContent>
         </Card>
       </div>
+
+      {result.cleanedSourcePath && (
+        <div className="mb-4 flex items-center gap-2 rounded-lg border bg-muted/50 px-4 py-2 text-sm text-muted-foreground">
+          <Trash2 className="h-4 w-4" />
+          <span>{text.cleanedSourceDir}: {result.cleanedSourcePath}</span>
+        </div>
+      )}
 
       {result.failed.length > 0 && (
         <div className="mb-6">
