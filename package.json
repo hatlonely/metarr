@@ -1,0 +1,21 @@
+{
+  "name": "metarr",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Media file renaming tool for Jellyfin-compatible naming conventions",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "build:core": "npm run build --workspace=packages/core",
+    "build:cli": "npm run build --workspace=packages/cli",
+    "dev:cli": "npm run dev --workspace=packages/cli",
+    "dev:gui": "npm run dev --workspace=packages/gui",
+    "test": "npm run test --workspaces",
+    "typecheck": "npm run typecheck --workspaces"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "name": "@metarr/gui",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/main/main.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:next\" \"npm run dev:electron\"",
+    "dev:next": "next dev --port 3000",
+    "dev:electron": "tsx watch src/main/main.ts",
+    "build": "npm run build:next && npm run build:main",
+    "build:next": "next build",
+    "build:main": "tsup src/main/main.ts src/preload/preload.ts --outDir dist --format esm",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@metarr/core": "*",
+    "next": "^15.3.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "electron-store": "^10.0.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0",
+    "electron": "^35.0.0",
+    "electron-builder": "^26.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@tailwindcss/postcss": "^4.0.0",
+    "postcss": "^8.5.0",
+    "tailwindcss": "^4.0.0",
+    "tsup": "^8.4.0",
+    "typescript": "^5.7.0",
+    "tsx": "^4.19.0"
+  }
+}

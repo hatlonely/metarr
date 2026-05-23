@@ -1,0 +1,19 @@
+node_modules/
+dist/
+.next/
+out/
+release/
+*.tsbuildinfo
+.env
+.env.local
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
