@@ -260,7 +260,6 @@ export function StepPreview({
                             <SelectContent>
                               <SelectItem value="overwrite">{text.overwrite}</SelectItem>
                               <SelectItem value="skip">{text.skip}</SelectItem>
-                              <SelectItem value="abort">{text.abort}</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>

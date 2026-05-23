@@ -21,11 +21,8 @@ export async function executeRenamePlan(
 ): Promise<ExecutionResult> {
   const succeeded: RenameTask[] = [];
   const failed: { task: RenameTask; error: Error }[] = [];
-  let aborted = false;
 
   for (let i = 0; i < plan.tasks.length; i++) {
-    if (aborted) break;
-
     const task = plan.tasks[i];
     const resolution = resolutions?.[i];
 
@@ -36,10 +33,6 @@ export async function executeRenamePlan(
           break;
         case 'rename':
           if (resolution === 'skip') {
-            break;
-          }
-          if (resolution === 'abort') {
-            aborted = true;
             break;
           }
           // 'overwrite' or no resolution: remove target if exists, then rename

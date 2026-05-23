@@ -52,7 +52,7 @@ export interface FileConflict {
   isSameFile: boolean;
 }
 
-export type ConflictResolution = 'skip' | 'overwrite' | 'abort';
+export type ConflictResolution = 'skip' | 'overwrite';
 export type ConflictResolutionMap = Record<number, ConflictResolution>;
 
 export interface ConflictCheckResult {
