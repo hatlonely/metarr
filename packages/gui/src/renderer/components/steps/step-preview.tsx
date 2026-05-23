@@ -210,7 +210,11 @@ export function StepPreview({
     <>
       <StepHeader title={text.previewPlan} description={text.stepDesc.preview} />
 
-      <p className="mb-4 text-sm text-muted-foreground">{plan.summary}</p>
+      <p className="mb-4 text-sm text-muted-foreground">
+        {plan.summary.mediaType === 'tv'
+          ? text.planSummaryTv.replace('{name}', plan.summary.name).replace('{count}', String(plan.summary.fileCount))
+          : text.planSummaryMovie.replace('{name}', plan.summary.name)}
+      </p>
 
       {/* Stats */}
       <div className="mb-4 flex gap-4 text-sm text-muted-foreground">

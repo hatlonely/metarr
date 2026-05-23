@@ -8,13 +8,19 @@ export interface RenameTask {
   description: string;
 }
 
+export interface RenamePlanSummary {
+  name: string;
+  mediaType: MediaType;
+  fileCount: number;
+}
+
 export interface RenamePlan {
   mediaType: MediaType;
   tmdbMatch: TMDBMatch;
   sourcePath: string;
   destPath: string;
   tasks: RenameTask[];
-  summary: string;
+  summary: RenamePlanSummary;
 }
 
 export interface RenameOptions {

@@ -24,8 +24,9 @@ export function generateTvRenamePlan(
     description: `创建目录 ${newDirName}`,
   });
 
-  // Group episodes by season
-  const episodesBySeason = groupBySeason(parsed.episodes);
+  // Group episodes by season, skip entries without episode numbers
+  const validEpisodes = parsed.episodes.filter((ep) => ep.episodes.length > 0);
+  const episodesBySeason = groupBySeason(validEpisodes);
 
   for (const [seasonNum, episodes] of episodesBySeason) {
     const seasonDirName = `Season ${String(seasonNum).padStart(2, '0')}`;
@@ -69,7 +70,7 @@ export function generateTvRenamePlan(
     sourcePath: parsed.sourcePath,
     destPath: options.destPath,
     tasks,
-    summary: `电视剧 "${showName}" 共 ${parsed.episodes.length} 个文件`,
+    summary: { name: showName, mediaType: 'tv' as MediaType, fileCount: validEpisodes.length },
   };
 }
 

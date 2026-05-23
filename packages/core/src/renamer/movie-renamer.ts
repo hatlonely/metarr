@@ -59,7 +59,7 @@ export function generateMovieRenamePlan(
     sourcePath: parsed.sourcePath,
     destPath: options.destPath,
     tasks,
-    summary: `电影 "${movieName}"`,
+    summary: { name: movieName, mediaType: 'movie' as MediaType, fileCount: 1 },
   };
 }
 
