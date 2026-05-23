@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, XCircle, RotateCcw, Trash2 } from "lucide-react";
+import { XCircle, RotateCcw, Trash2, FileEdit, Ban, AlertTriangle } from "lucide-react";
 import { Button } from "@/src/renderer/components/ui/button";
 import {
   Table,
@@ -24,6 +24,11 @@ interface StepExecuteProps {
 export function StepExecute({ locale, result, onContinue }: StepExecuteProps) {
   const text = t(locale);
 
+  const renamedCount = result.succeeded.filter(t => t.operation === 'rename').length;
+  const skippedCount = result.skippedCount;
+  const overwrittenCount = result.overwrittenCount;
+  const removedCount = result.removedUnmatched?.length ?? 0;
+
   return (
     <>
       <StepHeader title={text.executionComplete} description={text.stepDesc.execute} />
@@ -31,14 +36,44 @@ export function StepExecute({ locale, result, onContinue }: StepExecuteProps) {
       <div className="mb-6 grid grid-cols-2 gap-4">
         <Card>
           <CardContent className="flex items-center gap-3 pt-6">
-            <CheckCircle2 className="h-8 w-8 text-green-500" />
+            <FileEdit className="h-8 w-8 text-green-500" />
             <div>
-              <div className="text-2xl font-bold">{result.succeeded.length}</div>
-              <div className="text-sm text-muted-foreground">{text.succeeded}</div>
+              <div className="text-2xl font-bold">{renamedCount}</div>
+              <div className="text-sm text-muted-foreground">{text.executeRenamed}</div>
             </div>
           </CardContent>
         </Card>
         <Card>
+          <CardContent className="flex items-center gap-3 pt-6">
+            <AlertTriangle className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
+            <div>
+              <div className="text-2xl font-bold">{overwrittenCount}</div>
+              <div className="text-sm text-muted-foreground">{text.executeOverwritten}</div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center gap-3 pt-6">
+            <Ban className="h-8 w-8 text-muted-foreground" />
+            <div>
+              <div className="text-2xl font-bold">{skippedCount}</div>
+              <div className="text-sm text-muted-foreground">{text.executeSkipped}</div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center gap-3 pt-6">
+            <Trash2 className="h-8 w-8 text-destructive" />
+            <div>
+              <div className="text-2xl font-bold">{removedCount}</div>
+              <div className="text-sm text-muted-foreground">{text.executeRemoved}</div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {result.failed.length > 0 && (
+        <Card className="mb-6">
           <CardContent className="flex items-center gap-3 pt-6">
             <XCircle className="h-8 w-8 text-destructive" />
             <div>
@@ -47,7 +82,7 @@ export function StepExecute({ locale, result, onContinue }: StepExecuteProps) {
             </div>
           </CardContent>
         </Card>
-      </div>
+      )}
 
       {result.cleanedSourcePath && (
         <div className="mb-4 flex items-center gap-2 rounded-lg border bg-muted/50 px-4 py-2 text-sm text-muted-foreground">

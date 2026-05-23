@@ -207,6 +207,15 @@ export function useWorkflow() {
         const conflictResult = await ipc.checkConflicts(newPlan);
         dispatch({ type: "SET_CONFLICT_RESULT", result: conflictResult });
 
+        // Initialize all conflict resolutions to 'skip' by default
+        if (conflictResult.hasConflicts) {
+          const defaultResolutions: Record<number, ConflictResolution> = {};
+          for (const conflict of conflictResult.conflicts) {
+            defaultResolutions[conflict.taskIndex] = 'skip';
+          }
+          dispatch({ type: "SET_CONFLICT_RESOLUTIONS", resolutions: defaultResolutions });
+        }
+
         const unmatchedFiles = await ipc.findUnmatchedFiles(state.parsed.sourcePath, newPlan, state.parsed.selectedFile);
         dispatch({ type: "SET_UNMATCHED_FILES", files: unmatchedFiles });
         dispatch({ type: "SET_FILES_TO_REMOVE", paths: [] });
@@ -227,11 +236,10 @@ export function useWorkflow() {
     dispatch({ type: "SET_ERROR", error: null });
 
     try {
-      const hasResolutions = Object.keys(state.conflictResolutions).length > 0;
       const hasFilesToRemove = state.filesToRemove.length > 0;
       const result = await ipc.executeRename(
         state.plan,
-        hasResolutions ? state.conflictResolutions : undefined,
+        state.conflictResolutions,
         hasFilesToRemove ? state.filesToRemove : undefined,
       );
       dispatch({ type: "SET_EXECUTION_RESULT", result });

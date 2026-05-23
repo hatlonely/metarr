@@ -96,6 +96,16 @@ const zh = {
   unmatchedFiles: '未匹配文件',
   removeAll: '全部删除',
   removedUnmatched: '已删除未匹配文件',
+  confirmExecuteTitle: '确认执行',
+  confirmExecuteDesc: '即将执行以下操作：',
+  confirmRenamed: '重命名 {count} 个文件',
+  confirmOverwritten: '覆盖 {count} 个文件',
+  confirmSkipped: '跳过 {count} 个文件',
+  confirmRemoved: '移除 {count} 个文件',
+  executeRenamed: '重命名',
+  executeSkipped: '跳过',
+  executeOverwritten: '覆盖',
+  executeRemoved: '移除',
 } as const;
 
 const en = {
@@ -196,6 +206,16 @@ const en = {
   unmatchedFiles: 'Unmatched Files',
   removeAll: 'Remove All',
   removedUnmatched: 'Removed unmatched files',
+  confirmExecuteTitle: 'Confirm Execution',
+  confirmExecuteDesc: 'The following operations will be performed:',
+  confirmRenamed: 'Rename {count} files',
+  confirmOverwritten: 'Overwrite {count} files',
+  confirmSkipped: 'Skip {count} files',
+  confirmRemoved: 'Remove {count} files',
+  executeRenamed: 'Renamed',
+  executeSkipped: 'Skipped',
+  executeOverwritten: 'Overwritten',
+  executeRemoved: 'Removed',
 } as const;
 
 export type Locale = 'zh' | 'en';

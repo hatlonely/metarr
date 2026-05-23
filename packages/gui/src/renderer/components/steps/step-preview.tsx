@@ -5,6 +5,16 @@ import { ArrowLeft, ArrowRight, Play, Loader2, Folder, File, AlertTriangle, File
 import { Button } from "@/src/renderer/components/ui/button";
 import { Card, CardContent } from "@/src/renderer/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/src/renderer/components/ui/collapsible";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/src/renderer/components/ui/alert-dialog";
 import { Badge } from "@/src/renderer/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/src/renderer/components/ui/select";
 import { Switch } from "@/src/renderer/components/ui/switch";
@@ -146,6 +156,21 @@ export function StepPreview({
   const leftRef = useRef<HTMLDivElement>(null);
   const rightRef = useRef<HTMLDivElement>(null);
   const syncing = useRef(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const executeSummary = useMemo(() => {
+    const renameTasks = plan.tasks.filter(t => t.operation === 'rename');
+    const overwriteCount = Object.values(conflictResolutions).filter(r => r === 'overwrite').length;
+    const totalConflicts = conflictResult?.conflicts.length ?? 0;
+    const skipCount = totalConflicts - overwriteCount;
+    const renamedCount = renameTasks.length - skipCount;
+    return { renamedCount, skipCount, overwriteCount, removedCount: filesToRemove.length };
+  }, [plan, conflictResolutions, conflictResult, filesToRemove]);
+
+  const handleConfirmExecute = useCallback(() => {
+    setConfirmOpen(false);
+    onExecute();
+  }, [onExecute]);
 
   const handleScroll = useCallback(
     (source: "left" | "right") => {
@@ -251,7 +276,7 @@ export function StepPreview({
                           </span>
 
                           <Select
-                            value={conflictResolutions[conflict.taskIndex] || 'overwrite'}
+                            value={conflictResolutions[conflict.taskIndex] || 'skip'}
                             onValueChange={(val) => onSetConflictResolution(conflict.taskIndex, val as ConflictResolution)}
                           >
                             <SelectTrigger className="h-7 w-24 text-xs">
@@ -403,7 +428,7 @@ export function StepPreview({
               <ArrowLeft className="mr-2 h-4 w-4" />
               {text.back}
             </Button>
-            <Button variant="default" onClick={onExecute} disabled={executing}>
+            <Button variant="default" onClick={() => setConfirmOpen(true)} disabled={executing}>
               {executing ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
@@ -414,6 +439,39 @@ export function StepPreview({
           </div>
         </CardContent>
       </Card>
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{text.confirmExecuteTitle}</AlertDialogTitle>
+            <AlertDialogDescription>{text.confirmExecuteDesc}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-1.5 pl-1 text-sm">
+            <div className="text-foreground">
+              {text.confirmRenamed.replace('{count}', String(executeSummary.renamedCount))}
+            </div>
+            {executeSummary.overwriteCount > 0 && (
+              <div className="text-yellow-600 dark:text-yellow-400">
+                {text.confirmOverwritten.replace('{count}', String(executeSummary.overwriteCount))}
+              </div>
+            )}
+            {executeSummary.skipCount > 0 && (
+              <div className="text-muted-foreground">
+                {text.confirmSkipped.replace('{count}', String(executeSummary.skipCount))}
+              </div>
+            )}
+            {executeSummary.removedCount > 0 && (
+              <div className="text-destructive">
+                {text.confirmRemoved.replace('{count}', String(executeSummary.removedCount))}
+              </div>
+            )}
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{text.close}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmExecute}>{text.confirmExecute}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

@@ -21,6 +21,8 @@ export async function executeRenamePlan(
 ): Promise<ExecutionResult> {
   const succeeded: RenameTask[] = [];
   const failed: { task: RenameTask; error: Error }[] = [];
+  let skippedCount = 0;
+  let overwrittenCount = 0;
 
   for (let i = 0; i < plan.tasks.length; i++) {
     const task = plan.tasks[i];
@@ -33,11 +35,13 @@ export async function executeRenamePlan(
           break;
         case 'rename':
           if (resolution === 'skip') {
+            skippedCount++;
             break;
           }
           // 'overwrite' or no resolution: remove target if exists, then rename
           try {
             await unlink(task.target);
+            overwrittenCount++;
           } catch {
             // Target doesn't exist, that's fine
           }
@@ -83,5 +87,5 @@ export async function executeRenamePlan(
     }
   }
 
-  return { succeeded, failed, cleanedSourcePath, removedUnmatched };
+  return { succeeded, failed, skippedCount, overwrittenCount, cleanedSourcePath, removedUnmatched };
 }
