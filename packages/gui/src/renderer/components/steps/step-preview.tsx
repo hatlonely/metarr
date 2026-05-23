@@ -151,18 +151,18 @@ export function StepPreview({
           </p>
           <div
             ref={leftRef}
-            className="max-h-[28rem] space-y-px overflow-y-auto"
+            className="max-h-[28rem] space-y-px overflow-y-auto overflow-x-auto"
             onScroll={() => handleScroll("left")}
           >
             {rows.map((row, i) =>
               row.type === "file" ? (
                 <div
                   key={i}
-                  className="flex items-center gap-1.5 py-0.5 text-xs text-muted-foreground"
+                  className="flex items-center gap-1.5 whitespace-nowrap py-0.5 text-xs text-muted-foreground"
                   style={indent(row.depth + 1)}
                 >
                   <File className="h-3 w-3 shrink-0" />
-                  <span className="truncate font-mono">{row.source}</span>
+                  <span className="font-mono">{row.source}</span>
                 </div>
               ) : (
                 <div key={i} className="h-6" />
@@ -182,14 +182,14 @@ export function StepPreview({
           </p>
           <div
             ref={rightRef}
-            className="max-h-[28rem] space-y-px overflow-y-auto"
+            className="max-h-[28rem] space-y-px overflow-y-auto overflow-x-auto"
             onScroll={() => handleScroll("right")}
           >
             {rows.map((row, i) =>
               row.type === "dir" ? (
                 <div
                   key={i}
-                  className="flex items-center gap-1.5 py-0.5 text-sm font-medium"
+                  className="flex items-center gap-1.5 whitespace-nowrap py-0.5 text-sm font-medium"
                   style={indent(row.depth)}
                 >
                   <Folder className="h-3.5 w-3.5 text-muted-foreground" />
@@ -198,11 +198,11 @@ export function StepPreview({
               ) : (
                 <div
                   key={i}
-                  className="flex items-center gap-1.5 py-0.5 text-xs text-muted-foreground"
+                  className="flex items-center gap-1.5 whitespace-nowrap py-0.5 text-xs text-muted-foreground"
                   style={indent(row.depth + 1)}
                 >
                   <File className="h-3 w-3 shrink-0" />
-                  <span className="truncate font-mono">{row.target}</span>
+                  <span className="font-mono">{row.target}</span>
                 </div>
               ),
             )}
