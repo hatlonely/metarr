@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
 import { renameAction } from './commands/rename.js';
+import { configAction, configSetAction } from './commands/config.js';
 
 const program = new Command();
 
@@ -19,5 +20,14 @@ program
   .option('--lang <lang>', 'Preferred title language: zh or en', 'zh')
   .option('--no-imdb', 'Do not prefer IMDB ID for movies')
   .action(renameAction);
+
+const configCmd = program.command('config').description('Manage configuration');
+
+configCmd
+  .command('set <key> <value>')
+  .description('Set a config value (e.g., tmdbKey, destPath, lang)')
+  .action(configSetAction);
+
+configCmd.command('show').description('Show current configuration').action(configAction);
 
 program.parse();

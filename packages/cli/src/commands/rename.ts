@@ -1,5 +1,4 @@
 import { existsSync } from 'node:fs';
-import { stat, access } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { MediaType, ParsedMedia, RenameOptions, RenamePlan, TMDBMatch } from '@metarr/core';
 import {
@@ -8,8 +7,8 @@ import {
   generateTvRenamePlan,
   generateMovieRenamePlan,
   executeRenamePlan,
+  getTmdbKey,
 } from '@metarr/core';
-import { Command } from 'commander';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import ora from 'ora';
@@ -31,9 +30,12 @@ export async function renameAction(source: string, options: RenameCommandOptions
     process.exit(1);
   }
 
-  const apiKey = options.tmdbKey || process.env.METARR_TMDB_KEY;
+  const apiKey = getTmdbKey(options.tmdbKey);
   if (!apiKey) {
-    console.error(chalk.red('错误: 请通过 --tmdb-key 或 METARR_TMDB_KEY 环境变量提供 TMDB API Key'));
+    console.error(chalk.red('错误: 请通过以下方式之一提供 TMDB API Key:'));
+    console.error(chalk.red('  1. --tmdb-key 参数'));
+    console.error(chalk.red('  2. METARR_TMDB_KEY 环境变量'));
+    console.error(chalk.red('  3. metarr config set tmdbKey <key>'));
     process.exit(1);
   }
 

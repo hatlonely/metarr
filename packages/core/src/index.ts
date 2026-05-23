@@ -9,6 +9,10 @@ export type { TMDBClientOptions } from './tmdb/index.js';
 // Renamer
 export { generateTvRenamePlan, generateMovieRenamePlan, executeRenamePlan } from './renamer/index.js';
 
+// Config
+export { getTmdbKey, getConfig, setConfig, getAllConfig, CONFIG_FILE } from './config.js';
+export type { MetarrConfig } from './config.js';
+
 // Types
 export type {
   MediaType,

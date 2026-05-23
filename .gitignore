@@ -7,6 +7,7 @@ release/
 .env
 .env.local
 *.log
+tmp/
 
 # OS
 .DS_Store
