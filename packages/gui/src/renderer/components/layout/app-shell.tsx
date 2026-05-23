@@ -28,6 +28,8 @@ export function AppShell() {
     selectMatch,
     generatePlan,
     executeRename,
+    setConflictResolution,
+    setAllConflictResolutions,
     reset,
   } = useWorkflow();
 
@@ -97,8 +99,12 @@ export function AppShell() {
             locale={locale}
             plan={state.plan}
             executing={state.executing}
+            conflictResult={state.conflictResult}
+            conflictResolutions={state.conflictResolutions}
             onBack={() => goToStep("search")}
             onExecute={() => executeRename()}
+            onSetConflictResolution={setConflictResolution}
+            onSetAllConflictResolutions={setAllConflictResolutions}
           />
         ) : null;
       case "execute":

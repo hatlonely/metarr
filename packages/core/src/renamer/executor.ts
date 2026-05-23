@@ -1,6 +1,6 @@
-import { rename, mkdir, rm, readdir } from 'node:fs/promises';
+import { rename, mkdir, rm, readdir, unlink } from 'node:fs/promises';
 import { dirname } from 'node:path';
-import type { RenamePlan, RenameTask, ExecutionResult } from '../types/index.js';
+import type { RenamePlan, RenameTask, ExecutionResult, ConflictResolutionMap } from '../types/index.js';
 
 async function isDirEmpty(dirPath: string): Promise<boolean> {
   try {
@@ -14,17 +14,39 @@ async function isDirEmpty(dirPath: string): Promise<boolean> {
 /**
  * Execute a rename plan: create directories and move/rename files.
  */
-export async function executeRenamePlan(plan: RenamePlan): Promise<ExecutionResult> {
+export async function executeRenamePlan(
+  plan: RenamePlan,
+  resolutions?: ConflictResolutionMap,
+): Promise<ExecutionResult> {
   const succeeded: RenameTask[] = [];
   const failed: { task: RenameTask; error: Error }[] = [];
+  let aborted = false;
 
-  for (const task of plan.tasks) {
+  for (let i = 0; i < plan.tasks.length; i++) {
+    if (aborted) break;
+
+    const task = plan.tasks[i];
+    const resolution = resolutions?.[i];
+
     try {
       switch (task.operation) {
         case 'create-dir':
           await mkdir(task.target, { recursive: true });
           break;
         case 'rename':
+          if (resolution === 'skip') {
+            break;
+          }
+          if (resolution === 'abort') {
+            aborted = true;
+            break;
+          }
+          // 'overwrite' or no resolution: remove target if exists, then rename
+          try {
+            await unlink(task.target);
+          } catch {
+            // Target doesn't exist, that's fine
+          }
           await mkdir(dirname(task.target), { recursive: true });
           await rename(task.source, task.target);
           break;

@@ -1,18 +1,32 @@
 "use client";
 
 import { useMemo, useRef, useCallback, useState } from "react";
-import { ArrowLeft, ArrowRight, Play, Loader2, Folder, File } from "lucide-react";
+import { ArrowLeft, ArrowRight, Play, Loader2, Folder, File, AlertTriangle } from "lucide-react";
 import { Button } from "@/src/renderer/components/ui/button";
+import { Badge } from "@/src/renderer/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/src/renderer/components/ui/select";
 import { StepHeader } from "@/src/renderer/components/shared/step-header";
 import { t, type Locale } from "@/src/renderer/lib/i18n";
-import type { RenamePlan } from "@metarr/core";
+import type { RenamePlan, ConflictCheckResult, ConflictResolutionMap, ConflictResolution } from "@metarr/core";
+
+function formatFileSize(bytes: number): string {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`;
+}
 
 interface StepPreviewProps {
   locale: Locale;
   plan: RenamePlan;
   executing: boolean;
+  conflictResult: ConflictCheckResult | null;
+  conflictResolutions: ConflictResolutionMap;
   onBack: () => void;
   onExecute: () => void;
+  onSetConflictResolution: (taskIndex: number, resolution: ConflictResolution) => void;
+  onSetAllConflictResolutions: (resolution: ConflictResolution) => void;
 }
 
 interface PairNode {
@@ -110,8 +124,12 @@ export function StepPreview({
   locale,
   plan,
   executing,
+  conflictResult,
+  conflictResolutions,
   onBack,
   onExecute,
+  onSetConflictResolution,
+  onSetAllConflictResolutions,
 }: StepPreviewProps) {
   const text = t(locale);
   const leftRef = useRef<HTMLDivElement>(null);
@@ -145,6 +163,11 @@ export function StepPreview({
     };
   }, [plan]);
 
+  const conflictedTargets = useMemo(() => {
+    if (!conflictResult) return new Set<string>();
+    return new Set(conflictResult.conflicts.map(c => c.task.target));
+  }, [conflictResult]);
+
   const indent = (depth: number) => ({ paddingLeft: `${depth * 16 + 8}px` });
 
   return (
@@ -158,6 +181,75 @@ export function StepPreview({
         <span>{stats.dirCount} {text.dirCount}</span>
         <span>{stats.fileCount} {text.fileCount}</span>
       </div>
+
+      {/* Conflict warning section */}
+      {conflictResult?.hasConflicts && (
+        <div className="mb-4 rounded-lg border border-yellow-500/50 bg-yellow-50 p-4 dark:bg-yellow-950/20">
+          <div className="mb-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+              <span className="text-sm font-semibold text-yellow-700 dark:text-yellow-300">
+                {text.conflictDetected} ({conflictResult.conflicts.length})
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onSetAllConflictResolutions('skip')}
+              >
+                {text.skipAll}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onSetAllConflictResolutions('overwrite')}
+              >
+                {text.overwriteAll}
+              </Button>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            {conflictResult.conflicts.map((conflict) => (
+              <div
+                key={conflict.taskIndex}
+                className="flex items-center gap-3 rounded-md border bg-background p-2 text-xs"
+              >
+                <Badge variant={conflict.isSameFile ? 'secondary' : 'destructive'}>
+                  {conflict.isSameFile ? text.duplicate : text.conflict}
+                </Badge>
+
+                <span className="flex-1 truncate font-mono">
+                  {conflict.task.target.replace(plan.destPath + '/', '')}
+                </span>
+
+                <span className="shrink-0 text-muted-foreground">
+                  {text.source}: {formatFileSize(conflict.sourceInfo.size)}
+                </span>
+
+                <span className="shrink-0 text-muted-foreground">
+                  {text.target}: {formatFileSize(conflict.targetInfo.size)}
+                </span>
+
+                <Select
+                  value={conflictResolutions[conflict.taskIndex] || 'overwrite'}
+                  onValueChange={(val) => onSetConflictResolution(conflict.taskIndex, val as ConflictResolution)}
+                >
+                  <SelectTrigger className="h-7 w-24 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="overwrite">{text.overwrite}</SelectItem>
+                    <SelectItem value="skip">{text.skip}</SelectItem>
+                    <SelectItem value="abort">{text.abort}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Left-Right two-panel comparison */}
       <div className="grid grid-cols-2 gap-4">
@@ -177,7 +269,9 @@ export function StepPreview({
               row.type === "file" ? (
                 <div
                   key={i}
-                  className="flex items-center gap-1.5 whitespace-nowrap py-0.5 text-xs text-muted-foreground"
+                  className={`flex items-center gap-1.5 whitespace-nowrap py-0.5 text-xs text-muted-foreground ${
+                    conflictedTargets.has(plan.destPath + '/' + (row.target || '')) ? 'rounded bg-yellow-100 dark:bg-yellow-900/30' : ''
+                  }`}
                   style={indent(row.depth + 1)}
                 >
                   <File className="h-3 w-3 shrink-0" />
@@ -215,7 +309,9 @@ export function StepPreview({
               ) : (
                 <div
                   key={i}
-                  className="flex items-center gap-1.5 whitespace-nowrap py-0.5 text-xs text-muted-foreground"
+                  className={`flex items-center gap-1.5 whitespace-nowrap py-0.5 text-xs text-muted-foreground ${
+                    conflictedTargets.has(plan.destPath + '/' + (row.target || '')) ? 'rounded bg-yellow-100 dark:bg-yellow-900/30' : ''
+                  }`}
                   style={indent(row.depth + 1)}
                 >
                   <File className="h-3 w-3 shrink-0" />

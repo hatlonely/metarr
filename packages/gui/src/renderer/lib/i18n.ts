@@ -82,6 +82,14 @@ const zh = {
   operationType: '操作',
   path: '路径',
   cleanedSourceDir: '已清理空源目录',
+  conflictDetected: '检测到文件冲突',
+  conflict: '冲突',
+  duplicate: '重复',
+  skip: '跳过',
+  overwrite: '覆盖',
+  abort: '中止',
+  skipAll: '全部跳过',
+  overwriteAll: '全部覆盖',
 } as const;
 
 const en = {
@@ -168,6 +176,14 @@ const en = {
   operationType: 'Operation',
   path: 'Path',
   cleanedSourceDir: 'Cleaned up empty source directory',
+  conflictDetected: 'File conflicts detected',
+  conflict: 'Conflict',
+  duplicate: 'Duplicate',
+  skip: 'Skip',
+  overwrite: 'Overwrite',
+  abort: 'Abort',
+  skipAll: 'Skip All',
+  overwriteAll: 'Overwrite All',
 } as const;
 
 export type Locale = 'zh' | 'en';

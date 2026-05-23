@@ -11,7 +11,9 @@ contextBridge.exposeInMainWorld('metarrAPI', {
     ipcRenderer.invoke('tmdb:getMovieDetails', apiKey, id),
   generateRenamePlan: (parsed: unknown, match: unknown, options: unknown) =>
     ipcRenderer.invoke('rename:generatePlan', parsed, match, options),
-  executeRename: (plan: unknown) => ipcRenderer.invoke('rename:execute', plan),
+  checkConflicts: (plan: unknown) => ipcRenderer.invoke('rename:checkConflicts', plan),
+  executeRename: (plan: unknown, resolutions?: unknown) =>
+    ipcRenderer.invoke('rename:execute', plan, resolutions),
   getConfig: () => ipcRenderer.invoke('config:get'),
   setConfig: (key: string, value: unknown) =>
     ipcRenderer.invoke('config:set', key, value),

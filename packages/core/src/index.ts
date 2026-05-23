@@ -7,7 +7,7 @@ export { TMDBError } from './tmdb/index.js';
 export type { TMDBClientOptions } from './tmdb/index.js';
 
 // Renamer
-export { generateTvRenamePlan, generateMovieRenamePlan, executeRenamePlan } from './renamer/index.js';
+export { generateTvRenamePlan, generateMovieRenamePlan, executeRenamePlan, checkConflicts } from './renamer/index.js';
 
 // Config
 export { getTmdbKey, getConfig, setConfig, getAllConfig, CONFIG_FILE } from './config.js';
@@ -37,4 +37,9 @@ export type {
   RenamePlan,
   RenameOptions,
   ExecutionResult,
+  ConflictFileInfo,
+  FileConflict,
+  ConflictResolution,
+  ConflictResolutionMap,
+  ConflictCheckResult,
 } from './types/renamer.js';

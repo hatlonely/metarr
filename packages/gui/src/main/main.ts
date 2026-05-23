@@ -7,10 +7,11 @@ import {
   generateTvRenamePlan,
   generateMovieRenamePlan,
   executeRenamePlan,
+  checkConflicts,
   getAllConfig,
   setConfig as coreSetConfig,
 } from '@metarr/core';
-import type { ParsedMedia, MediaType, RenameOptions, TMDBMatch } from '@metarr/core';
+import type { ParsedMedia, MediaType, RenameOptions, TMDBMatch, ConflictResolutionMap } from '@metarr/core';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -91,8 +92,13 @@ ipcMain.handle(
 );
 
 // IPC: Execute rename plan
-ipcMain.handle('rename:execute', async (_event, plan) => {
-  return executeRenamePlan(plan);
+ipcMain.handle('rename:execute', async (_event, plan, resolutions?: ConflictResolutionMap) => {
+  return executeRenamePlan(plan, resolutions);
+});
+
+// IPC: Check conflicts
+ipcMain.handle('rename:checkConflicts', async (_event, plan) => {
+  return checkConflicts(plan);
 });
 
 // IPC: Config - uses @metarr/core config persistence

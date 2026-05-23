@@ -1,12 +1,13 @@
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
-import type { MediaType, ParsedMedia, RenameOptions, RenamePlan, TMDBMatch } from '@metarr/core';
+import type { MediaType, ParsedMedia, RenameOptions, RenamePlan, TMDBMatch, ConflictResolution, ConflictResolutionMap } from '@metarr/core';
 import {
   parseMediaDir,
   TMDBClient,
   generateTvRenamePlan,
   generateMovieRenamePlan,
   executeRenamePlan,
+  checkConflicts,
   getTmdbKey,
   getConfig,
 } from '@metarr/core';
@@ -208,6 +209,54 @@ export async function renameAction(source: string, options: RenameCommandOptions
     return;
   }
 
+  // Step 7.5: Check for conflicts
+  let resolutions: ConflictResolutionMap | undefined;
+  const conflictResult = await checkConflicts(plan);
+
+  if (conflictResult.hasConflicts) {
+    console.log();
+    console.log(chalk.bold.yellow(`! 检测到 ${conflictResult.conflicts.length} 个文件冲突:`));
+    console.log();
+
+    for (const conflict of conflictResult.conflicts) {
+      const shortTarget = conflict.task.target.replace(destPath + '/', '');
+      if (conflict.isSameFile) {
+        console.log(`  ${chalk.gray('[重复]')} ${chalk.cyan(shortTarget)}`);
+      } else {
+        console.log(`  ${chalk.red('[冲突]')} ${chalk.cyan(shortTarget)}`);
+      }
+      console.log(`    源: ${formatFileSize(conflict.sourceInfo.size)}, ${conflict.sourceInfo.mtime}`);
+      console.log(`    目标: ${formatFileSize(conflict.targetInfo.size)}, ${conflict.targetInfo.mtime}`);
+      if (conflict.isSameFile) {
+        console.log(chalk.gray('    文件大小和修改时间相同，可能是重复文件'));
+      }
+      console.log();
+    }
+
+    const { resolution } = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'resolution',
+        message: '检测到文件冲突，如何处理？',
+        choices: [
+          { name: '全部覆盖 (所有冲突文件将被覆盖)', value: 'overwrite' },
+          { name: '跳过所有 (跳过所有冲突文件，保留目标文件)', value: 'skip' },
+          { name: '中止操作 (不执行任何操作)', value: 'abort' },
+        ],
+      },
+    ]);
+
+    if (resolution === 'abort') {
+      console.log(chalk.yellow('已取消'));
+      return;
+    }
+
+    resolutions = {};
+    for (const conflict of conflictResult.conflicts) {
+      resolutions[conflict.taskIndex] = resolution as ConflictResolution;
+    }
+  }
+
   // Step 8: Confirm and execute
   console.log();
   const { confirm } = await inquirer.prompt([
@@ -225,7 +274,7 @@ export async function renameAction(source: string, options: RenameCommandOptions
   }
 
   const execSpinner = ora('执行重命名...').start();
-  const result = await executeRenamePlan(plan);
+  const result = await executeRenamePlan(plan, resolutions);
   execSpinner.succeed(`完成: ${result.succeeded.length} 个操作成功`);
 
   if (result.failed.length > 0) {
@@ -255,4 +304,12 @@ async function askMediaType(): Promise<MediaType> {
     },
   ]);
   return type as MediaType;
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`;
 }

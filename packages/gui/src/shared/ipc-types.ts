@@ -1,4 +1,4 @@
-import type { ParsedMedia, RenameOptions, RenamePlan, ExecutionResult, TMDBMatch } from '@metarr/core';
+import type { ParsedMedia, RenameOptions, RenamePlan, ExecutionResult, TMDBMatch, ConflictCheckResult, ConflictResolutionMap } from '@metarr/core';
 
 export interface IPCApi {
   openDirectory(): Promise<string | null>;
@@ -10,7 +10,8 @@ export interface IPCApi {
     match: TMDBMatch,
     options: RenameOptions,
   ): Promise<RenamePlan>;
-  executeRename(plan: RenamePlan): Promise<ExecutionResult>;
+  checkConflicts(plan: RenamePlan): Promise<ConflictCheckResult>;
+  executeRename(plan: RenamePlan, resolutions?: ConflictResolutionMap): Promise<ExecutionResult>;
   getConfig(): Promise<Record<string, unknown>>;
   setConfig(key: string, value: unknown): Promise<void>;
 }

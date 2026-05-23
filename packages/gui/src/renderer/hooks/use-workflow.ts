@@ -6,7 +6,7 @@ import type {
   WorkflowAction,
   StepId,
 } from "@/src/renderer/types/workflow";
-import type { ParsedMedia, TMDBMatch, RenamePlan, ExecutionResult } from "@metarr/core";
+import type { ParsedMedia, TMDBMatch, RenamePlan, ExecutionResult, ConflictResolution } from "@metarr/core";
 import { ipc } from "@/src/renderer/lib/ipc";
 
 const steps: StepId[] = ["select", "parse", "search", "preview", "execute"];
@@ -21,6 +21,8 @@ const initialState: WorkflowState = {
   selectedMatch: null,
   plan: null,
   executionResult: null,
+  conflictResult: null,
+  conflictResolutions: {},
   executing: false,
   error: null,
   loading: false,
@@ -46,6 +48,10 @@ function workflowReducer(state: WorkflowState, action: WorkflowAction): Workflow
       return { ...state, plan: action.plan };
     case "SET_EXECUTION_RESULT":
       return { ...state, executionResult: action.result };
+    case "SET_CONFLICT_RESULT":
+      return { ...state, conflictResult: action.result };
+    case "SET_CONFLICT_RESOLUTIONS":
+      return { ...state, conflictResolutions: action.resolutions };
     case "SET_EXECUTING":
       return { ...state, executing: action.executing };
     case "SET_ERROR":
@@ -180,6 +186,11 @@ export function useWorkflow() {
           preferImdbId,
         });
         dispatch({ type: "SET_PLAN", plan: newPlan });
+
+        // Check for conflicts
+        const conflictResult = await ipc.checkConflicts(newPlan);
+        dispatch({ type: "SET_CONFLICT_RESULT", result: conflictResult });
+
         dispatch({ type: "SET_STEP", step: "preview" });
       } catch (err) {
         dispatch({ type: "SET_ERROR", error: `生成计划失败: ${(err as Error).message}` });
@@ -196,7 +207,11 @@ export function useWorkflow() {
     dispatch({ type: "SET_ERROR", error: null });
 
     try {
-      const result = await ipc.executeRename(state.plan);
+      const hasResolutions = Object.keys(state.conflictResolutions).length > 0;
+      const result = await ipc.executeRename(
+        state.plan,
+        hasResolutions ? state.conflictResolutions : undefined,
+      );
       dispatch({ type: "SET_EXECUTION_RESULT", result });
       dispatch({ type: "SET_STEP", step: "execute" });
     } catch (err) {
@@ -204,7 +219,23 @@ export function useWorkflow() {
     } finally {
       dispatch({ type: "SET_EXECUTING", executing: false });
     }
-  }, [state.plan]);
+  }, [state.plan, state.conflictResolutions]);
+
+  const setConflictResolution = useCallback((taskIndex: number, resolution: ConflictResolution) => {
+    dispatch({
+      type: "SET_CONFLICT_RESOLUTIONS",
+      resolutions: { ...state.conflictResolutions, [taskIndex]: resolution },
+    });
+  }, [state.conflictResolutions]);
+
+  const setAllConflictResolutions = useCallback((resolution: ConflictResolution) => {
+    if (!state.conflictResult) return;
+    const resolutions: Record<number, ConflictResolution> = {};
+    for (const conflict of state.conflictResult.conflicts) {
+      resolutions[conflict.taskIndex] = resolution;
+    }
+    dispatch({ type: "SET_CONFLICT_RESOLUTIONS", resolutions });
+  }, [state.conflictResult]);
 
   const reset = useCallback(() => {
     dispatch({ type: "RESET" });
@@ -225,6 +256,8 @@ export function useWorkflow() {
     selectMatch,
     generatePlan,
     executeRename,
+    setConflictResolution,
+    setAllConflictResolutions,
     reset,
   };
 }

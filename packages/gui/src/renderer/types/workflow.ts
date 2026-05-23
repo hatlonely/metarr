@@ -1,4 +1,4 @@
-import type { ParsedMedia, TMDBMatch, RenamePlan, ExecutionResult } from '@metarr/core';
+import type { ParsedMedia, TMDBMatch, RenamePlan, ExecutionResult, ConflictCheckResult, ConflictResolutionMap } from '@metarr/core';
 
 export type StepId = 'select' | 'parse' | 'search' | 'preview' | 'execute';
 
@@ -12,6 +12,8 @@ export interface WorkflowState {
   selectedMatch: TMDBMatch | null;
   plan: RenamePlan | null;
   executionResult: ExecutionResult | null;
+  conflictResult: ConflictCheckResult | null;
+  conflictResolutions: ConflictResolutionMap;
   executing: boolean;
   error: string | null;
   loading: boolean;
@@ -27,6 +29,8 @@ export type WorkflowAction =
   | { type: 'SELECT_MATCH'; match: TMDBMatch | null }
   | { type: 'SET_PLAN'; plan: RenamePlan | null }
   | { type: 'SET_EXECUTION_RESULT'; result: ExecutionResult | null }
+  | { type: 'SET_CONFLICT_RESULT'; result: ConflictCheckResult | null }
+  | { type: 'SET_CONFLICT_RESOLUTIONS'; resolutions: ConflictResolutionMap }
   | { type: 'SET_EXECUTING'; executing: boolean }
   | { type: 'SET_ERROR'; error: string | null }
   | { type: 'SET_LOADING'; loading: boolean }

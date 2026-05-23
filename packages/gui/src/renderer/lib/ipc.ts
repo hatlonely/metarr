@@ -1,4 +1,4 @@
-import type { ParsedMedia, TMDBMatch, RenamePlan, RenameOptions, ExecutionResult } from '@metarr/core';
+import type { ParsedMedia, TMDBMatch, RenamePlan, RenameOptions, ExecutionResult, ConflictCheckResult, ConflictResolutionMap } from '@metarr/core';
 
 function getApi() {
   if (typeof window === 'undefined' || !window.metarrAPI) {
@@ -30,7 +30,11 @@ export const ipc = {
     options: RenameOptions,
   ): Promise<RenamePlan> => getApi().generateRenamePlan(parsed, match, options),
 
-  executeRename: (plan: RenamePlan): Promise<ExecutionResult> => getApi().executeRename(plan),
+  checkConflicts: (plan: RenamePlan): Promise<ConflictCheckResult> =>
+    getApi().checkConflicts(plan),
+
+  executeRename: (plan: RenamePlan, resolutions?: ConflictResolutionMap): Promise<ExecutionResult> =>
+    getApi().executeRename(plan, resolutions),
 
   getConfig: (): Promise<Record<string, unknown>> => getApi().getConfig(),
 
