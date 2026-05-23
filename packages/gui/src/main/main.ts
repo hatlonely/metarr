@@ -118,7 +118,7 @@ ipcMain.handle(
 ipcMain.handle(
   'rename:generatePlan',
   async (_event, parsed: ParsedMedia, match: TMDBMatch, options: RenameOptions) => {
-    if (parsed.type === 'tv') {
+    if (match.type === 'tv') {
       return generateTvRenamePlan(parsed, match, options);
     }
     return generateMovieRenamePlan(parsed, match, options);
