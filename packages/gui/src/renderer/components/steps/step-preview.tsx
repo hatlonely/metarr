@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useCallback, useState } from "react";
-import { ArrowLeft, ArrowRight, Play, Loader2, Folder, File, AlertTriangle, FileQuestion, Trash2, ChevronDown } from "lucide-react";
+import { ArrowLeft, ArrowRight, Play, Loader2, Folder, File, AlertTriangle, FileQuestion, Trash2, ChevronDown, FileEdit, Ban, ShieldAlert } from "lucide-react";
 import { Button } from "@/src/renderer/components/ui/button";
 import { Card, CardContent } from "@/src/renderer/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/src/renderer/components/ui/collapsible";
@@ -441,31 +441,71 @@ export function StepPreview({
       </Card>
 
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="sm:max-w-md">
           <AlertDialogHeader>
-            <AlertDialogTitle>{text.confirmExecuteTitle}</AlertDialogTitle>
-            <AlertDialogDescription>{text.confirmExecuteDesc}</AlertDialogDescription>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-yellow-500/10">
+                <ShieldAlert className="h-3.5 w-3.5 text-yellow-600 dark:text-yellow-400" />
+              </div>
+              {text.confirmExecuteTitle}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="sr-only">
+              {text.confirmExecuteDesc}
+            </AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="space-y-1.5 pl-1 text-sm">
-            <div className="text-foreground">
-              {text.confirmRenamed.replace('{count}', String(executeSummary.renamedCount))}
+
+          <div className="space-y-3 pt-1">
+            <p className="text-sm text-muted-foreground">{text.confirmExecuteDesc}</p>
+
+            <div className="space-y-1.5 rounded-lg border bg-muted/30 p-3">
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-500/10">
+                    <FileEdit className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                  </div>
+                  {text.executeRenamed}
+                </div>
+                <span className="tabular-nums font-semibold">{executeSummary.renamedCount}</span>
+              </div>
+
+              {executeSummary.overwriteCount > 0 && (
+                <div className="flex items-center justify-between rounded-md bg-yellow-500/10 px-1.5 py-1 text-sm">
+                  <div className="flex items-center gap-2.5 text-yellow-700 dark:text-yellow-300">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-yellow-500/20">
+                      <AlertTriangle className="h-3.5 w-3.5" />
+                    </div>
+                    {text.executeOverwritten}
+                  </div>
+                  <span className="tabular-nums font-semibold text-yellow-700 dark:text-yellow-300">{executeSummary.overwriteCount}</span>
+                </div>
+              )}
+
+              {executeSummary.skipCount > 0 && (
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2.5 text-muted-foreground">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted">
+                      <Ban className="h-3.5 w-3.5" />
+                    </div>
+                    {text.executeSkipped}
+                  </div>
+                  <span className="tabular-nums text-muted-foreground">{executeSummary.skipCount}</span>
+                </div>
+              )}
+
+              {executeSummary.removedCount > 0 && (
+                <div className="flex items-center justify-between rounded-md bg-destructive/10 px-1.5 py-1 text-sm">
+                  <div className="flex items-center gap-2.5 text-destructive">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-destructive/20">
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </div>
+                    {text.executeRemoved}
+                  </div>
+                  <span className="tabular-nums font-semibold text-destructive">{executeSummary.removedCount}</span>
+                </div>
+              )}
             </div>
-            {executeSummary.overwriteCount > 0 && (
-              <div className="text-yellow-600 dark:text-yellow-400">
-                {text.confirmOverwritten.replace('{count}', String(executeSummary.overwriteCount))}
-              </div>
-            )}
-            {executeSummary.skipCount > 0 && (
-              <div className="text-muted-foreground">
-                {text.confirmSkipped.replace('{count}', String(executeSummary.skipCount))}
-              </div>
-            )}
-            {executeSummary.removedCount > 0 && (
-              <div className="text-destructive">
-                {text.confirmRemoved.replace('{count}', String(executeSummary.removedCount))}
-              </div>
-            )}
           </div>
+
           <AlertDialogFooter>
             <AlertDialogCancel>{text.close}</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmExecute}>{text.confirmExecute}</AlertDialogAction>
