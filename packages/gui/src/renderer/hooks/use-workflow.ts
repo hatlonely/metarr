@@ -23,6 +23,8 @@ const initialState: WorkflowState = {
   executionResult: null,
   conflictResult: null,
   conflictResolutions: {},
+  unmatchedFiles: [],
+  filesToRemove: [],
   executing: false,
   error: null,
   loading: false,
@@ -52,6 +54,10 @@ function workflowReducer(state: WorkflowState, action: WorkflowAction): Workflow
       return { ...state, conflictResult: action.result };
     case "SET_CONFLICT_RESOLUTIONS":
       return { ...state, conflictResolutions: action.resolutions };
+    case "SET_UNMATCHED_FILES":
+      return { ...state, unmatchedFiles: action.files };
+    case "SET_FILES_TO_REMOVE":
+      return { ...state, filesToRemove: action.paths };
     case "SET_EXECUTING":
       return { ...state, executing: action.executing };
     case "SET_ERROR":
@@ -187,9 +193,12 @@ export function useWorkflow() {
         });
         dispatch({ type: "SET_PLAN", plan: newPlan });
 
-        // Check for conflicts
         const conflictResult = await ipc.checkConflicts(newPlan);
         dispatch({ type: "SET_CONFLICT_RESULT", result: conflictResult });
+
+        const unmatchedFiles = await ipc.findUnmatchedFiles(state.parsed.sourcePath, newPlan);
+        dispatch({ type: "SET_UNMATCHED_FILES", files: unmatchedFiles });
+        dispatch({ type: "SET_FILES_TO_REMOVE", paths: [] });
 
         dispatch({ type: "SET_STEP", step: "preview" });
       } catch (err) {
@@ -208,9 +217,11 @@ export function useWorkflow() {
 
     try {
       const hasResolutions = Object.keys(state.conflictResolutions).length > 0;
+      const hasFilesToRemove = state.filesToRemove.length > 0;
       const result = await ipc.executeRename(
         state.plan,
         hasResolutions ? state.conflictResolutions : undefined,
+        hasFilesToRemove ? state.filesToRemove : undefined,
       );
       dispatch({ type: "SET_EXECUTION_RESULT", result });
       dispatch({ type: "SET_STEP", step: "execute" });
@@ -219,7 +230,7 @@ export function useWorkflow() {
     } finally {
       dispatch({ type: "SET_EXECUTING", executing: false });
     }
-  }, [state.plan, state.conflictResolutions]);
+  }, [state.plan, state.conflictResolutions, state.filesToRemove]);
 
   const setConflictResolution = useCallback((taskIndex: number, resolution: ConflictResolution) => {
     dispatch({
@@ -236,6 +247,27 @@ export function useWorkflow() {
     }
     dispatch({ type: "SET_CONFLICT_RESOLUTIONS", resolutions });
   }, [state.conflictResult]);
+
+  const toggleFileRemoval = useCallback((filePath: string) => {
+    const current = new Set(state.filesToRemove);
+    if (current.has(filePath)) {
+      current.delete(filePath);
+    } else {
+      current.add(filePath);
+    }
+    dispatch({ type: "SET_FILES_TO_REMOVE", paths: Array.from(current) });
+  }, [state.filesToRemove]);
+
+  const setAllFilesToRemove = useCallback((remove: boolean) => {
+    if (remove) {
+      dispatch({
+        type: "SET_FILES_TO_REMOVE",
+        paths: state.unmatchedFiles.map(f => f.path),
+      });
+    } else {
+      dispatch({ type: "SET_FILES_TO_REMOVE", paths: [] });
+    }
+  }, [state.unmatchedFiles]);
 
   const reset = useCallback(() => {
     dispatch({ type: "RESET" });
@@ -258,6 +290,8 @@ export function useWorkflow() {
     executeRename,
     setConflictResolution,
     setAllConflictResolutions,
+    toggleFileRemoval,
+    setAllFilesToRemove,
     reset,
   };
 }

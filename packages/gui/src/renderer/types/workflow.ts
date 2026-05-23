@@ -1,4 +1,4 @@
-import type { ParsedMedia, TMDBMatch, RenamePlan, ExecutionResult, ConflictCheckResult, ConflictResolutionMap } from '@metarr/core';
+import type { ParsedMedia, TMDBMatch, RenamePlan, ExecutionResult, ConflictCheckResult, ConflictResolutionMap, UnmatchedFileInfo } from '@metarr/core';
 
 export type StepId = 'select' | 'parse' | 'search' | 'preview' | 'execute';
 
@@ -14,6 +14,8 @@ export interface WorkflowState {
   executionResult: ExecutionResult | null;
   conflictResult: ConflictCheckResult | null;
   conflictResolutions: ConflictResolutionMap;
+  unmatchedFiles: UnmatchedFileInfo[];
+  filesToRemove: string[];
   executing: boolean;
   error: string | null;
   loading: boolean;
@@ -31,6 +33,8 @@ export type WorkflowAction =
   | { type: 'SET_EXECUTION_RESULT'; result: ExecutionResult | null }
   | { type: 'SET_CONFLICT_RESULT'; result: ConflictCheckResult | null }
   | { type: 'SET_CONFLICT_RESOLUTIONS'; resolutions: ConflictResolutionMap }
+  | { type: 'SET_UNMATCHED_FILES'; files: UnmatchedFileInfo[] }
+  | { type: 'SET_FILES_TO_REMOVE'; paths: string[] }
   | { type: 'SET_EXECUTING'; executing: boolean }
   | { type: 'SET_ERROR'; error: string | null }
   | { type: 'SET_LOADING'; loading: boolean }

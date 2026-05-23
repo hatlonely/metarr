@@ -27,6 +27,15 @@ export interface ExecutionResult {
   succeeded: RenameTask[];
   failed: { task: RenameTask; error: Error }[];
   cleanedSourcePath?: string;
+  removedUnmatched?: string[];
+}
+
+export interface UnmatchedFileInfo {
+  path: string;
+  name: string;
+  extension: string;
+  size: number;
+  type: 'nfo' | 'image' | 'subtitle' | 'other';
 }
 
 export interface ConflictFileInfo {

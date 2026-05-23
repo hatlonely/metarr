@@ -1,13 +1,14 @@
 "use client";
 
 import { useMemo, useRef, useCallback, useState } from "react";
-import { ArrowLeft, ArrowRight, Play, Loader2, Folder, File, AlertTriangle } from "lucide-react";
+import { ArrowLeft, ArrowRight, Play, Loader2, Folder, File, AlertTriangle, FileQuestion, Trash2 } from "lucide-react";
 import { Button } from "@/src/renderer/components/ui/button";
 import { Badge } from "@/src/renderer/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/src/renderer/components/ui/select";
+import { Switch } from "@/src/renderer/components/ui/switch";
 import { StepHeader } from "@/src/renderer/components/shared/step-header";
 import { t, type Locale } from "@/src/renderer/lib/i18n";
-import type { RenamePlan, ConflictCheckResult, ConflictResolutionMap, ConflictResolution } from "@metarr/core";
+import type { RenamePlan, ConflictCheckResult, ConflictResolutionMap, ConflictResolution, UnmatchedFileInfo } from "@metarr/core";
 
 function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 B';
@@ -23,10 +24,14 @@ interface StepPreviewProps {
   executing: boolean;
   conflictResult: ConflictCheckResult | null;
   conflictResolutions: ConflictResolutionMap;
+  unmatchedFiles: UnmatchedFileInfo[];
+  filesToRemove: string[];
   onBack: () => void;
   onExecute: () => void;
   onSetConflictResolution: (taskIndex: number, resolution: ConflictResolution) => void;
   onSetAllConflictResolutions: (resolution: ConflictResolution) => void;
+  onToggleFileRemoval: (filePath: string) => void;
+  onSetAllFilesToRemove: (remove: boolean) => void;
 }
 
 interface PairNode {
@@ -126,10 +131,14 @@ export function StepPreview({
   executing,
   conflictResult,
   conflictResolutions,
+  unmatchedFiles,
+  filesToRemove,
   onBack,
   onExecute,
   onSetConflictResolution,
   onSetAllConflictResolutions,
+  onToggleFileRemoval,
+  onSetAllFilesToRemove,
 }: StepPreviewProps) {
   const text = t(locale);
   const leftRef = useRef<HTMLDivElement>(null);
@@ -245,6 +254,49 @@ export function StepPreview({
                     <SelectItem value="abort">{text.abort}</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Unmatched files section */}
+      {unmatchedFiles.length > 0 && (
+        <div className="mb-4 rounded-lg border border-orange-500/50 bg-orange-50 p-4 dark:bg-orange-950/20">
+          <div className="mb-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <FileQuestion className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+              <span className="text-sm font-semibold text-orange-700 dark:text-orange-300">
+                {text.unmatchedFiles} ({unmatchedFiles.length})
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">{text.removeAll}</span>
+              <Switch
+                checked={filesToRemove.length === unmatchedFiles.length && unmatchedFiles.length > 0}
+                onCheckedChange={(checked) => onSetAllFilesToRemove(checked)}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            {unmatchedFiles.map((file) => (
+              <div
+                key={file.path}
+                className="flex items-center gap-3 rounded-md border bg-background p-2 text-xs"
+              >
+                <Switch
+                  checked={filesToRemove.includes(file.path)}
+                  onCheckedChange={() => onToggleFileRemoval(file.path)}
+                />
+                <Badge variant="outline">{file.type}</Badge>
+                <span className="flex-1 truncate font-mono">{file.name}</span>
+                <span className="shrink-0 text-muted-foreground">
+                  {formatFileSize(file.size)}
+                </span>
+                {filesToRemove.includes(file.path) && (
+                  <Trash2 className="h-3 w-3 text-destructive" />
+                )}
               </div>
             ))}
           </div>

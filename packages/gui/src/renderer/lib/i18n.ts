@@ -90,6 +90,9 @@ const zh = {
   abort: '中止',
   skipAll: '全部跳过',
   overwriteAll: '全部覆盖',
+  unmatchedFiles: '未匹配文件',
+  removeAll: '全部删除',
+  removedUnmatched: '已删除未匹配文件',
 } as const;
 
 const en = {
@@ -184,6 +187,9 @@ const en = {
   abort: 'Abort',
   skipAll: 'Skip All',
   overwriteAll: 'Overwrite All',
+  unmatchedFiles: 'Unmatched Files',
+  removeAll: 'Remove All',
+  removedUnmatched: 'Removed unmatched files',
 } as const;
 
 export type Locale = 'zh' | 'en';

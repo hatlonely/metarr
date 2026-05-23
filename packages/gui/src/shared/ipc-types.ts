@@ -1,4 +1,4 @@
-import type { ParsedMedia, RenameOptions, RenamePlan, ExecutionResult, TMDBMatch, ConflictCheckResult, ConflictResolutionMap } from '@metarr/core';
+import type { ParsedMedia, RenameOptions, RenamePlan, ExecutionResult, TMDBMatch, ConflictCheckResult, ConflictResolutionMap, UnmatchedFileInfo } from '@metarr/core';
 
 export interface IPCApi {
   openDirectory(): Promise<string | null>;
@@ -11,7 +11,8 @@ export interface IPCApi {
     options: RenameOptions,
   ): Promise<RenamePlan>;
   checkConflicts(plan: RenamePlan): Promise<ConflictCheckResult>;
-  executeRename(plan: RenamePlan, resolutions?: ConflictResolutionMap): Promise<ExecutionResult>;
+  findUnmatchedFiles(sourcePath: string, plan: RenamePlan): Promise<UnmatchedFileInfo[]>;
+  executeRename(plan: RenamePlan, resolutions?: ConflictResolutionMap, filesToRemove?: string[]): Promise<ExecutionResult>;
   getConfig(): Promise<Record<string, unknown>>;
   setConfig(key: string, value: unknown): Promise<void>;
 }

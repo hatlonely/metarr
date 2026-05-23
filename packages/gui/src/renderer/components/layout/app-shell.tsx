@@ -30,6 +30,8 @@ export function AppShell() {
     executeRename,
     setConflictResolution,
     setAllConflictResolutions,
+    toggleFileRemoval,
+    setAllFilesToRemove,
     reset,
   } = useWorkflow();
 
@@ -101,10 +103,14 @@ export function AppShell() {
             executing={state.executing}
             conflictResult={state.conflictResult}
             conflictResolutions={state.conflictResolutions}
+            unmatchedFiles={state.unmatchedFiles}
+            filesToRemove={state.filesToRemove}
             onBack={() => goToStep("search")}
             onExecute={() => executeRename()}
             onSetConflictResolution={setConflictResolution}
             onSetAllConflictResolutions={setAllConflictResolutions}
+            onToggleFileRemoval={toggleFileRemoval}
+            onSetAllFilesToRemove={setAllFilesToRemove}
           />
         ) : null;
       case "execute":

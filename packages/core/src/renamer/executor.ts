@@ -17,6 +17,7 @@ async function isDirEmpty(dirPath: string): Promise<boolean> {
 export async function executeRenamePlan(
   plan: RenamePlan,
   resolutions?: ConflictResolutionMap,
+  filesToRemove?: string[],
 ): Promise<ExecutionResult> {
   const succeeded: RenameTask[] = [];
   const failed: { task: RenameTask; error: Error }[] = [];
@@ -57,6 +58,27 @@ export async function executeRenamePlan(
     }
   }
 
+  // Remove unmatched files
+  const removedUnmatched: string[] = [];
+  if (filesToRemove && filesToRemove.length > 0) {
+    for (const filePath of filesToRemove) {
+      try {
+        await rm(filePath, { force: true });
+        removedUnmatched.push(filePath);
+      } catch (error) {
+        failed.push({
+          task: {
+            source: filePath,
+            target: '',
+            operation: 'create-dir',
+            description: `删除未匹配文件 ${filePath}`,
+          },
+          error: error as Error,
+        });
+      }
+    }
+  }
+
   // Clean up empty source directory
   let cleanedSourcePath: string | undefined;
   if (succeeded.length > 0 && plan.sourcePath && await isDirEmpty(plan.sourcePath)) {
@@ -68,5 +90,5 @@ export async function executeRenamePlan(
     }
   }
 
-  return { succeeded, failed, cleanedSourcePath };
+  return { succeeded, failed, cleanedSourcePath, removedUnmatched };
 }

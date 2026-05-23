@@ -8,6 +8,7 @@ import {
   generateMovieRenamePlan,
   executeRenamePlan,
   checkConflicts,
+  findUnmatchedFiles,
   getTmdbKey,
   getConfig,
 } from '@metarr/core';
@@ -209,6 +210,31 @@ export async function renameAction(source: string, options: RenameCommandOptions
     return;
   }
 
+  // Step 7.3: Find unmatched files
+  const unmatchedFiles = await findUnmatchedFiles(sourcePath, plan);
+  let filesToRemove: string[] = [];
+
+  if (unmatchedFiles.length > 0) {
+    console.log();
+    console.log(chalk.bold(`发现 ${unmatchedFiles.length} 个未匹配文件:`));
+    for (const file of unmatchedFiles) {
+      console.log(`  ${chalk.gray('[未匹配]')} ${file.name} (${formatFileSize(file.size)}) [${file.type}]`);
+    }
+
+    const { removeUnmatched } = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'removeUnmatched',
+        message: `是否删除这 ${unmatchedFiles.length} 个未匹配文件？`,
+        default: false,
+      },
+    ]);
+
+    if (removeUnmatched) {
+      filesToRemove = unmatchedFiles.map(f => f.path);
+    }
+  }
+
   // Step 7.5: Check for conflicts
   let resolutions: ConflictResolutionMap | undefined;
   const conflictResult = await checkConflicts(plan);
@@ -274,7 +300,7 @@ export async function renameAction(source: string, options: RenameCommandOptions
   }
 
   const execSpinner = ora('执行重命名...').start();
-  const result = await executeRenamePlan(plan, resolutions);
+  const result = await executeRenamePlan(plan, resolutions, filesToRemove.length > 0 ? filesToRemove : undefined);
   execSpinner.succeed(`完成: ${result.succeeded.length} 个操作成功`);
 
   if (result.failed.length > 0) {
@@ -288,6 +314,11 @@ export async function renameAction(source: string, options: RenameCommandOptions
   if (result.cleanedSourcePath) {
     console.log();
     console.log(chalk.gray(`  已清理空源目录: ${result.cleanedSourcePath}`));
+  }
+
+  if (result.removedUnmatched && result.removedUnmatched.length > 0) {
+    console.log();
+    console.log(chalk.gray(`  已删除 ${result.removedUnmatched.length} 个未匹配文件`));
   }
 }
 

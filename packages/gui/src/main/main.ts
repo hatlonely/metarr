@@ -8,10 +8,11 @@ import {
   generateMovieRenamePlan,
   executeRenamePlan,
   checkConflicts,
+  findUnmatchedFiles,
   getAllConfig,
   setConfig as coreSetConfig,
 } from '@metarr/core';
-import type { ParsedMedia, MediaType, RenameOptions, TMDBMatch, ConflictResolutionMap } from '@metarr/core';
+import type { ParsedMedia, MediaType, RenameOptions, TMDBMatch, RenamePlan, ConflictResolutionMap } from '@metarr/core';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -92,13 +93,18 @@ ipcMain.handle(
 );
 
 // IPC: Execute rename plan
-ipcMain.handle('rename:execute', async (_event, plan, resolutions?: ConflictResolutionMap) => {
-  return executeRenamePlan(plan, resolutions);
+ipcMain.handle('rename:execute', async (_event, plan: RenamePlan, resolutions?: ConflictResolutionMap, filesToRemove?: string[]) => {
+  return executeRenamePlan(plan, resolutions, filesToRemove);
 });
 
 // IPC: Check conflicts
-ipcMain.handle('rename:checkConflicts', async (_event, plan) => {
+ipcMain.handle('rename:checkConflicts', async (_event, plan: RenamePlan) => {
   return checkConflicts(plan);
+});
+
+// IPC: Find unmatched files
+ipcMain.handle('unmatched:find', async (_event, sourcePath: string, plan: RenamePlan) => {
+  return findUnmatchedFiles(sourcePath, plan);
 });
 
 // IPC: Config - uses @metarr/core config persistence

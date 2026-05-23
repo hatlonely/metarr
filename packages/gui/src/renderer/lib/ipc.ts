@@ -1,4 +1,4 @@
-import type { ParsedMedia, TMDBMatch, RenamePlan, RenameOptions, ExecutionResult, ConflictCheckResult, ConflictResolutionMap } from '@metarr/core';
+import type { ParsedMedia, TMDBMatch, RenamePlan, RenameOptions, ExecutionResult, ConflictCheckResult, ConflictResolutionMap, UnmatchedFileInfo } from '@metarr/core';
 
 function getApi() {
   if (typeof window === 'undefined' || !window.metarrAPI) {
@@ -33,8 +33,11 @@ export const ipc = {
   checkConflicts: (plan: RenamePlan): Promise<ConflictCheckResult> =>
     getApi().checkConflicts(plan),
 
-  executeRename: (plan: RenamePlan, resolutions?: ConflictResolutionMap): Promise<ExecutionResult> =>
-    getApi().executeRename(plan, resolutions),
+  findUnmatchedFiles: (sourcePath: string, plan: RenamePlan): Promise<UnmatchedFileInfo[]> =>
+    getApi().findUnmatchedFiles(sourcePath, plan),
+
+  executeRename: (plan: RenamePlan, resolutions?: ConflictResolutionMap, filesToRemove?: string[]): Promise<ExecutionResult> =>
+    getApi().executeRename(plan, resolutions, filesToRemove),
 
   getConfig: (): Promise<Record<string, unknown>> => getApi().getConfig(),
 
