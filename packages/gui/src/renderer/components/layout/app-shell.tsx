@@ -83,10 +83,11 @@ export function AppShell() {
             selectedMatch={state.selectedMatch}
             searchQuery={state.searchQuery}
             loading={state.loading}
+            defaultDestPath={config.destPath}
             onSelectMatch={(match) => selectMatch(match, config.tmdbKey)}
             onReSearch={() => searchTmdb(config.tmdbKey)}
-            onGeneratePlan={() =>
-              generatePlan(config.tmdbKey, config.destPath, config.preferImdbId)
+            onGeneratePlan={(destPath) =>
+              generatePlan(config.tmdbKey, destPath, config.preferImdbId)
             }
           />
         );
