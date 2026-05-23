@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useCallback } from "react";
+import { useMemo, useRef, useCallback, useState } from "react";
 import { ArrowLeft, ArrowRight, Play, Loader2, Folder, File } from "lucide-react";
 import { Button } from "@/src/renderer/components/ui/button";
 import { StepHeader } from "@/src/renderer/components/shared/step-header";
@@ -62,9 +62,7 @@ interface TreeRow {
 function flattenTree(node: PairNode, depth: number): TreeRow[] {
   const rows: TreeRow[] = [];
 
-  // Skip virtual root
   const startNode = node.name === "" && node.children.length === 1 ? node.children[0] : node;
-  const startDepth = node.name === "" && node.children.length === 1 ? depth : depth;
 
   function walk(n: PairNode, d: number) {
     if (n.name) {
@@ -78,8 +76,34 @@ function flattenTree(node: PairNode, depth: number): TreeRow[] {
     }
   }
 
-  walk(startNode, startDepth);
+  walk(startNode, depth);
   return rows;
+}
+
+/** Breadcrumb: show last 2 components with "..." prefix if more exist */
+function formatBreadcrumb(path: string): string {
+  const parts = path.split("/").filter(Boolean);
+  if (parts.length <= 2) return path;
+  return ".../" + parts.slice(-2).join("/");
+}
+
+/** Clickable path display: breadcrumb by default, full path on click */
+function PathDisplay({ path }: { path: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const isLong = path.length > 40;
+  const display = isLong && !expanded ? formatBreadcrumb(path) : path;
+
+  return (
+    <p
+      className={`mb-3 cursor-pointer font-mono text-xs text-muted-foreground ${
+        isLong && !expanded ? "truncate" : "break-all"
+      }`}
+      onClick={() => isLong && setExpanded(!expanded)}
+      title={path}
+    >
+      {display}
+    </p>
+  );
 }
 
 export function StepPreview({
@@ -121,9 +145,6 @@ export function StepPreview({
     };
   }, [plan]);
 
-  const sourceBase = plan.sourcePath.split("/").pop() || plan.sourcePath;
-  const targetBase = plan.destPath;
-
   const indent = (depth: number) => ({ paddingLeft: `${depth * 16 + 8}px` });
 
   return (
@@ -146,9 +167,7 @@ export function StepPreview({
             <ArrowLeft className="h-4 w-4" />
             {text.originalStructure}
           </div>
-          <p className="mb-3 truncate font-mono text-xs text-muted-foreground">
-            {sourceBase}
-          </p>
+          <PathDisplay path={plan.sourcePath} />
           <div
             ref={leftRef}
             className="max-h-[28rem] space-y-px overflow-y-auto overflow-x-auto"
@@ -177,9 +196,7 @@ export function StepPreview({
             <ArrowRight className="h-4 w-4" />
             {text.newStructure}
           </div>
-          <p className="mb-3 truncate font-mono text-xs text-muted-foreground">
-            {targetBase}
-          </p>
+          <PathDisplay path={plan.destPath} />
           <div
             ref={rightRef}
             className="max-h-[28rem] space-y-px overflow-y-auto overflow-x-auto"
