@@ -1,6 +1,6 @@
 "use client";
 
-import { FolderOpen, Loader2 } from "lucide-react";
+import { FolderOpen, FileVideo, Loader2 } from "lucide-react";
 import { Button } from "@/src/renderer/components/ui/button";
 import { Card, CardContent } from "@/src/renderer/components/ui/card";
 import {
@@ -54,9 +54,9 @@ export function StepSelect({
             {loading ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
-              <FolderOpen className="mr-2 h-4 w-4" />
+              <FileVideo className="mr-2 h-4 w-4" />
             )}
-            {text.selectDir}
+            {text.selectMedia}
           </Button>
         </CardContent>
       </Card>

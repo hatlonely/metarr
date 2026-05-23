@@ -93,26 +93,30 @@ export function useWorkflow() {
     dispatch({ type: "SET_SEARCH_QUERY", query });
   }, []);
 
-  const selectDirectory = useCallback(async (tmdbKey: string) => {
+  const selectMedia = useCallback(async (tmdbKey: string) => {
     dispatch({ type: "SET_LOADING", loading: true });
     dispatch({ type: "SET_ERROR", error: null });
     try {
-      const dirPath = await ipc.openDirectory();
-      if (!dirPath) {
+      const result = await ipc.openMedia();
+      if (!result) {
         dispatch({ type: "SET_LOADING", loading: false });
         return;
       }
-      dispatch({ type: "SET_SOURCE_PATH", path: dirPath });
 
-      const result = await ipc.parseDirectory(dirPath);
-      dispatch({ type: "SET_PARSED", parsed: result });
+      dispatch({ type: "SET_SOURCE_PATH", path: result.sourcePath });
+
+      const parsed = result.type === 'file'
+        ? await ipc.parseFile(result.path)
+        : await ipc.parseDirectory(result.path);
+
+      dispatch({ type: "SET_PARSED", parsed });
       dispatch({
         type: "SET_SEARCH_QUERY",
-        query: result.chineseTitle || result.englishTitle || "",
+        query: parsed.chineseTitle || parsed.englishTitle || "",
       });
 
-      if (result.type === "tv" || result.type === "movie") {
-        dispatch({ type: "SET_MEDIA_TYPE", mediaType: result.type });
+      if (parsed.type === "tv" || parsed.type === "movie") {
+        dispatch({ type: "SET_MEDIA_TYPE", mediaType: parsed.type });
       }
 
       dispatch({ type: "SET_STEP", step: "parse" });
@@ -196,7 +200,7 @@ export function useWorkflow() {
         const conflictResult = await ipc.checkConflicts(newPlan);
         dispatch({ type: "SET_CONFLICT_RESULT", result: conflictResult });
 
-        const unmatchedFiles = await ipc.findUnmatchedFiles(state.parsed.sourcePath, newPlan);
+        const unmatchedFiles = await ipc.findUnmatchedFiles(state.parsed.sourcePath, newPlan, state.parsed.selectedFile);
         dispatch({ type: "SET_UNMATCHED_FILES", files: unmatchedFiles });
         dispatch({ type: "SET_FILES_TO_REMOVE", paths: [] });
 
@@ -283,7 +287,7 @@ export function useWorkflow() {
     setError,
     setMediaType,
     setSearchQuery,
-    selectDirectory,
+    selectMedia,
     searchTmdb,
     selectMatch,
     generatePlan,

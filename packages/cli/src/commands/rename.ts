@@ -1,8 +1,9 @@
-import { existsSync } from 'node:fs';
+import { existsSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { MediaType, ParsedMedia, RenameOptions, RenamePlan, TMDBMatch, ConflictResolution, ConflictResolutionMap } from '@metarr/core';
 import {
   parseMediaDir,
+  parseMediaFile,
   TMDBClient,
   generateTvRenamePlan,
   generateMovieRenamePlan,
@@ -29,9 +30,11 @@ export async function renameAction(source: string, options: RenameCommandOptions
   // Validate source
   const sourcePath = resolve(source);
   if (!existsSync(sourcePath)) {
-    console.error(chalk.red(`错误: 源目录不存在: ${sourcePath}`));
+    console.error(chalk.red(`错误: 源路径不存在: ${sourcePath}`));
     process.exit(1);
   }
+
+  const isFile = statSync(sourcePath).isFile();
 
   const apiKey = getTmdbKey(options.tmdbKey);
   if (!apiKey) {
@@ -45,19 +48,25 @@ export async function renameAction(source: string, options: RenameCommandOptions
   const destPath = resolve(options.dest);
   const displayLanguage = getConfig('displayLanguage', options.lang) || 'zh-CN';
 
-  // Step 1: Parse directory
-  const spinner = ora('解析目录...').start();
+  // Step 1: Parse source (file or directory)
+  const spinner = ora(isFile ? '解析文件...' : '解析目录...').start();
   let parsed: ParsedMedia;
   try {
-    parsed = await parseMediaDir(sourcePath, {
-      type: options.type === 'auto' ? undefined : (options.type as MediaType),
-    });
+    if (isFile) {
+      parsed = await parseMediaFile(sourcePath, {
+        type: options.type === 'auto' ? undefined : (options.type as MediaType),
+      });
+    } else {
+      parsed = await parseMediaDir(sourcePath, {
+        type: options.type === 'auto' ? undefined : (options.type as MediaType),
+      });
+    }
   } catch (err) {
-    spinner.fail(chalk.red('解析目录失败'));
+    spinner.fail(chalk.red(isFile ? '解析文件失败' : '解析目录失败'));
     console.error(err);
     process.exit(1);
   }
-  spinner.succeed('解析目录完成');
+  spinner.succeed(isFile ? '解析文件完成' : '解析目录完成');
 
   // Display parse results
   console.log();
@@ -211,7 +220,7 @@ export async function renameAction(source: string, options: RenameCommandOptions
   }
 
   // Step 7.3: Find unmatched files
-  const unmatchedFiles = await findUnmatchedFiles(sourcePath, plan);
+  const unmatchedFiles = await findUnmatchedFiles(parsed.sourcePath, plan, parsed.selectedFile);
   let filesToRemove: string[] = [];
 
   if (unmatchedFiles.length > 0) {

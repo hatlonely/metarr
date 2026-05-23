@@ -1,12 +1,68 @@
-import { basename } from 'node:path';
+import { basename, dirname } from 'node:path';
 import type { ParsedMedia, MediaType, ParseOptions } from '../types/media.js';
 import { parseDirName, extractFromFileName } from './dir-parser.js';
 import { scanDirectory } from './scanner.js';
+import { parseFileName, parseSubtitleFile } from './file-parser.js';
 
 export { parseDirName, extractFromFileName } from './dir-parser.js';
 export { parseFileName, parseSubtitleFile } from './file-parser.js';
 export { scanDirectory, scanMediaDirectories } from './scanner.js';
 export { parseTags } from './tag-parser.js';
+
+/**
+ * Parse a single media file: scan its parent directory but only keep the selected file and its associated subtitles.
+ */
+export async function parseMediaFile(
+  filePath: string,
+  options?: ParseOptions,
+): Promise<ParsedMedia> {
+  const dirPath = dirname(filePath);
+  const fileName = basename(filePath);
+
+  const scan = await scanDirectory(dirPath);
+
+  const selectedVideo = scan.videoFiles.find((f) => f.name === fileName);
+  if (!selectedVideo) {
+    throw new Error(`Selected file is not a video file: ${fileName}`);
+  }
+
+  const selectedEpisode = parseFileName(selectedVideo.name);
+
+  const videoNames = scan.videoFiles.map((f) => f.name);
+  for (const sf of scan.subtitleFiles) {
+    const result = parseSubtitleFile(sf.name, videoNames);
+    if (result.isAssociated && result.videoBaseName) {
+      const videoBase = selectedVideo.name.replace(/\.[^.]+$/, '');
+      if (result.videoBaseName === videoBase) {
+        selectedEpisode.associatedFiles.push(sf.name);
+      }
+    }
+  }
+
+  const dirInfo = parseDirName(basename(dirPath));
+  const fileInfo = extractFromFileName(fileName);
+
+  const chineseTitle = dirInfo.chineseTitle || fileInfo.chineseTitle;
+  const englishTitle = dirInfo.englishTitle || fileInfo.englishTitle;
+  const year = dirInfo.year || fileInfo.year;
+  const tags = dirInfo.tags.resolution ? dirInfo.tags : fileInfo.tags;
+
+  const type: MediaType | 'unknown' =
+    options?.type && options.type !== 'auto' ? options.type : 'movie';
+
+  return {
+    type,
+    chineseTitle,
+    englishTitle,
+    year,
+    tags,
+    episodes: [selectedEpisode],
+    originalDirName: basename(dirPath),
+    sourcePath: dirPath,
+    isClean: dirInfo.isClean,
+    selectedFile: filePath,
+  };
+}
 
 /**
  * Parse a media directory: extract metadata from the directory name and its contents.

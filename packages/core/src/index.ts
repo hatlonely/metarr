@@ -1,5 +1,5 @@
 // Parser
-export { parseMediaDir, parseDirName, parseFileName, scanDirectory, scanMediaDirectories } from './parser/index.js';
+export { parseMediaDir, parseMediaFile, parseDirName, parseFileName, scanDirectory, scanMediaDirectories } from './parser/index.js';
 
 // TMDB
 export { TMDBClient } from './tmdb/index.js';

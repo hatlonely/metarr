@@ -13,11 +13,17 @@ function classifyFile(extension: string): UnmatchedFileInfo['type'] {
 
 /**
  * Find files in the source directory that are not included in the rename plan.
+ * In single-file mode (selectedFile is set), returns empty since other files are intentionally ignored.
  */
 export async function findUnmatchedFiles(
   sourcePath: string,
   plan: RenamePlan,
+  selectedFile?: string,
 ): Promise<UnmatchedFileInfo[]> {
+  if (selectedFile) {
+    return [];
+  }
+
   const scanResult = await scanDirectory(sourcePath);
 
   const plannedPaths = new Set<string>();

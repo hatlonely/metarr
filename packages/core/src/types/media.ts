@@ -31,6 +31,8 @@ export interface ParsedMedia {
   originalDirName: string;
   sourcePath: string;
   isClean: boolean;
+  /** User-selected single file path (only in single-file mode) */
+  selectedFile?: string;
 }
 
 export interface ParseOptions {

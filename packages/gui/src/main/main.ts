@@ -1,8 +1,10 @@
 import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { statSync } from 'node:fs';
 import {
   parseMediaDir,
+  parseMediaFile,
   TMDBClient,
   generateTvRenamePlan,
   generateMovieRenamePlan,
@@ -41,7 +43,28 @@ function createWindow() {
   }
 }
 
-// IPC: Open directory dialog
+// IPC: Open media dialog (file or directory)
+ipcMain.handle('dialog:openMedia', async () => {
+  if (!mainWindow) return null;
+  const result = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openFile', 'openDirectory'],
+    filters: [
+      { name: 'Video Files', extensions: ['mkv', 'mp4', 'avi', 'wmv', 'mov', 'ts', 'rmvb', 'flv', 'webm'] },
+      { name: 'All Files', extensions: ['*'] },
+    ],
+  });
+  const filePath = result.filePaths[0];
+  if (!filePath) return null;
+  const stat = statSync(filePath);
+  const isDir = stat.isDirectory();
+  return {
+    type: isDir ? 'dir' as const : 'file' as const,
+    path: filePath,
+    sourcePath: isDir ? filePath : dirname(filePath),
+  };
+});
+
+// IPC: Open directory dialog (for destination path selection)
 ipcMain.handle('dialog:openDirectory', async () => {
   if (!mainWindow) return null;
   const result = await dialog.showOpenDialog(mainWindow, {
@@ -55,6 +78,16 @@ ipcMain.handle(
   'parse:directory',
   async (_event, dirPath: string, type?: string) => {
     return parseMediaDir(dirPath, {
+      type: type === 'tv' || type === 'movie' ? (type as MediaType) : undefined,
+    });
+  },
+);
+
+// IPC: Parse single file
+ipcMain.handle(
+  'parse:file',
+  async (_event, filePath: string, type?: string) => {
+    return parseMediaFile(filePath, {
       type: type === 'tv' || type === 'movie' ? (type as MediaType) : undefined,
     });
   },
@@ -103,8 +136,8 @@ ipcMain.handle('rename:checkConflicts', async (_event, plan: RenamePlan) => {
 });
 
 // IPC: Find unmatched files
-ipcMain.handle('unmatched:find', async (_event, sourcePath: string, plan: RenamePlan) => {
-  return findUnmatchedFiles(sourcePath, plan);
+ipcMain.handle('unmatched:find', async (_event, sourcePath: string, plan: RenamePlan, selectedFile?: string) => {
+  return findUnmatchedFiles(sourcePath, plan, selectedFile);
 });
 
 // IPC: Config - uses @metarr/core config persistence

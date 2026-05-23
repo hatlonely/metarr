@@ -23,7 +23,7 @@ export function AppShell() {
     setError,
     setMediaType,
     setSearchQuery,
-    selectDirectory,
+    selectMedia,
     searchTmdb,
     selectMatch,
     generatePlan,
@@ -63,7 +63,7 @@ export function AppShell() {
             loading={state.loading}
             mediaType={state.mediaType}
             onMediaTypeChange={setMediaType}
-            onSelect={() => selectDirectory(config.tmdbKey)}
+            onSelect={() => selectMedia(config.tmdbKey)}
           />
         );
       case "parse":
