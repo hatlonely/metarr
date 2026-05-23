@@ -5,8 +5,8 @@ contextBridge.exposeInMainWorld('metarrAPI', {
   openDirectory: () => ipcRenderer.invoke('dialog:openDirectory'),
   parseDirectory: (dirPath: string, type?: string) =>
     ipcRenderer.invoke('parse:directory', dirPath, type),
-  tmdbSearch: (apiKey: string, query: string, type: string, year?: number) =>
-    ipcRenderer.invoke('tmdb:search', apiKey, query, type, year),
+  tmdbSearch: (apiKey: string, query: string, type: string, year?: number, language?: string) =>
+    ipcRenderer.invoke('tmdb:search', apiKey, query, type, year, language),
   tmdbGetMovieDetails: (apiKey: string, id: number) =>
     ipcRenderer.invoke('tmdb:getMovieDetails', apiKey, id),
   generateRenamePlan: (parsed: unknown, match: unknown, options: unknown) =>

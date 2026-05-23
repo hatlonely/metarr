@@ -7,6 +7,8 @@ import {
   generateTvRenamePlan,
   generateMovieRenamePlan,
   executeRenamePlan,
+  getAllConfig,
+  setConfig as coreSetConfig,
 } from '@metarr/core';
 import type { ParsedMedia, MediaType, RenameOptions, TMDBMatch } from '@metarr/core';
 
@@ -19,8 +21,8 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
-    minWidth: 900,
-    minHeight: 600,
+    minWidth: 1200,
+    minHeight: 800,
     webPreferences: {
       preload: join(__dirname, '../preload/preload.mjs'),
       contextIsolation: true,
@@ -55,11 +57,14 @@ ipcMain.handle(
   },
 );
 
-// IPC: TMDB search
+// IPC: TMDB search (with language support)
 ipcMain.handle(
   'tmdb:search',
-  async (_event, apiKey: string, query: string, type: string, year?: number) => {
-    const client = new TMDBClient({ apiKey });
+  async (_event, apiKey: string, query: string, type: string, year?: number, language?: string) => {
+    const client = new TMDBClient({
+      apiKey,
+      language: language || 'zh-CN',
+    });
     return client.search(query, type as 'tv' | 'movie', year);
   },
 );
@@ -89,15 +94,13 @@ ipcMain.handle('rename:execute', async (_event, plan) => {
   return executeRenamePlan(plan);
 });
 
-// IPC: Config (simple in-memory for now, can use electron-store later)
-const config: Record<string, unknown> = {};
-
+// IPC: Config - uses @metarr/core config persistence
 ipcMain.handle('config:get', async () => {
-  return { ...config };
+  return getAllConfig();
 });
 
 ipcMain.handle('config:set', async (_event, key: string, value: unknown) => {
-  config[key] = value;
+  coreSetConfig(key as keyof import('@metarr/core').MetarrConfig, value as never);
 });
 
 app.whenReady().then(createWindow);

@@ -3,7 +3,7 @@ import type { ParsedMedia, RenameOptions, RenamePlan, ExecutionResult, TMDBMatch
 export interface IPCApi {
   openDirectory(): Promise<string | null>;
   parseDirectory(dirPath: string, type?: string): Promise<ParsedMedia>;
-  tmdbSearch(apiKey: string, query: string, type: string, year?: number): Promise<TMDBMatch[]>;
+  tmdbSearch(apiKey: string, query: string, type: string, year?: number, language?: string): Promise<TMDBMatch[]>;
   tmdbGetMovieDetails(apiKey: string, id: number): Promise<{ imdb_id?: string }>;
   generateRenamePlan(
     parsed: ParsedMedia,
