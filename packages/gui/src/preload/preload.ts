@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron';
+import { contextBridge, ipcRenderer, webUtils } from 'electron';
 import type { IPCApi } from '../shared/ipc-types.js';
 
 contextBridge.exposeInMainWorld('metarrAPI', {
@@ -19,7 +19,9 @@ contextBridge.exposeInMainWorld('metarrAPI', {
     ipcRenderer.invoke('unmatched:find', sourcePath, plan, selectedFile),
   executeRename: (plan: unknown, resolutions?: unknown, filesToRemove?: unknown) =>
     ipcRenderer.invoke('rename:execute', plan, resolutions, filesToRemove),
+  resolveMediaPath: (path: string) => ipcRenderer.invoke('fs:resolveMediaPath', path),
   getConfig: () => ipcRenderer.invoke('config:get'),
   setConfig: (key: string, value: unknown) =>
     ipcRenderer.invoke('config:set', key, value),
+  getPathForFile: (file: File) => webUtils.getPathForFile(file),
 } satisfies Record<string, (...args: unknown[]) => unknown>);

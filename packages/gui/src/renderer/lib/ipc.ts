@@ -45,7 +45,12 @@ export const ipc = {
   executeRename: (plan: RenamePlan, resolutions?: ConflictResolutionMap, filesToRemove?: string[]): Promise<ExecutionResult> =>
     getApi().executeRename(plan, resolutions, filesToRemove),
 
+  resolveMediaPath: (path: string): Promise<OpenMediaResult> =>
+    getApi().resolveMediaPath(path),
+
   getConfig: (): Promise<Record<string, unknown>> => getApi().getConfig(),
 
   setConfig: (key: string, value: unknown): Promise<void> => getApi().setConfig(key, value),
+
+  getPathForFile: (file: File): string => getApi().getPathForFile(file),
 };

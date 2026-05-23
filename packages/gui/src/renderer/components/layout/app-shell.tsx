@@ -24,6 +24,7 @@ export function AppShell() {
     setMediaType,
     setSearchQuery,
     selectMedia,
+    dropMedia,
     searchTmdb,
     selectMatch,
     generatePlan,
@@ -64,6 +65,7 @@ export function AppShell() {
             mediaType={state.mediaType}
             onMediaTypeChange={setMediaType}
             onSelect={() => selectMedia(config.tmdbKey)}
+            onDrop={(filePath) => dropMedia(filePath)}
           />
         );
       case "parse":

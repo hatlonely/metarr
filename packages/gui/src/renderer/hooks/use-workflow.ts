@@ -7,6 +7,7 @@ import type {
   StepId,
 } from "@/src/renderer/types/workflow";
 import type { ParsedMedia, TMDBMatch, RenamePlan, ExecutionResult, ConflictResolution } from "@metarr/core";
+import type { OpenMediaResult } from "@/src/shared/ipc-types";
 import { ipc } from "@/src/renderer/lib/ipc";
 
 const steps: StepId[] = ["select", "parse", "search", "preview", "execute"];
@@ -93,16 +94,10 @@ export function useWorkflow() {
     dispatch({ type: "SET_SEARCH_QUERY", query });
   }, []);
 
-  const selectMedia = useCallback(async (tmdbKey: string) => {
+  const handleMediaResult = useCallback(async (result: OpenMediaResult) => {
     dispatch({ type: "SET_LOADING", loading: true });
     dispatch({ type: "SET_ERROR", error: null });
     try {
-      const result = await ipc.openMedia();
-      if (!result) {
-        dispatch({ type: "SET_LOADING", loading: false });
-        return;
-      }
-
       dispatch({ type: "SET_SOURCE_PATH", path: result.sourcePath });
 
       const parsed = result.type === 'file'
@@ -126,6 +121,18 @@ export function useWorkflow() {
       dispatch({ type: "SET_LOADING", loading: false });
     }
   }, []);
+
+  const selectMedia = useCallback(async (tmdbKey: string) => {
+    const result = await ipc.openMedia();
+    if (!result) return;
+    await handleMediaResult(result);
+  }, [handleMediaResult]);
+
+  const dropMedia = useCallback(async (filePath: string) => {
+    const result = await ipc.resolveMediaPath(filePath);
+    if (!result) return;
+    await handleMediaResult(result);
+  }, [handleMediaResult]);
 
   const searchTmdb = useCallback(
     async (tmdbKey: string, query?: string, language?: string) => {
@@ -288,6 +295,7 @@ export function useWorkflow() {
     setMediaType,
     setSearchQuery,
     selectMedia,
+    dropMedia,
     searchTmdb,
     selectMatch,
     generatePlan,

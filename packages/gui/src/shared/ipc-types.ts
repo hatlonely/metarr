@@ -22,6 +22,8 @@ export interface IPCApi {
   checkConflicts(plan: RenamePlan): Promise<ConflictCheckResult>;
   findUnmatchedFiles(sourcePath: string, plan: RenamePlan, selectedFile?: string): Promise<UnmatchedFileInfo[]>;
   executeRename(plan: RenamePlan, resolutions?: ConflictResolutionMap, filesToRemove?: string[]): Promise<ExecutionResult>;
+  resolveMediaPath(path: string): Promise<OpenMediaResult>;
   getConfig(): Promise<Record<string, unknown>>;
   setConfig(key: string, value: unknown): Promise<void>;
+  getPathForFile(file: File): string;
 }

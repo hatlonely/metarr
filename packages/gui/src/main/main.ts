@@ -140,6 +140,17 @@ ipcMain.handle('unmatched:find', async (_event, sourcePath: string, plan: Rename
   return findUnmatchedFiles(sourcePath, plan, selectedFile);
 });
 
+// IPC: Resolve media path (for drag & drop)
+ipcMain.handle('fs:resolveMediaPath', async (_event, filePath: string) => {
+  const stat = statSync(filePath);
+  const isDir = stat.isDirectory();
+  return {
+    type: isDir ? 'dir' as const : 'file' as const,
+    path: filePath,
+    sourcePath: isDir ? filePath : dirname(filePath),
+  };
+});
+
 // IPC: Config - uses @metarr/core config persistence
 ipcMain.handle('config:get', async () => {
   return getAllConfig();
