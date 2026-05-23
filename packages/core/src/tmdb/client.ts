@@ -88,6 +88,18 @@ export class TMDBClient {
     ];
   }
 
+  async fuzzySearch(
+    query: string,
+    type: 'tv' | 'movie',
+    year?: number,
+  ): Promise<TMDBMatch[]> {
+    let results = await this.search(query, type, year);
+    if (results.length === 0 && year) {
+      results = await this.search(query, type);
+    }
+    return results;
+  }
+
   async search(
     query: string,
     type: 'tv' | 'movie',

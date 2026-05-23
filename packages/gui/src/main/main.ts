@@ -66,7 +66,7 @@ ipcMain.handle(
       apiKey,
       language: language || 'zh-CN',
     });
-    return client.search(query, type as 'tv' | 'movie', year);
+    return client.fuzzySearch(query, type as 'tv' | 'movie', year);
   },
 );
 

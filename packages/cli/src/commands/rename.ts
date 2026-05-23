@@ -105,10 +105,7 @@ export async function renameAction(source: string, options: RenameCommandOptions
     const searchSpinner = ora(`搜索 TMDB: ${query}...`).start();
     try {
       // 先带年份搜索，如果无结果则去掉年份重试
-      matches = await client.search(query, mediaType, parsed.year);
-      if (matches.length === 0 && parsed.year) {
-        matches = await client.search(query, mediaType);
-      }
+      matches = await client.fuzzySearch(query, mediaType, parsed.year);
     } catch (err) {
       searchSpinner.fail(chalk.red('TMDB 搜索失败'));
       console.error(err);
