@@ -32,6 +32,7 @@ function formatFileSize(bytes: number): string {
 
 interface StepPreviewProps {
   locale: Locale;
+  step: number;
   plan: RenamePlan;
   executing: boolean;
   conflictResult: ConflictCheckResult | null;
@@ -139,6 +140,7 @@ function PathDisplay({ path }: { path: string }) {
 
 export function StepPreview({
   locale,
+  step,
   plan,
   executing,
   conflictResult,
@@ -208,7 +210,7 @@ export function StepPreview({
 
   return (
     <>
-      <StepHeader title={text.previewPlan} description={text.stepDesc.preview} />
+      <StepHeader title={text.previewPlan} description={text.stepDesc.preview} step={step} />
 
       <p className="mb-4 text-sm text-muted-foreground">
         {plan.summary.mediaType === 'tv'
@@ -355,7 +357,7 @@ export function StepPreview({
             {/* Left panel: original structure */}
             <Card>
               <CardContent className="pt-6">
-                <div className="mb-2 flex items-center gap-2 text-sm font-semibold">
+                <div className="mb-2 flex items-center gap-2 rounded-md bg-muted/30 px-3 py-1.5 text-sm font-semibold">
                   <ArrowLeft className="h-4 w-4" />
                   {text.originalStructure}
                 </div>
@@ -388,7 +390,7 @@ export function StepPreview({
             {/* Right panel: new structure */}
             <Card>
               <CardContent className="pt-6">
-                <div className="mb-2 flex items-center gap-2 text-sm font-semibold">
+                <div className="mb-2 flex items-center gap-2 rounded-md bg-muted/30 px-3 py-1.5 text-sm font-semibold">
                   <ArrowRight className="h-4 w-4" />
                   {text.newStructure}
                 </div>

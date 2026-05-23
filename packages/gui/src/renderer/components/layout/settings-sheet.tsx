@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Input } from "@/src/renderer/components/ui/input";
 import { Label } from "@/src/renderer/components/ui/label";
 import { Button } from "@/src/renderer/components/ui/button";
+import { Separator } from "@/src/renderer/components/ui/separator";
 import { Switch } from "@/src/renderer/components/ui/switch";
 import {
   Select,
@@ -51,10 +52,10 @@ export function SettingsSheet({ open, onOpenChange, config, onSave, locale }: Se
       <SheetContent side="right" className="sm:max-w-md overflow-y-auto">
         <SheetHeader>
           <SheetTitle>{text.settingsTitle}</SheetTitle>
-          <SheetDescription>{text.settingsTitle}</SheetDescription>
+          <SheetDescription>{text.settingsDescription}</SheetDescription>
         </SheetHeader>
 
-        <div className="mt-6 space-y-6">
+        <div className="mt-6 space-y-5">
           {/* TMDB API Key */}
           <div className="space-y-2">
             <Label htmlFor="tmdb-key">{text.tmdbApiKey}</Label>
@@ -82,6 +83,8 @@ export function SettingsSheet({ open, onOpenChange, config, onSave, locale }: Se
               placeholder={text.destPathPlaceholder}
             />
           </div>
+
+          <Separator />
 
           {/* Display Language */}
           <div className="space-y-2">
@@ -115,9 +118,11 @@ export function SettingsSheet({ open, onOpenChange, config, onSave, locale }: Se
           </div>
 
           {/* Save Button */}
-          <Button className="w-full" onClick={handleSave}>
-            {text.saveSettings}
-          </Button>
+          <div className="flex justify-end pt-2">
+            <Button onClick={handleSave}>
+              {text.saveSettings}
+            </Button>
+          </div>
         </div>
       </SheetContent>
     </Sheet>

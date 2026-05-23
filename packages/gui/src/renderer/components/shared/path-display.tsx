@@ -7,7 +7,7 @@ interface PathDisplayProps {
 
 export function PathDisplay({ path, className }: PathDisplayProps) {
   return (
-    <code className={`rounded bg-muted px-2 py-1 font-mono text-xs ${className || ""}`}>
+    <code className={`rounded bg-muted/50 px-1.5 py-0.5 font-mono text-xs text-muted-foreground ${className || ""}`}>
       {path}
     </code>
   );

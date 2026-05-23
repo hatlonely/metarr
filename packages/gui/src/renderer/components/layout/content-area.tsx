@@ -12,7 +12,7 @@ interface ContentAreaProps {
 export function ContentArea({ children, error, onDismissError }: ContentAreaProps) {
   return (
     <ScrollArea className="flex-1">
-      <div className="mx-auto max-w-4xl p-6">
+      <div className="mx-auto max-w-5xl px-8 py-6">
         {error && (
           <ErrorBanner message={error} onDismiss={onDismissError} />
         )}

@@ -32,9 +32,9 @@ export function Sidebar({ steps, currentStepIndex, onStepClick, onOpenSettings, 
   return (
     <div className="flex h-full w-64 flex-col border-r border-sidebar-border bg-sidebar-background">
       {/* Logo */}
-      <div className="px-6 py-5">
-        <h1 className="text-xl font-bold tracking-tight text-sidebar-foreground">{text.appName}</h1>
-        <p className="text-xs text-sidebar-foreground/50">{text.appDesc}</p>
+      <div className="border-l-4 border-primary px-5 py-5">
+        <h1 className="text-lg font-bold tracking-tight text-sidebar-foreground">{text.appName}</h1>
+        <p className="mt-0.5 text-[11px] text-sidebar-foreground/50">{text.appDesc}</p>
       </div>
 
       <Separator />
@@ -49,6 +49,7 @@ export function Sidebar({ steps, currentStepIndex, onStepClick, onOpenSettings, 
             label={stepLabels[index]}
             current={index === currentStepIndex}
             completed={index < currentStepIndex}
+            isLast={index === steps.length - 1}
             onClick={() => {
               if (index <= currentStepIndex) {
                 onStepClick(step);

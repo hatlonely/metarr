@@ -10,15 +10,15 @@ interface PosterCardProps {
   locale: "zh" | "en";
 }
 
-export function PosterCard({ match, selected, onClick, locale }: PosterCardProps) {
+export function PosterCard({ match, selected, onClick }: PosterCardProps) {
   return (
     <button
       onClick={onClick}
       className={cn(
-        "w-full rounded-lg border p-3 text-left transition-all",
+        "w-full rounded-xl border-l-4 p-3 text-left transition-all duration-200",
         selected
-          ? "border-primary bg-primary/5 ring-1 ring-primary"
-          : "border-border bg-card hover:border-primary/50 hover:bg-accent/50",
+          ? "border-l-primary border-y border-r border-primary/30 bg-primary/5 shadow-sm"
+          : "border-l-muted-foreground/20 border-y border-r border-border bg-card hover:border-l-primary/50 hover:shadow-sm",
       )}
     >
       <div className="flex gap-3">
@@ -26,10 +26,10 @@ export function PosterCard({ match, selected, onClick, locale }: PosterCardProps
           <img
             src={match.posterUrl}
             alt=""
-            className="h-28 w-20 shrink-0 rounded-md object-cover"
+            className="h-28 w-20 shrink-0 rounded-lg object-cover ring-1 ring-black/5 dark:ring-white/10"
           />
         ) : (
-          <div className="flex h-28 w-20 shrink-0 items-center justify-center rounded-md bg-muted text-xs text-muted-foreground">
+          <div className="flex h-28 w-20 shrink-0 items-center justify-center rounded-lg bg-muted text-xs text-muted-foreground">
             No Poster
           </div>
         )}
@@ -41,7 +41,7 @@ export function PosterCard({ match, selected, onClick, locale }: PosterCardProps
             )}
           </div>
           {match.originalName && match.originalName !== match.displayName && (
-            <div className="mt-0.5 text-sm text-muted-foreground truncate">
+            <div className="mt-0.5 truncate text-sm text-muted-foreground">
               {match.originalName}
             </div>
           )}
@@ -50,7 +50,7 @@ export function PosterCard({ match, selected, onClick, locale }: PosterCardProps
             {match.imdbId && <span>IMDB: {match.imdbId}</span>}
           </div>
           {match.overview && (
-            <p className="mt-2 line-clamp-3 text-xs leading-relaxed text-muted-foreground">
+            <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
               {match.overview}
             </p>
           )}

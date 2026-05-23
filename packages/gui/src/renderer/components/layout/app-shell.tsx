@@ -61,6 +61,7 @@ export function AppShell() {
         return (
           <StepSelect
             locale={locale}
+            step={currentStepIndex + 1}
             loading={state.loading}
             mediaType={state.mediaType}
             onMediaTypeChange={setMediaType}
@@ -72,6 +73,7 @@ export function AppShell() {
         return state.parsed ? (
           <StepParse
             locale={locale}
+            step={currentStepIndex + 1}
             parsed={state.parsed}
             mediaType={state.mediaType}
             searchQuery={state.searchQuery}
@@ -85,6 +87,7 @@ export function AppShell() {
         return (
           <StepSearch
             locale={locale}
+            step={currentStepIndex + 1}
             results={state.tmdbResults}
             selectedMatch={state.selectedMatch}
             searchQuery={state.searchQuery}
@@ -101,6 +104,7 @@ export function AppShell() {
         return state.plan ? (
           <StepPreview
             locale={locale}
+            step={currentStepIndex + 1}
             plan={state.plan}
             executing={state.executing}
             conflictResult={state.conflictResult}
@@ -117,7 +121,7 @@ export function AppShell() {
         ) : null;
       case "execute":
         return state.executionResult ? (
-          <StepExecute locale={locale} result={state.executionResult} onContinue={reset} />
+          <StepExecute locale={locale} step={currentStepIndex + 1} result={state.executionResult} onContinue={reset} />
         ) : null;
       default:
         return null;

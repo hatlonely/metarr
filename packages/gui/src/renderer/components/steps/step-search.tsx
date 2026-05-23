@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Loader2, RefreshCw, ArrowRight, FolderOpen } from "lucide-react";
+import { Loader2, RefreshCw, ArrowRight, FolderOpen, Search } from "lucide-react";
 import { Button } from "@/src/renderer/components/ui/button";
 import { Input } from "@/src/renderer/components/ui/input";
 import { Label } from "@/src/renderer/components/ui/label";
@@ -14,6 +14,7 @@ import type { TMDBMatch } from "@metarr/core";
 
 interface StepSearchProps {
   locale: Locale;
+  step: number;
   results: TMDBMatch[];
   selectedMatch: TMDBMatch | null;
   searchQuery: string;
@@ -26,6 +27,7 @@ interface StepSearchProps {
 
 export function StepSearch({
   locale,
+  step,
   results,
   selectedMatch,
   searchQuery,
@@ -55,11 +57,12 @@ export function StepSearch({
 
   return (
     <>
-      <StepHeader title={text.selectMatch} description={text.stepDesc.search} />
+      <StepHeader title={text.selectMatch} description={text.stepDesc.search} step={step} />
 
       <div className="mb-4 flex items-center justify-between">
-        <span className="text-sm text-muted-foreground">
-          &ldquo;{searchQuery}&rdquo; - {results.length} {results.length === 1 ? "result" : "results"}
+        <span className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Search className="h-3.5 w-3.5" />
+          &ldquo;{searchQuery}&rdquo; &middot; {results.length} {results.length === 1 ? "result" : "results"}
         </span>
         <Button variant="outline" size="sm" onClick={onReSearch} disabled={loading}>
           {loading ? (
@@ -72,10 +75,10 @@ export function StepSearch({
       </div>
 
       {loading ? (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="flex gap-3 rounded-lg border p-3">
-              <Skeleton className="h-28 w-20 rounded-md" />
+            <div key={i} className="flex gap-3 rounded-xl border p-3">
+              <Skeleton className="h-28 w-20 rounded-lg" />
               <div className="flex-1 space-y-2">
                 <Skeleton className="h-5 w-3/4" />
                 <Skeleton className="h-4 w-1/2" />
@@ -85,7 +88,7 @@ export function StepSearch({
           ))}
         </div>
       ) : results.length > 0 ? (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {results.map((match) => (
             <PosterCard
               key={match.id}
@@ -97,14 +100,14 @@ export function StepSearch({
           ))}
         </div>
       ) : (
-        <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
-          No results found
+        <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
+          {text.noResults}
         </div>
       )}
 
       {selectedMatch && (
-        <div className="mt-6 space-y-4">
-          <div className="space-y-2">
+        <div className="mt-6 space-y-3">
+          <div className="space-y-1.5">
             <Label>{text.outputPath}</Label>
             <div className="flex gap-2">
               <Input

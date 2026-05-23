@@ -18,6 +18,7 @@ import { t, type Locale } from "@/src/renderer/lib/i18n";
 
 interface StepSelectProps {
   locale: Locale;
+  step: number;
   loading: boolean;
   mediaType: "tv" | "movie" | "auto";
   onMediaTypeChange: (type: "tv" | "movie" | "auto") => void;
@@ -27,6 +28,7 @@ interface StepSelectProps {
 
 export function StepSelect({
   locale,
+  step,
   loading,
   mediaType,
   onMediaTypeChange,
@@ -77,7 +79,7 @@ export function StepSelect({
 
   return (
     <>
-      <StepHeader title={text.steps.select} description={text.stepDesc.select} />
+      <StepHeader title={text.steps.select} description={text.stepDesc.select} step={step} />
 
       <Card>
         <CardContent className="space-y-6 pt-6">
@@ -104,13 +106,13 @@ export function StepSelect({
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             className={cn(
-              "flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-12 transition-colors",
+              "flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 transition-all duration-200",
               dragOver
                 ? "border-primary bg-primary/5"
-                : "border-muted-foreground/25 hover:border-muted-foreground/50",
+                : "border-muted-foreground/25 hover:border-muted-foreground/40",
             )}
           >
-            <Upload className="mb-4 h-10 w-10 text-muted-foreground/50" />
+            <Upload className="mb-3 h-8 w-8 text-muted-foreground/50" />
             <p className="text-sm text-muted-foreground">{text.dragDropHint}</p>
             <p className="mt-1 text-xs text-muted-foreground/60">
               {text.dragDropFormats}
@@ -122,8 +124,8 @@ export function StepSelect({
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t" />
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">{text.or}</span>
+            <div className="relative flex justify-center">
+              <span className="bg-card px-3 text-xs text-muted-foreground">{text.or}</span>
             </div>
           </div>
 

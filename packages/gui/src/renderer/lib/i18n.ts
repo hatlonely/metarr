@@ -49,6 +49,7 @@ const zh = {
   next: '下一步',
   settings: '设置',
   settingsTitle: '应用设置',
+  settingsDescription: '管理 TMDB 配置和应用偏好',
   tmdbApiKey: 'TMDB API Key',
   tmdbApiKeyPlaceholder: '请输入 TMDB API Key',
   destPath: '目标目录',
@@ -108,6 +109,8 @@ const zh = {
   executeSkipped: '跳过',
   executeOverwritten: '覆盖',
   executeRemoved: '移除',
+  noResults: '未找到结果',
+  mediaTags: '媒体标签',
 } as const;
 
 const en = {
@@ -161,6 +164,7 @@ const en = {
   next: 'Next',
   settings: 'Settings',
   settingsTitle: 'Settings',
+  settingsDescription: 'Manage TMDB configuration and app preferences',
   tmdbApiKey: 'TMDB API Key',
   tmdbApiKeyPlaceholder: 'Enter TMDB API Key',
   destPath: 'Destination',
@@ -220,6 +224,8 @@ const en = {
   executeSkipped: 'Skipped',
   executeOverwritten: 'Overwritten',
   executeRemoved: 'Removed',
+  noResults: 'No results found',
+  mediaTags: 'Media Tags',
 } as const;
 
 export type Locale = 'zh' | 'en';

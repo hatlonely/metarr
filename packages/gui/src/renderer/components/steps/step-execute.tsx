@@ -17,11 +17,12 @@ import type { ExecutionResult } from "@metarr/core";
 
 interface StepExecuteProps {
   locale: Locale;
+  step: number;
   result: ExecutionResult;
   onContinue: () => void;
 }
 
-export function StepExecute({ locale, result, onContinue }: StepExecuteProps) {
+export function StepExecute({ locale, step, result, onContinue }: StepExecuteProps) {
   const text = t(locale);
 
   const renamedCount = result.succeeded.filter(t => t.operation === 'rename').length;
@@ -32,7 +33,7 @@ export function StepExecute({ locale, result, onContinue }: StepExecuteProps) {
 
   return (
     <>
-      <StepHeader title={text.executionComplete} description={text.stepDesc.execute} />
+      <StepHeader title={text.executionComplete} description={text.stepDesc.execute} step={step} />
 
       {/* Main stats */}
       <div className="mb-6 grid grid-cols-2 gap-3">
