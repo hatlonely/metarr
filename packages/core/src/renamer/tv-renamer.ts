@@ -11,7 +11,7 @@ export function generateTvRenamePlan(
   options: RenameOptions,
 ): RenamePlan {
   const tasks: RenameTask[] = [];
-  const showName = resolveTitle(tmdbMatch, options.titleLanguage);
+  const showName = tmdbMatch.displayName || tmdbMatch.originalName;
   const year = tmdbMatch.year;
   const newDirName = `${showName} (${year}) [tmdbid-${tmdbMatch.id}]`;
   const newDirPath = join(options.destPath, newDirName);
@@ -71,13 +71,6 @@ export function generateTvRenamePlan(
     tasks,
     summary: `电视剧 "${showName}" 共 ${parsed.episodes.length} 个文件`,
   };
-}
-
-function resolveTitle(match: TMDBMatch, lang: 'zh' | 'en'): string {
-  if (lang === 'zh') {
-    return match.localizedName || match.originalName;
-  }
-  return match.originalName || match.localizedName;
 }
 
 function formatEpisodeFileName(

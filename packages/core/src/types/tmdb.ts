@@ -64,7 +64,7 @@ export interface TMDBMovieDetails {
 export interface TMDBMatch {
   id: number;
   type: 'tv' | 'movie';
-  localizedName: string;
+  displayName: string;
   originalName: string;
   year: number;
   imdbId?: string;

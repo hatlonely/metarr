@@ -17,7 +17,7 @@ program
   .option('-t, --type <type>', 'Media type: tv, movie, or auto', 'auto')
   .option('--dry-run', 'Preview rename plan without executing', false)
   .option('--tmdb-key <key>', 'TMDB API key (or set METARR_TMDB_KEY env var)')
-  .option('--lang <lang>', 'Preferred title language: zh or en', 'zh')
+  .option('--lang <lang>', 'Override display language: zh or en')
   .option('--no-imdb', 'Do not prefer IMDB ID for movies')
   .action(renameAction);
 

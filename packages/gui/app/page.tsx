@@ -124,7 +124,6 @@ export default function Home() {
     try {
       const newPlan = await api.generateRenamePlan(parsed, selectedMatch, {
         destPath,
-        titleLanguage: titleLang,
         dryRun: false,
         preferImdbId: true,
       });
@@ -362,10 +361,10 @@ export default function Home() {
                   )}
                   <div className="flex-1">
                     <div className="font-medium">
-                      {match.localizedName} ({match.year})
+                      {match.zhName || match.enName} ({match.year})
                     </div>
-                    {match.originalName !== match.localizedName && (
-                      <div className="text-sm text-gray-500">{match.originalName}</div>
+                    {match.zhName && match.enName && match.zhName !== match.enName && (
+                      <div className="text-sm text-gray-500">{match.enName}</div>
                     )}
                     <div className="mt-1 text-xs text-gray-400">
                       [tmdbid-{match.id}]

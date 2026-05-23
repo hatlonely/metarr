@@ -60,7 +60,7 @@ ipcMain.handle(
   'tmdb:search',
   async (_event, apiKey: string, query: string, type: string, year?: number) => {
     const client = new TMDBClient({ apiKey });
-    return client.searchWithBothLanguages(query, type as 'tv' | 'movie', year);
+    return client.search(query, type as 'tv' | 'movie', year);
   },
 );
 

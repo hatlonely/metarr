@@ -8,7 +8,7 @@ const CONFIG_FILE = join(CONFIG_DIR, 'config.json');
 export interface MetarrConfig {
   tmdbKey?: string;
   destPath?: string;
-  lang?: 'zh' | 'en';
+  displayLanguage?: string;
   preferImdbId?: boolean;
 }
 

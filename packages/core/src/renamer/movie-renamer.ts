@@ -11,7 +11,7 @@ export function generateMovieRenamePlan(
   options: RenameOptions,
 ): RenamePlan {
   const tasks: RenameTask[] = [];
-  const movieName = resolveTitle(tmdbMatch, options.titleLanguage);
+  const movieName = tmdbMatch.displayName || tmdbMatch.originalName;
   const year = tmdbMatch.year;
 
   // Determine ID tag: prefer imdbid, fallback to tmdbid
@@ -61,13 +61,6 @@ export function generateMovieRenamePlan(
     tasks,
     summary: `电影 "${movieName}"`,
   };
-}
-
-function resolveTitle(match: TMDBMatch, lang: 'zh' | 'en'): string {
-  if (lang === 'zh') {
-    return match.localizedName || match.originalName;
-  }
-  return match.originalName || match.localizedName;
 }
 
 function replaceBaseName(

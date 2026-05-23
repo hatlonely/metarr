@@ -105,7 +105,7 @@ describe('TMDBClient', () => {
     expect(matches[0]).toEqual({
       id: 789,
       type: 'tv',
-      localizedName: '低智商犯罪',
+      displayName: '低智商犯罪',
       originalName: 'Born with Luck',
       year: 2026,
       imdbId: undefined,

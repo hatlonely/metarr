@@ -36,7 +36,7 @@ const baseParsedMedia: ParsedMedia = {
 const baseTmdbMatch: TMDBMatch = {
   id: 12345,
   type: 'tv',
-  localizedName: '低智商犯罪',
+  displayName: '低智商犯罪',
   originalName: 'Born with Luck',
   year: 2026,
   overview: 'A crime drama.',
@@ -44,7 +44,6 @@ const baseTmdbMatch: TMDBMatch = {
 
 const baseOptions: RenameOptions = {
   destPath: '/tmp/test-dest',
-  titleLanguage: 'zh',
   dryRun: false,
   preferImdbId: true,
 };
@@ -64,11 +63,9 @@ describe('generateTvRenamePlan', () => {
     expect(plan.tasks[3].target).toContain('低智商犯罪 (2026) S01E02.mkv');
   });
 
-  it('should use English title when lang is en', () => {
-    const plan = generateTvRenamePlan(baseParsedMedia, baseTmdbMatch, {
-      ...baseOptions,
-      titleLanguage: 'en',
-    });
+  it('should fallback to originalName when displayName is empty', () => {
+    const noDisplayName = { ...baseTmdbMatch, displayName: '' };
+    const plan = generateTvRenamePlan(baseParsedMedia, noDisplayName, baseOptions);
 
     expect(plan.tasks[0].target).toContain('Born with Luck (2026) [tmdbid-12345]');
     expect(plan.tasks[2].target).toContain('Born with Luck (2026) S01E01.mkv');

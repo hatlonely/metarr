@@ -1,12 +1,12 @@
 import { setConfig, getAllConfig, CONFIG_FILE, type MetarrConfig } from '@metarr/core';
 import chalk from 'chalk';
 
-const CONFIG_KEYS: (keyof MetarrConfig)[] = ['tmdbKey', 'destPath', 'lang', 'preferImdbId'];
+const CONFIG_KEYS: (keyof MetarrConfig)[] = ['tmdbKey', 'destPath', 'displayLanguage', 'preferImdbId'];
 
 const KEY_DESCRIPTIONS: Record<string, string> = {
   tmdbKey: 'TMDB API Key',
   destPath: '默认目标目录',
-  lang: '标题语言 (zh/en)',
+  displayLanguage: '展示语言 (zh-CN/en-US)',
   preferImdbId: '电影优先使用 IMDB ID (true/false)',
 };
 
@@ -19,7 +19,7 @@ export async function configSetAction(key: string, value: string): Promise<void>
   }
 
   const typedValue: MetarrConfig[keyof MetarrConfig] =
-    k === 'preferImdbId' ? value === 'true' : k === 'lang' ? (value as 'zh' | 'en') : value;
+    k === 'preferImdbId' ? value === 'true' : value;
 
   setConfig(k, typedValue as never);
   console.log(chalk.green(`已设置 ${KEY_DESCRIPTIONS[k]}: ${maskSecret(k, value)}`));

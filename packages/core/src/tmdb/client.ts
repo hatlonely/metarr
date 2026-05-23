@@ -98,41 +98,8 @@ export class TMDBClient {
     return results.map((r) => this.toMatch(r, type));
   }
 
-  async searchWithBothLanguages(
-    query: string,
-    type: 'tv' | 'movie',
-    year?: number,
-  ): Promise<TMDBMatch[]> {
-    const savedLang = this.language;
-
-    // Search in Chinese
-    this.language = 'zh-CN';
-    const zhResults = await this.search(query, type, year);
-
-    // Search in English
-    this.language = 'en-US';
-    let enResults: TMDBMatch[] = [];
-    try {
-      enResults = await this.search(query, type, year);
-    } catch {
-      // If English search fails, just use Chinese results
-    }
-
-    // Merge: for each zh result, find matching en result by ID
-    const merged = zhResults.map((zh) => {
-      const en = enResults.find((e) => e.id === zh.id);
-      return {
-        ...zh,
-        originalName: en?.originalName || en?.localizedName || zh.originalName,
-      };
-    });
-
-    this.language = savedLang;
-    return merged;
-  }
-
   private toMatch(result: TMDBSearchResult, type: 'tv' | 'movie'): TMDBMatch {
-    const localizedName = result.name || result.title || '';
+    const displayName = result.name || result.title || '';
     const originalName = result.original_name || result.original_title || '';
     const dateStr = result.first_air_date || result.release_date || '';
     const year = dateStr ? parseInt(dateStr.slice(0, 4), 10) : 0;
@@ -140,7 +107,7 @@ export class TMDBClient {
     return {
       id: result.id,
       type,
-      localizedName,
+      displayName: displayName || originalName,
       originalName,
       year,
       imdbId: undefined,

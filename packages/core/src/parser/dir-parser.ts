@@ -4,6 +4,67 @@ import { parseTags } from './tag-parser.js';
 /**
  * Parse a directory name to extract title, year, and media tags.
  */
+/**
+ * Extract title and year from a video file name (used as fallback when
+ * the directory name doesn't contain useful information).
+ * E.g., "Born.with.Luck.S01E01.2026.2160p.IQ.WEB-DL.H265.DV.DDP5.1-BlackTV.mkv"
+ *       -> englishTitle: "Born with Luck", year: 2026
+ */
+export function extractFromFileName(fileName: string): {
+  englishTitle?: string;
+  chineseTitle?: string;
+  year?: number;
+  tags: MediaTags;
+} {
+  // Remove extension
+  const base = fileName.replace(/\.[^.]+$/, '');
+  const tags = parseTags(base);
+
+  // Extract S##E## portion (with surrounding dots)
+  let working = base.replace(/\.[Ss]\d{1,2}[Ee]\d{1,2}(?:-\d{1,2})?/g, ' ');
+
+  // Extract year
+  let year: number | undefined;
+  const yearMatch = working.match(/(?:^|[.\s])(\d{4})(?:[.\s]|$)/);
+  if (yearMatch) {
+    const y = parseInt(yearMatch[1], 10);
+    if (y >= 1900 && y <= 2030) {
+      year = y;
+    }
+  }
+
+  // Remove media tags
+  working = working.replace(/\.?\d{3,4}[pPiI]\b/g, ' ');
+  working = working.replace(/\.?(?:H\.?265|HEVC|x265|H\.?264|AVC|x264|VP9|AV1)\b/gi, ' ');
+  working = working.replace(/\.?(?:WEB-DL|WEBRip|BluRay|BDRip|HDTV|HDRip|DVDRip|REMUX)\b/gi, ' ');
+  working = working.replace(/\.?(?:DDP?[\s.]?5[\s.]?1|DTS[\s.]?HD[\s.]?MA|DTS[\s.]?5[\s.]?1|TrueHD|AAC|FLAC|PCM)\b/gi, ' ');
+  working = working.replace(/\.?(?:HDR|DV|HQ|IQ)\b/gi, ' ');
+  working = working.replace(/\.?Dolby[\s.]?Vision\b/gi, ' ');
+  working = working.replace(/-\w+\s*$/, ' ');
+  working = working.replace(/\b\d+Audios?\b/gi, ' ');
+  if (year) {
+    working = working.replace(new RegExp(`[.\\s]${year}[.\\s]`, 'g'), ' ');
+  }
+
+  // Extract Chinese title
+  const chineseTitle = extractChineseTitle(working);
+
+  // Extract English title (words between S##E## segment and media tags)
+  const chineseTitle2 = extractChineseTitle(working);
+  let remaining = working.replace(/[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff\u3000-\u303f\uff00-\uffef]/g, ' ');
+  remaining = remaining.replace(/\./g, ' ');
+  const mediaTagWords = new Set([
+    'the', 'and', 'or', 'for', 'with', 'version', 'complete', 'season', 'episode',
+    'web', 'dl', 'bluray', 'bdrip', 'hdtv', 'hdr', 'dv', 'hq',
+  ]);
+  const words = remaining
+    .split(/\s+/)
+    .filter((w) => w.length > 1 && !mediaTagWords.has(w.toLowerCase()));
+  const englishTitle = words.length >= 2 ? words.join(' ') : undefined;
+
+  return { chineseTitle: chineseTitle || undefined, englishTitle, year, tags };
+}
+
 export function parseDirName(dirName: string): {
   chineseTitle?: string;
   englishTitle?: string;
@@ -26,6 +87,10 @@ export function parseDirName(dirName: string): {
   }
 
   let workingName = dirName;
+
+  // Strip macOS Finder copy suffixes (_副本, _副本2, _copy, etc.)
+  workingName = workingName.replace(/_副本\d*\s*$/i, '');
+  workingName = workingName.replace(/_copy\d*\s*$/i, '');
 
   // Strip 【...】 Chinese bracket prefix (e.g., 【高清剧集网发布 www.QQHDTV.com】)
   workingName = workingName.replace(/^【[^】]*】\s*/, '');

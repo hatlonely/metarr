@@ -19,7 +19,6 @@ export interface RenamePlan {
 
 export interface RenameOptions {
   destPath: string;
-  titleLanguage: 'zh' | 'en';
   dryRun: boolean;
   preferImdbId: boolean;
 }

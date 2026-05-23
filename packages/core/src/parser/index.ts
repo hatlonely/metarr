@@ -1,9 +1,9 @@
 import { basename } from 'node:path';
 import type { ParsedMedia, MediaType, ParseOptions } from '../types/media.js';
-import { parseDirName } from './dir-parser.js';
+import { parseDirName, extractFromFileName } from './dir-parser.js';
 import { scanDirectory } from './scanner.js';
 
-export { parseDirName } from './dir-parser.js';
+export { parseDirName, extractFromFileName } from './dir-parser.js';
 export { parseFileName, parseSubtitleFile } from './file-parser.js';
 export { scanDirectory, scanMediaDirectories } from './scanner.js';
 export { parseTags } from './tag-parser.js';
@@ -38,12 +38,26 @@ export async function parseMediaDir(
     }
   }
 
+  // Fallback: if directory name didn't yield a title, try extracting from file names
+  let chineseTitle = dirInfo.chineseTitle;
+  let englishTitle = dirInfo.englishTitle;
+  let year = dirInfo.year;
+  let tags = dirInfo.tags;
+
+  if (!chineseTitle && !englishTitle && scan.episodes.length > 0) {
+    const fileFirst = extractFromFileName(scan.episodes[0].originalFileName);
+    chineseTitle = fileFirst.chineseTitle;
+    englishTitle = fileFirst.englishTitle;
+    if (!year) year = fileFirst.year;
+    if (!tags.resolution) tags = fileFirst.tags;
+  }
+
   return {
     type,
-    chineseTitle: dirInfo.chineseTitle,
-    englishTitle: dirInfo.englishTitle,
-    year: dirInfo.year,
-    tags: dirInfo.tags,
+    chineseTitle,
+    englishTitle,
+    year,
+    tags,
     episodes: scan.episodes,
     originalDirName,
     sourcePath: dirPath,

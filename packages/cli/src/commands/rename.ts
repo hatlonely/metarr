@@ -8,6 +8,7 @@ import {
   generateMovieRenamePlan,
   executeRenamePlan,
   getTmdbKey,
+  getConfig,
 } from '@metarr/core';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
@@ -18,7 +19,7 @@ interface RenameCommandOptions {
   type: string;
   dryRun: boolean;
   tmdbKey?: string;
-  lang: string;
+  lang?: string;
   imdb: boolean;
 }
 
@@ -40,6 +41,7 @@ export async function renameAction(source: string, options: RenameCommandOptions
   }
 
   const destPath = resolve(options.dest);
+  const displayLanguage = getConfig('displayLanguage', options.lang) || 'zh-CN';
 
   // Step 1: Parse directory
   const spinner = ora('解析目录...').start();
@@ -84,22 +86,63 @@ export async function renameAction(source: string, options: RenameCommandOptions
   }
 
   // Step 3: Search TMDB
-  const query = parsed.chineseTitle || parsed.englishTitle || parsed.originalDirName;
-  const client = new TMDBClient({ apiKey, language: options.lang === 'zh' ? 'zh-CN' : 'en-US' });
+  const client = new TMDBClient({ apiKey, language: displayLanguage });
 
-  const searchSpinner = ora(`搜索 TMDB: ${query}...`).start();
-  let matches: TMDBMatch[];
-  try {
-    matches = await client.searchWithBothLanguages(query, mediaType, parsed.year);
-  } catch (err) {
-    searchSpinner.fail(chalk.red('TMDB 搜索失败'));
-    console.error(err);
-    process.exit(1);
+  // Build list of queries to try in order
+  const queries: string[] = [];
+  if (parsed.chineseTitle) queries.push(parsed.chineseTitle);
+  if (parsed.englishTitle && parsed.englishTitle !== parsed.chineseTitle) {
+    queries.push(parsed.englishTitle);
   }
-  searchSpinner.succeed(`找到 ${matches.length} 个结果`);
+  if (parsed.originalDirName) queries.push(parsed.originalDirName);
+
+  let matches: TMDBMatch[] = [];
+  const triedQueries: string[] = [];
+
+  for (const query of queries) {
+    if (triedQueries.includes(query)) continue;
+    triedQueries.push(query);
+    const searchSpinner = ora(`搜索 TMDB: ${query}...`).start();
+    try {
+      // 先带年份搜索，如果无结果则去掉年份重试
+      matches = await client.search(query, mediaType, parsed.year);
+      if (matches.length === 0 && parsed.year) {
+        matches = await client.search(query, mediaType);
+      }
+    } catch (err) {
+      searchSpinner.fail(chalk.red('TMDB 搜索失败'));
+      console.error(err);
+      process.exit(1);
+    }
+    searchSpinner.succeed(`"${query}" 找到 ${matches.length} 个结果`);
+    if (matches.length > 0) break;
+  }
+
+  // If still no results, let user enter custom query
+  if (matches.length === 0) {
+    console.log(chalk.yellow('自动搜索未找到结果，请输入关键词手动搜索'));
+    const { customQuery } = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'customQuery',
+        message: '搜索关键词:',
+      },
+    ]);
+    if (!customQuery.trim()) process.exit(0);
+
+    const searchSpinner = ora(`搜索 TMDB: ${customQuery}...`).start();
+    try {
+      matches = await client.search(customQuery, mediaType);
+    } catch (err) {
+      searchSpinner.fail(chalk.red('TMDB 搜索失败'));
+      console.error(err);
+      process.exit(1);
+    }
+    searchSpinner.succeed(`找到 ${matches.length} 个结果`);
+  }
 
   if (matches.length === 0) {
-    console.log(chalk.yellow('未找到匹配结果，请尝试其他关键词'));
+    console.log(chalk.yellow('未找到匹配结果'));
     process.exit(0);
   }
 
@@ -110,10 +153,15 @@ export async function renameAction(source: string, options: RenameCommandOptions
       type: 'list',
       name: 'selectedId',
       message: '选择正确的匹配项:',
-      choices: matches.map((m) => ({
-        name: `${m.localizedName} (${m.year}) [tmdbid-${m.id}]${m.originalName !== m.localizedName ? ` - ${m.originalName}` : ''}`,
-        value: m.id,
-      })),
+      choices: matches.map((m) => {
+        const name = m.displayName || m.originalName;
+        const suffix = m.originalName && m.displayName && m.originalName !== m.displayName
+          ? ` - ${m.originalName}` : '';
+        return {
+          name: `${name} (${m.year}) [tmdbid-${m.id}]${suffix}`,
+          value: m.id,
+        };
+      }),
     },
   ]);
 
@@ -132,7 +180,6 @@ export async function renameAction(source: string, options: RenameCommandOptions
   // Step 6: Generate rename plan
   const renameOptions: RenameOptions = {
     destPath,
-    titleLanguage: options.lang as 'zh' | 'en',
     dryRun: options.dryRun,
     preferImdbId: options.imdb,
   };
