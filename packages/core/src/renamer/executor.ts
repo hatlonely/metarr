@@ -36,7 +36,7 @@ export async function executeRenamePlan(
         case 'rename':
           if (resolution === 'skip') {
             skippedCount++;
-            break;
+            continue;
           }
           // 'overwrite' or no resolution: remove target if exists, then rename
           try {
