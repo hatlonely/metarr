@@ -27,10 +27,6 @@ win:
     - nsis
     - portable
 
-linux:
-  target:
-    - deb
-
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
