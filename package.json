@@ -12,6 +12,8 @@
     "build:cli": "npm run build --workspace=packages/cli",
     "dev:cli": "npm run dev --workspace=packages/cli",
     "dev:gui": "npm run dev --workspace=packages/gui",
+    "dev:web": "npm run dev --workspace=packages/web",
+    "build:web": "npm run build --workspace=packages/web",
     "test": "npm run test --workspaces",
     "typecheck": "npm run typecheck --workspaces"
   },
