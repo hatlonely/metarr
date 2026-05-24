@@ -1,6 +1,7 @@
 appId: com.metarr.app
 productName: Metarr
 copyright: Copyright © 2025 hatlonely
+electronVersion: 35.0.0
 
 directories:
   output: release
