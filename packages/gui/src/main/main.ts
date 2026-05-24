@@ -30,6 +30,7 @@ let mainWindow: BrowserWindow | null = null;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
+    icon: join(__dirname, '../../icon.png'),
     width: 1200,
     height: 800,
     minWidth: 1200,
