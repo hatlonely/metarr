@@ -3,6 +3,7 @@ dist/
 .next/
 out/
 release/
+**/next-env.d.ts
 *.tsbuildinfo
 .env
 .env.local
