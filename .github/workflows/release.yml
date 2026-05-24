@@ -20,8 +20,7 @@ jobs:
           - os: ubuntu-latest
             artifact: linux
     runs-on: ${{ matrix.os }}
-
-    steps:
+    timeout-minutes: 10
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
@@ -41,7 +40,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: gui-${{ matrix.artifact }}
-          path: packages/gui/release/*.{dmg,zip,exe,msi,AppImage,deb}
+          path: packages/gui/release/*.{dmg,zip,exe,deb}
           if-no-files-found: error
 
   build-web:

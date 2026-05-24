@@ -30,7 +30,6 @@ win:
 linux:
   artifactName: ${name}-${version}-linux.${ext}
   target:
-    - AppImage
     - deb
 
 nsis:
