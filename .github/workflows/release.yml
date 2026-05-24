@@ -31,6 +31,9 @@ jobs:
       - run: node -e "require('fs').rmSync('package-lock.json',{force:true})"
       - run: npm install
 
+      - name: Build core
+        run: npm run build --workspace=packages/core
+
       - name: Build GUI
         run: npm run build --workspace=packages/gui
 
