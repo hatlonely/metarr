@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "description": "Metarr desktop application",
-  "author": "hatlonely",
+  "author": "hatlonely <hatlonely@users.noreply.github.com>",
+  "homepage": "https://github.com/hatlonely/metarr",
   "main": "dist/main/main.mjs",
   "scripts": {
     "dev": "concurrently \"npm run dev:next\" \"npm run dev:electron\"",
