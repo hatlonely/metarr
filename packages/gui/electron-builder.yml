@@ -18,19 +18,16 @@ buildDependenciesFromSource: false
 
 mac:
   category: public.app-category.utilities
-  artifactName: ${name}-${version}-mac.${ext}
   target:
     - dmg
     - zip
 
 win:
-  artifactName: ${name}-${version}-win.${ext}
   target:
     - nsis
     - portable
 
 linux:
-  artifactName: ${name}-${version}-linux.${ext}
   target:
     - deb
 
