@@ -9,10 +9,12 @@ directories:
 files:
   - dist/**/*
   - package.json
-  - node_modules/**/*
+  - node_modules/@metarr/**/*
 
 extraMetadata:
   main: dist/main/main.mjs
+
+buildDependenciesFromSource: false
 
 mac:
   category: public.app-category.utilities
