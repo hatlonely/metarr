@@ -39,7 +39,7 @@ export async function executeRenamePlan(
           await mkdir(task.target, { recursive: true });
           break;
         case 'rename':
-          if (resolution === 'skip') {
+          if (resolution === 'skip' || task.source === task.target) {
             skippedCount++;
             continue;
           }

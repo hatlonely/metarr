@@ -30,6 +30,9 @@ export async function checkConflicts(plan: RenamePlan): Promise<ConflictCheckRes
     const task = plan.tasks[i];
     if (task.operation !== 'rename') continue;
 
+    // Source and target are the same path — file is already in place, skip
+    if (task.source === task.target) continue;
+
     const targetInfo = await getFileInfo(task.target);
     if (!targetInfo) continue;
 
