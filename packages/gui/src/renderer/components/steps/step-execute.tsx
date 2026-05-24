@@ -1,7 +1,15 @@
-"use client";
+'use client';
 
-import { CheckCircle2, XCircle, RotateCcw, Trash2, FileEdit, Ban, AlertTriangle } from "lucide-react";
-import { Button } from "@/src/renderer/components/ui/button";
+import {
+  CheckCircle2,
+  XCircle,
+  RotateCcw,
+  Trash2,
+  FileEdit,
+  Ban,
+  AlertTriangle,
+} from 'lucide-react';
+import { Button } from '@/src/renderer/components/ui/button';
 import {
   Table,
   TableBody,
@@ -9,11 +17,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/src/renderer/components/ui/table";
-import { Card, CardContent } from "@/src/renderer/components/ui/card";
-import { StepHeader } from "@/src/renderer/components/shared/step-header";
-import { t, type Locale } from "@/src/renderer/lib/i18n";
-import type { ExecutionResult } from "@metarr/core";
+} from '@/src/renderer/components/ui/table';
+import { Card, CardContent } from '@/src/renderer/components/ui/card';
+import { StepHeader } from '@/src/renderer/components/shared/step-header';
+import { t, type Locale } from '@/src/renderer/lib/i18n';
+import type { ExecutionResult } from '@metarr/core';
 
 interface StepExecuteProps {
   locale: Locale;
@@ -25,7 +33,7 @@ interface StepExecuteProps {
 export function StepExecute({ locale, step, result, onContinue }: StepExecuteProps) {
   const text = t(locale);
 
-  const renamedCount = result.succeeded.filter(t => t.operation === 'rename').length;
+  const renamedCount = result.succeeded.filter((t) => t.operation === 'rename').length;
   const skippedCount = result.skippedCount;
   const overwrittenCount = result.overwrittenCount;
   const removedCount = result.removedUnmatched?.length ?? 0;
@@ -72,8 +80,12 @@ export function StepExecute({ locale, step, result, onContinue }: StepExecutePro
                     <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
                   </div>
                   <div className="flex-1">
-                    <span className="text-yellow-700 dark:text-yellow-300">{text.executeOverwritten}</span>
-                  <span className="ml-2 font-semibold tabular-nums text-yellow-700 dark:text-yellow-300">{overwrittenCount}</span>
+                    <span className="text-yellow-700 dark:text-yellow-300">
+                      {text.executeOverwritten}
+                    </span>
+                    <span className="ml-2 font-semibold tabular-nums text-yellow-700 dark:text-yellow-300">
+                      {overwrittenCount}
+                    </span>
                   </div>
                 </div>
               )}
@@ -84,7 +96,9 @@ export function StepExecute({ locale, step, result, onContinue }: StepExecutePro
                   </div>
                   <div className="flex-1">
                     <span className="text-destructive">{text.executeRemoved}</span>
-                    <span className="ml-2 font-semibold tabular-nums text-destructive">{removedCount}</span>
+                    <span className="ml-2 font-semibold tabular-nums text-destructive">
+                      {removedCount}
+                    </span>
                   </div>
                 </div>
               )}
@@ -95,7 +109,9 @@ export function StepExecute({ locale, step, result, onContinue }: StepExecutePro
                   </div>
                   <div className="flex-1">
                     <span className="text-destructive">{text.failed}</span>
-                    <span className="ml-2 font-semibold tabular-nums text-destructive">{result.failed.length}</span>
+                    <span className="ml-2 font-semibold tabular-nums text-destructive">
+                      {result.failed.length}
+                    </span>
                   </div>
                 </div>
               )}
@@ -105,18 +121,23 @@ export function StepExecute({ locale, step, result, onContinue }: StepExecutePro
       )}
 
       {/* Cleanup info */}
-      {(result.cleanedSourcePath || (result.removedUnmatched && result.removedUnmatched.length > 0)) && (
+      {(result.cleanedSourcePath ||
+        (result.removedUnmatched && result.removedUnmatched.length > 0)) && (
         <div className="mb-6 space-y-2">
           {result.cleanedSourcePath && (
             <div className="flex items-center gap-2 rounded-lg border bg-muted/30 px-4 py-2.5 text-sm text-muted-foreground">
               <Trash2 className="h-3.5 w-3.5" />
-              <span>{text.cleanedSourceDir}: {result.cleanedSourcePath}</span>
+              <span>
+                {text.cleanedSourceDir}: {result.cleanedSourcePath}
+              </span>
             </div>
           )}
           {result.removedUnmatched && result.removedUnmatched.length > 0 && (
             <div className="flex items-center gap-2 rounded-lg border bg-muted/30 px-4 py-2.5 text-sm text-muted-foreground">
               <Trash2 className="h-3.5 w-3.5" />
-              <span>{text.removedUnmatched}: {result.removedUnmatched.length}</span>
+              <span>
+                {text.removedUnmatched}: {result.removedUnmatched.length}
+              </span>
             </div>
           )}
         </div>
@@ -137,15 +158,9 @@ export function StepExecute({ locale, step, result, onContinue }: StepExecutePro
               <TableBody>
                 {result.failed.map((item, i) => (
                   <TableRow key={i}>
-                    <TableCell className="font-mono text-xs">
-                      {item.task.source}
-                    </TableCell>
-                    <TableCell className="text-xs">
-                      {item.task.operation}
-                    </TableCell>
-                    <TableCell className="text-xs text-destructive">
-                      {item.error.message}
-                    </TableCell>
+                    <TableCell className="font-mono text-xs">{item.task.source}</TableCell>
+                    <TableCell className="text-xs">{item.task.operation}</TableCell>
+                    <TableCell className="text-xs text-destructive">{item.error.message}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

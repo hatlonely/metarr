@@ -1,10 +1,28 @@
-"use client";
+'use client';
 
-import { useMemo, useRef, useCallback, useState } from "react";
-import { ArrowLeft, ArrowRight, Play, Loader2, Folder, File, AlertTriangle, FileQuestion, Trash2, ChevronDown, FileEdit, Ban, ShieldAlert } from "lucide-react";
-import { Button } from "@/src/renderer/components/ui/button";
-import { Card, CardContent } from "@/src/renderer/components/ui/card";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/src/renderer/components/ui/collapsible";
+import { useMemo, useRef, useCallback, useState } from 'react';
+import {
+  ArrowLeft,
+  ArrowRight,
+  Play,
+  Loader2,
+  Folder,
+  File,
+  AlertTriangle,
+  FileQuestion,
+  Trash2,
+  ChevronDown,
+  FileEdit,
+  Ban,
+  ShieldAlert,
+} from 'lucide-react';
+import { Button } from '@/src/renderer/components/ui/button';
+import { Card, CardContent } from '@/src/renderer/components/ui/card';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/src/renderer/components/ui/collapsible';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -14,13 +32,25 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
   AlertDialogAction,
-} from "@/src/renderer/components/ui/alert-dialog";
-import { Badge } from "@/src/renderer/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/src/renderer/components/ui/select";
-import { Switch } from "@/src/renderer/components/ui/switch";
-import { StepHeader } from "@/src/renderer/components/shared/step-header";
-import { t, type Locale } from "@/src/renderer/lib/i18n";
-import type { RenamePlan, ConflictCheckResult, ConflictResolutionMap, ConflictResolution, UnmatchedFileInfo } from "@metarr/core";
+} from '@/src/renderer/components/ui/alert-dialog';
+import { Badge } from '@/src/renderer/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/src/renderer/components/ui/select';
+import { Switch } from '@/src/renderer/components/ui/switch';
+import { StepHeader } from '@/src/renderer/components/shared/step-header';
+import { t, type Locale } from '@/src/renderer/lib/i18n';
+import type {
+  RenamePlan,
+  ConflictCheckResult,
+  ConflictResolutionMap,
+  ConflictResolution,
+  UnmatchedFileInfo,
+} from '@metarr/core';
 
 function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 B';
@@ -58,14 +88,14 @@ function buildPairTree(
   sourceRoot: string,
   targetRoot: string,
 ): PairNode {
-  const root: PairNode = { name: "", children: [], files: [] };
+  const root: PairNode = { name: '', children: [], files: [] };
 
   for (const task of tasks) {
-    const srcRel = task.source.replace(sourceRoot + "/", "").replace(sourceRoot, "");
-    const tgtRel = task.target.replace(targetRoot + "/", "").replace(targetRoot, "");
+    const srcRel = task.source.replace(sourceRoot + '/', '').replace(sourceRoot, '');
+    const tgtRel = task.target.replace(targetRoot + '/', '').replace(targetRoot, '');
 
-    const srcName = srcRel.split("/").pop() || srcRel;
-    const tgtParts = tgtRel.split("/").filter(Boolean);
+    const srcName = srcRel.split('/').pop() || srcRel;
+    const tgtParts = tgtRel.split('/').filter(Boolean);
 
     let node = root;
     for (let i = 0; i < tgtParts.length - 1; i++) {
@@ -84,7 +114,7 @@ function buildPairTree(
 
 /** Flatten the tree into rows: directory spacers and file pairs */
 interface TreeRow {
-  type: "dir" | "file";
+  type: 'dir' | 'file';
   depth: number;
   dirName?: string;
   source?: string;
@@ -94,17 +124,17 @@ interface TreeRow {
 function flattenTree(node: PairNode, depth: number): TreeRow[] {
   const rows: TreeRow[] = [];
 
-  const startNode = node.name === "" && node.children.length === 1 ? node.children[0] : node;
+  const startNode = node.name === '' && node.children.length === 1 ? node.children[0] : node;
 
   function walk(n: PairNode, d: number) {
     if (n.name) {
-      rows.push({ type: "dir", depth: d, dirName: n.name });
+      rows.push({ type: 'dir', depth: d, dirName: n.name });
     }
     for (const child of n.children) {
       walk(child, d + 1);
     }
     for (const file of n.files) {
-      rows.push({ type: "file", depth: d, source: file.source, target: file.target });
+      rows.push({ type: 'file', depth: d, source: file.source, target: file.target });
     }
   }
 
@@ -114,9 +144,9 @@ function flattenTree(node: PairNode, depth: number): TreeRow[] {
 
 /** Breadcrumb: show last 2 components with "..." prefix if more exist */
 function formatBreadcrumb(path: string): string {
-  const parts = path.split("/").filter(Boolean);
+  const parts = path.split('/').filter(Boolean);
   if (parts.length <= 2) return path;
-  return ".../" + parts.slice(-2).join("/");
+  return '.../' + parts.slice(-2).join('/');
 }
 
 /** Clickable path display: breadcrumb by default, full path on click */
@@ -128,7 +158,7 @@ function PathDisplay({ path }: { path: string }) {
   return (
     <p
       className={`mb-3 cursor-pointer font-mono text-xs text-muted-foreground ${
-        isLong && !expanded ? "truncate" : "break-all"
+        isLong && !expanded ? 'truncate' : 'break-all'
       }`}
       onClick={() => isLong && setExpanded(!expanded)}
       title={path}
@@ -161,8 +191,10 @@ export function StepPreview({
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const executeSummary = useMemo(() => {
-    const renameTasks = plan.tasks.filter(t => t.operation === 'rename');
-    const overwriteCount = Object.values(conflictResolutions).filter(r => r === 'overwrite').length;
+    const renameTasks = plan.tasks.filter((t) => t.operation === 'rename');
+    const overwriteCount = Object.values(conflictResolutions).filter(
+      (r) => r === 'overwrite',
+    ).length;
     const totalConflicts = conflictResult?.conflicts.length ?? 0;
     const skipCount = totalConflicts - overwriteCount;
     const renamedCount = renameTasks.length - skipCount;
@@ -174,25 +206,22 @@ export function StepPreview({
     onExecute();
   }, [onExecute]);
 
-  const handleScroll = useCallback(
-    (source: "left" | "right") => {
-      if (syncing.current) return;
-      syncing.current = true;
-      const srcEl = source === "left" ? leftRef.current : rightRef.current;
-      const tgtEl = source === "left" ? rightRef.current : leftRef.current;
-      if (srcEl && tgtEl) {
-        tgtEl.scrollTop = srcEl.scrollTop;
-      }
-      requestAnimationFrame(() => {
-        syncing.current = false;
-      });
-    },
-    [],
-  );
+  const handleScroll = useCallback((source: 'left' | 'right') => {
+    if (syncing.current) return;
+    syncing.current = true;
+    const srcEl = source === 'left' ? leftRef.current : rightRef.current;
+    const tgtEl = source === 'left' ? rightRef.current : leftRef.current;
+    if (srcEl && tgtEl) {
+      tgtEl.scrollTop = srcEl.scrollTop;
+    }
+    requestAnimationFrame(() => {
+      syncing.current = false;
+    });
+  }, []);
 
   const { rows, stats } = useMemo(() => {
-    const renameTasks = plan.tasks.filter((task) => task.operation === "rename");
-    const dirCount = plan.tasks.filter((task) => task.operation === "create-dir").length;
+    const renameTasks = plan.tasks.filter((task) => task.operation === 'rename');
+    const dirCount = plan.tasks.filter((task) => task.operation === 'create-dir').length;
     const tree = buildPairTree(renameTasks, plan.sourcePath, plan.destPath);
 
     return {
@@ -203,7 +232,7 @@ export function StepPreview({
 
   const conflictedTargets = useMemo(() => {
     if (!conflictResult) return new Set<string>();
-    return new Set(conflictResult.conflicts.map(c => c.task.target));
+    return new Set(conflictResult.conflicts.map((c) => c.task.target));
   }, [conflictResult]);
 
   const indent = (depth: number) => ({ paddingLeft: `${depth * 16 + 8}px` });
@@ -214,15 +243,21 @@ export function StepPreview({
 
       <p className="mb-4 text-sm text-muted-foreground">
         {plan.summary.mediaType === 'tv'
-          ? text.planSummaryTv.replace('{name}', plan.summary.name).replace('{count}', String(plan.summary.fileCount))
+          ? text.planSummaryTv
+              .replace('{name}', plan.summary.name)
+              .replace('{count}', String(plan.summary.fileCount))
           : text.planSummaryMovie.replace('{name}', plan.summary.name)}
       </p>
 
       {/* Stats */}
       <div className="mb-4 flex gap-4 text-sm text-muted-foreground">
-        <span>{stats.dirCount} {text.dirCount}</span>
+        <span>
+          {stats.dirCount} {text.dirCount}
+        </span>
         <span>·</span>
-        <span>{stats.fileCount} {text.fileCount}</span>
+        <span>
+          {stats.fileCount} {text.fileCount}
+        </span>
       </div>
 
       <Card>
@@ -283,7 +318,9 @@ export function StepPreview({
 
                           <Select
                             value={conflictResolutions[conflict.taskIndex] || 'skip'}
-                            onValueChange={(val) => onSetConflictResolution(conflict.taskIndex, val as ConflictResolution)}
+                            onValueChange={(val) =>
+                              onSetConflictResolution(conflict.taskIndex, val as ConflictResolution)
+                            }
                           >
                             <SelectTrigger className="h-7 w-24 text-xs">
                               <SelectValue />
@@ -320,7 +357,10 @@ export function StepPreview({
                     <div className="mb-2 flex items-center justify-end gap-2">
                       <span className="text-xs text-muted-foreground">{text.removeAll}</span>
                       <Switch
-                        checked={filesToRemove.length === unmatchedFiles.length && unmatchedFiles.length > 0}
+                        checked={
+                          filesToRemove.length === unmatchedFiles.length &&
+                          unmatchedFiles.length > 0
+                        }
                         onCheckedChange={(checked) => onSetAllFilesToRemove(checked)}
                       />
                     </div>
@@ -365,14 +405,16 @@ export function StepPreview({
                 <div
                   ref={leftRef}
                   className="max-h-[28rem] space-y-0.5 overflow-y-auto overflow-x-auto"
-                  onScroll={() => handleScroll("left")}
+                  onScroll={() => handleScroll('left')}
                 >
                   {rows.map((row, i) =>
-                    row.type === "file" ? (
+                    row.type === 'file' ? (
                       <div
                         key={i}
                         className={`flex items-center gap-1.5 whitespace-nowrap py-0.5 text-xs text-muted-foreground ${
-                          conflictedTargets.has(plan.destPath + '/' + (row.target || '')) ? 'rounded bg-yellow-100 dark:bg-yellow-900/30' : ''
+                          conflictedTargets.has(plan.destPath + '/' + (row.target || ''))
+                            ? 'rounded bg-yellow-100 dark:bg-yellow-900/30'
+                            : ''
                         }`}
                         style={indent(row.depth + 1)}
                       >
@@ -398,10 +440,10 @@ export function StepPreview({
                 <div
                   ref={rightRef}
                   className="max-h-[28rem] space-y-0.5 overflow-y-auto overflow-x-auto"
-                  onScroll={() => handleScroll("right")}
+                  onScroll={() => handleScroll('right')}
                 >
                   {rows.map((row, i) =>
-                    row.type === "dir" ? (
+                    row.type === 'dir' ? (
                       <div
                         key={i}
                         className="flex items-center gap-1.5 whitespace-nowrap py-0.5 text-sm font-medium"
@@ -414,7 +456,9 @@ export function StepPreview({
                       <div
                         key={i}
                         className={`flex items-center gap-1.5 whitespace-nowrap py-0.5 text-xs text-muted-foreground ${
-                          conflictedTargets.has(plan.destPath + '/' + (row.target || '')) ? 'rounded bg-yellow-100 dark:bg-yellow-900/30' : ''
+                          conflictedTargets.has(plan.destPath + '/' + (row.target || ''))
+                            ? 'rounded bg-yellow-100 dark:bg-yellow-900/30'
+                            : ''
                         }`}
                         style={indent(row.depth + 1)}
                       >
@@ -482,7 +526,9 @@ export function StepPreview({
                     </div>
                     {text.executeOverwritten}
                   </div>
-                  <span className="tabular-nums font-semibold text-yellow-700 dark:text-yellow-300">{executeSummary.overwriteCount}</span>
+                  <span className="tabular-nums font-semibold text-yellow-700 dark:text-yellow-300">
+                    {executeSummary.overwriteCount}
+                  </span>
                 </div>
               )}
 
@@ -494,7 +540,9 @@ export function StepPreview({
                     </div>
                     {text.executeSkipped}
                   </div>
-                  <span className="tabular-nums text-muted-foreground">{executeSummary.skipCount}</span>
+                  <span className="tabular-nums text-muted-foreground">
+                    {executeSummary.skipCount}
+                  </span>
                 </div>
               )}
 
@@ -506,7 +554,9 @@ export function StepPreview({
                     </div>
                     {text.executeRemoved}
                   </div>
-                  <span className="tabular-nums font-semibold text-destructive">{executeSummary.removedCount}</span>
+                  <span className="tabular-nums font-semibold text-destructive">
+                    {executeSummary.removedCount}
+                  </span>
                 </div>
               )}
             </div>
@@ -514,7 +564,9 @@ export function StepPreview({
 
           <AlertDialogFooter>
             <AlertDialogCancel>{text.close}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmExecute}>{text.confirmExecute}</AlertDialogAction>
+            <AlertDialogAction onClick={handleConfirmExecute}>
+              {text.confirmExecute}
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

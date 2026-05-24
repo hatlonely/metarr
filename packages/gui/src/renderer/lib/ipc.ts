@@ -1,4 +1,13 @@
-import type { ParsedMedia, TMDBMatch, RenamePlan, RenameOptions, ExecutionResult, ConflictCheckResult, ConflictResolutionMap, UnmatchedFileInfo } from '@metarr/core';
+import type {
+  ParsedMedia,
+  TMDBMatch,
+  RenamePlan,
+  RenameOptions,
+  ExecutionResult,
+  ConflictCheckResult,
+  ConflictResolutionMap,
+  UnmatchedFileInfo,
+} from '@metarr/core';
 import type { OpenMediaResult } from '@/src/shared/ipc-types';
 
 function getApi() {
@@ -36,17 +45,21 @@ export const ipc = {
     options: RenameOptions,
   ): Promise<RenamePlan> => getApi().generateRenamePlan(parsed, match, options),
 
-  checkConflicts: (plan: RenamePlan): Promise<ConflictCheckResult> =>
-    getApi().checkConflicts(plan),
+  checkConflicts: (plan: RenamePlan): Promise<ConflictCheckResult> => getApi().checkConflicts(plan),
 
-  findUnmatchedFiles: (sourcePath: string, plan: RenamePlan, selectedFile?: string): Promise<UnmatchedFileInfo[]> =>
-    getApi().findUnmatchedFiles(sourcePath, plan, selectedFile),
+  findUnmatchedFiles: (
+    sourcePath: string,
+    plan: RenamePlan,
+    selectedFile?: string,
+  ): Promise<UnmatchedFileInfo[]> => getApi().findUnmatchedFiles(sourcePath, plan, selectedFile),
 
-  executeRename: (plan: RenamePlan, resolutions?: ConflictResolutionMap, filesToRemove?: string[]): Promise<ExecutionResult> =>
-    getApi().executeRename(plan, resolutions, filesToRemove),
+  executeRename: (
+    plan: RenamePlan,
+    resolutions?: ConflictResolutionMap,
+    filesToRemove?: string[],
+  ): Promise<ExecutionResult> => getApi().executeRename(plan, resolutions, filesToRemove),
 
-  resolveMediaPath: (path: string): Promise<OpenMediaResult> =>
-    getApi().resolveMediaPath(path),
+  resolveMediaPath: (path: string): Promise<OpenMediaResult> => getApi().resolveMediaPath(path),
 
   getConfig: (): Promise<Record<string, unknown>> => getApi().getConfig(),
 

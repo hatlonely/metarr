@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { Loader2, RefreshCw, ArrowRight, FolderOpen, Search } from "lucide-react";
-import { Button } from "@/src/renderer/components/ui/button";
-import { Input } from "@/src/renderer/components/ui/input";
-import { Label } from "@/src/renderer/components/ui/label";
-import { Skeleton } from "@/src/renderer/components/ui/skeleton";
-import { StepHeader } from "@/src/renderer/components/shared/step-header";
-import { PosterCard } from "@/src/renderer/components/shared/poster-card";
-import { t, type Locale } from "@/src/renderer/lib/i18n";
-import { ipc } from "@/src/renderer/lib/ipc";
-import type { TMDBMatch } from "@metarr/core";
+import { useState, useEffect } from 'react';
+import { Loader2, RefreshCw, ArrowRight, FolderOpen, Search } from 'lucide-react';
+import { Button } from '@/src/renderer/components/ui/button';
+import { Input } from '@/src/renderer/components/ui/input';
+import { Label } from '@/src/renderer/components/ui/label';
+import { Skeleton } from '@/src/renderer/components/ui/skeleton';
+import { StepHeader } from '@/src/renderer/components/shared/step-header';
+import { PosterCard } from '@/src/renderer/components/shared/poster-card';
+import { t, type Locale } from '@/src/renderer/lib/i18n';
+import { ipc } from '@/src/renderer/lib/ipc';
+import type { TMDBMatch } from '@metarr/core';
 
 interface StepSearchProps {
   locale: Locale;
@@ -62,7 +62,8 @@ export function StepSearch({
       <div className="mb-4 flex items-center justify-between">
         <span className="flex items-center gap-2 text-sm text-muted-foreground">
           <Search className="h-3.5 w-3.5" />
-          &ldquo;{searchQuery}&rdquo; &middot; {results.length} {results.length === 1 ? "result" : "results"}
+          &ldquo;{searchQuery}&rdquo; &middot; {results.length}{' '}
+          {results.length === 1 ? 'result' : 'results'}
         </span>
         <Button variant="outline" size="sm" onClick={onReSearch} disabled={loading}>
           {loading ? (

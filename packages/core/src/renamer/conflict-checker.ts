@@ -1,5 +1,10 @@
 import { stat } from 'node:fs/promises';
-import type { RenamePlan, ConflictCheckResult, FileConflict, ConflictFileInfo } from '../types/index.js';
+import type {
+  RenamePlan,
+  ConflictCheckResult,
+  FileConflict,
+  ConflictFileInfo,
+} from '../types/index.js';
 
 async function getFileInfo(path: string): Promise<ConflictFileInfo | null> {
   try {
@@ -31,8 +36,7 @@ export async function checkConflicts(plan: RenamePlan): Promise<ConflictCheckRes
     const sourceInfo = await getFileInfo(task.source);
     if (!sourceInfo) continue;
 
-    const isSameFile = sourceInfo.size === targetInfo.size
-      && sourceInfo.mtime === targetInfo.mtime;
+    const isSameFile = sourceInfo.size === targetInfo.size && sourceInfo.mtime === targetInfo.mtime;
 
     conflicts.push({
       taskIndex: i,
@@ -43,7 +47,7 @@ export async function checkConflicts(plan: RenamePlan): Promise<ConflictCheckRes
     });
   }
 
-  const duplicateCount = conflicts.filter(c => c.isSameFile).length;
+  const duplicateCount = conflicts.filter((c) => c.isSameFile).length;
   const overwriteCount = conflicts.length - duplicateCount;
 
   return {

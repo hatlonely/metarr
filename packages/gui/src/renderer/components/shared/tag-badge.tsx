@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { Badge } from "@/src/renderer/components/ui/badge";
-import { cn } from "@/src/renderer/lib/utils";
-import type { MediaTags } from "@metarr/core";
+import { Badge } from '@/src/renderer/components/ui/badge';
+import { cn } from '@/src/renderer/lib/utils';
+import type { MediaTags } from '@metarr/core';
 
 interface TagBadgeProps {
   label: string;
@@ -11,7 +11,7 @@ interface TagBadgeProps {
 
 export function TagBadge({ label, className }: TagBadgeProps) {
   return (
-    <Badge variant="secondary" className={cn("font-normal", className)}>
+    <Badge variant="secondary" className={cn('font-normal', className)}>
       {label}
     </Badge>
   );
@@ -26,8 +26,8 @@ export function MediaTagBadges({ tags }: MediaTagBadgesProps) {
   if (tags.resolution) items.push(tags.resolution);
   if (tags.codec) items.push(tags.codec);
   if (tags.audioCodec) items.push(tags.audioCodec);
-  if (tags.isDV) items.push("DV");
-  if (tags.isHDR) items.push("HDR");
+  if (tags.isDV) items.push('DV');
+  if (tags.isHDR) items.push('HDR');
   if (tags.source) items.push(tags.source);
 
   if (items.length === 0) return null;

@@ -6,8 +6,7 @@ contextBridge.exposeInMainWorld('metarrAPI', {
   openDirectory: () => ipcRenderer.invoke('dialog:openDirectory'),
   parseDirectory: (dirPath: string, type?: string) =>
     ipcRenderer.invoke('parse:directory', dirPath, type),
-  parseFile: (filePath: string, type?: string) =>
-    ipcRenderer.invoke('parse:file', filePath, type),
+  parseFile: (filePath: string, type?: string) => ipcRenderer.invoke('parse:file', filePath, type),
   tmdbSearch: (apiKey: string, query: string, type: string, year?: number, language?: string) =>
     ipcRenderer.invoke('tmdb:search', apiKey, query, type, year, language),
   tmdbGetMovieDetails: (apiKey: string, id: number) =>
@@ -21,7 +20,6 @@ contextBridge.exposeInMainWorld('metarrAPI', {
     ipcRenderer.invoke('rename:execute', plan, resolutions, filesToRemove),
   resolveMediaPath: (path: string) => ipcRenderer.invoke('fs:resolveMediaPath', path),
   getConfig: () => ipcRenderer.invoke('config:get'),
-  setConfig: (key: string, value: unknown) =>
-    ipcRenderer.invoke('config:set', key, value),
+  setConfig: (key: string, value: unknown) => ipcRenderer.invoke('config:set', key, value),
   getPathForFile: (file: File) => webUtils.getPathForFile(file),
 } satisfies Record<string, (...args: unknown[]) => unknown>);

@@ -1,6 +1,11 @@
 import { rename, mkdir, rm, readdir, unlink } from 'node:fs/promises';
 import { dirname } from 'node:path';
-import type { RenamePlan, RenameTask, ExecutionResult, ConflictResolutionMap } from '../types/index.js';
+import type {
+  RenamePlan,
+  RenameTask,
+  ExecutionResult,
+  ConflictResolutionMap,
+} from '../types/index.js';
 
 async function isDirEmpty(dirPath: string): Promise<boolean> {
   try {
@@ -78,7 +83,7 @@ export async function executeRenamePlan(
 
   // Clean up empty source directory
   let cleanedSourcePath: string | undefined;
-  if (succeeded.length > 0 && plan.sourcePath && await isDirEmpty(plan.sourcePath)) {
+  if (succeeded.length > 0 && plan.sourcePath && (await isDirEmpty(plan.sourcePath))) {
     try {
       await rm(plan.sourcePath, { recursive: true, force: true });
       cleanedSourcePath = plan.sourcePath;

@@ -67,10 +67,7 @@ export async function parseMediaFile(
 /**
  * Parse a media directory: extract metadata from the directory name and its contents.
  */
-export async function parseMediaDir(
-  dirPath: string,
-  options?: ParseOptions,
-): Promise<ParsedMedia> {
+export async function parseMediaDir(dirPath: string, options?: ParseOptions): Promise<ParsedMedia> {
   const originalDirName = basename(dirPath);
   const dirInfo = parseDirName(originalDirName);
   const scan = await scanDirectory(dirPath);

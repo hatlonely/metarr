@@ -1,5 +1,11 @@
 import { join } from 'node:path';
-import type { ParsedMedia, RenameOptions, RenamePlan, RenameTask, MediaType } from '../types/index.js';
+import type {
+  ParsedMedia,
+  RenameOptions,
+  RenamePlan,
+  RenameTask,
+  MediaType,
+} from '../types/index.js';
 import type { TMDBMatch } from '../types/tmdb.js';
 
 /**
@@ -63,11 +69,7 @@ export function generateMovieRenamePlan(
   };
 }
 
-function replaceBaseName(
-  fileName: string,
-  oldVideoName: string,
-  newVideoName: string,
-): string {
+function replaceBaseName(fileName: string, oldVideoName: string, newVideoName: string): string {
   const oldBase = oldVideoName.replace(/\.[^.]+$/, '');
   const newBase = newVideoName.replace(/\.[^.]+$/, '');
   const ext = fileName.match(/\.[^.]+$/)?.[0] || '';

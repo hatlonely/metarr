@@ -1,5 +1,11 @@
 import { join } from 'node:path';
-import type { ParsedMedia, RenameOptions, RenamePlan, RenameTask, MediaType } from '../types/index.js';
+import type {
+  ParsedMedia,
+  RenameOptions,
+  RenamePlan,
+  RenameTask,
+  MediaType,
+} from '../types/index.js';
 import type { TMDBMatch } from '../types/tmdb.js';
 
 /**
@@ -84,9 +90,7 @@ function formatEpisodeFileName(
   return `${showName} (${year}) S${s}E${e}${ep.extension}`;
 }
 
-function groupBySeason(
-  episodes: ParsedMedia['episodes'],
-): Map<number, ParsedMedia['episodes']> {
+function groupBySeason(episodes: ParsedMedia['episodes']): Map<number, ParsedMedia['episodes']> {
   const map = new Map<number, ParsedMedia['episodes']>();
   for (const ep of episodes) {
     const season = ep.season || 1;
@@ -102,11 +106,7 @@ function groupBySeason(
   return map;
 }
 
-function replaceBaseName(
-  fileName: string,
-  oldVideoName: string,
-  newVideoName: string,
-): string {
+function replaceBaseName(fileName: string, oldVideoName: string, newVideoName: string): string {
   const oldBase = oldVideoName.replace(/\.[^.]+$/, '');
   const newBase = newVideoName.replace(/\.[^.]+$/, '');
 

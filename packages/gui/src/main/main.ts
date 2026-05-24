@@ -14,7 +14,14 @@ import {
   getAllConfig,
   setConfig as coreSetConfig,
 } from '@metarr/core';
-import type { ParsedMedia, MediaType, RenameOptions, TMDBMatch, RenamePlan, ConflictResolutionMap } from '@metarr/core';
+import type {
+  ParsedMedia,
+  MediaType,
+  RenameOptions,
+  TMDBMatch,
+  RenamePlan,
+  ConflictResolutionMap,
+} from '@metarr/core';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -49,7 +56,10 @@ ipcMain.handle('dialog:openMedia', async () => {
   const result = await dialog.showOpenDialog(mainWindow, {
     properties: ['openFile', 'openDirectory'],
     filters: [
-      { name: 'Video Files', extensions: ['mkv', 'mp4', 'avi', 'wmv', 'mov', 'ts', 'rmvb', 'flv', 'webm'] },
+      {
+        name: 'Video Files',
+        extensions: ['mkv', 'mp4', 'avi', 'wmv', 'mov', 'ts', 'rmvb', 'flv', 'webm'],
+      },
       { name: 'All Files', extensions: ['*'] },
     ],
   });
@@ -58,7 +68,7 @@ ipcMain.handle('dialog:openMedia', async () => {
   const stat = statSync(filePath);
   const isDir = stat.isDirectory();
   return {
-    type: isDir ? 'dir' as const : 'file' as const,
+    type: isDir ? ('dir' as const) : ('file' as const),
     path: filePath,
     sourcePath: isDir ? filePath : dirname(filePath),
   };
@@ -74,24 +84,18 @@ ipcMain.handle('dialog:openDirectory', async () => {
 });
 
 // IPC: Parse directory
-ipcMain.handle(
-  'parse:directory',
-  async (_event, dirPath: string, type?: string) => {
-    return parseMediaDir(dirPath, {
-      type: type === 'tv' || type === 'movie' ? (type as MediaType) : undefined,
-    });
-  },
-);
+ipcMain.handle('parse:directory', async (_event, dirPath: string, type?: string) => {
+  return parseMediaDir(dirPath, {
+    type: type === 'tv' || type === 'movie' ? (type as MediaType) : undefined,
+  });
+});
 
 // IPC: Parse single file
-ipcMain.handle(
-  'parse:file',
-  async (_event, filePath: string, type?: string) => {
-    return parseMediaFile(filePath, {
-      type: type === 'tv' || type === 'movie' ? (type as MediaType) : undefined,
-    });
-  },
-);
+ipcMain.handle('parse:file', async (_event, filePath: string, type?: string) => {
+  return parseMediaFile(filePath, {
+    type: type === 'tv' || type === 'movie' ? (type as MediaType) : undefined,
+  });
+});
 
 // IPC: TMDB search (with language support)
 ipcMain.handle(
@@ -106,13 +110,10 @@ ipcMain.handle(
 );
 
 // IPC: Get movie details (for IMDB ID)
-ipcMain.handle(
-  'tmdb:getMovieDetails',
-  async (_event, apiKey: string, id: number) => {
-    const client = new TMDBClient({ apiKey });
-    return client.getMovieDetails(id);
-  },
-);
+ipcMain.handle('tmdb:getMovieDetails', async (_event, apiKey: string, id: number) => {
+  const client = new TMDBClient({ apiKey });
+  return client.getMovieDetails(id);
+});
 
 // IPC: Generate rename plan
 ipcMain.handle(
@@ -126,9 +127,17 @@ ipcMain.handle(
 );
 
 // IPC: Execute rename plan
-ipcMain.handle('rename:execute', async (_event, plan: RenamePlan, resolutions?: ConflictResolutionMap, filesToRemove?: string[]) => {
-  return executeRenamePlan(plan, resolutions, filesToRemove);
-});
+ipcMain.handle(
+  'rename:execute',
+  async (
+    _event,
+    plan: RenamePlan,
+    resolutions?: ConflictResolutionMap,
+    filesToRemove?: string[],
+  ) => {
+    return executeRenamePlan(plan, resolutions, filesToRemove);
+  },
+);
 
 // IPC: Check conflicts
 ipcMain.handle('rename:checkConflicts', async (_event, plan: RenamePlan) => {
@@ -136,16 +145,19 @@ ipcMain.handle('rename:checkConflicts', async (_event, plan: RenamePlan) => {
 });
 
 // IPC: Find unmatched files
-ipcMain.handle('unmatched:find', async (_event, sourcePath: string, plan: RenamePlan, selectedFile?: string) => {
-  return findUnmatchedFiles(sourcePath, plan, selectedFile);
-});
+ipcMain.handle(
+  'unmatched:find',
+  async (_event, sourcePath: string, plan: RenamePlan, selectedFile?: string) => {
+    return findUnmatchedFiles(sourcePath, plan, selectedFile);
+  },
+);
 
 // IPC: Resolve media path (for drag & drop)
 ipcMain.handle('fs:resolveMediaPath', async (_event, filePath: string) => {
   const stat = statSync(filePath);
   const isDir = stat.isDirectory();
   return {
-    type: isDir ? 'dir' as const : 'file' as const,
+    type: isDir ? ('dir' as const) : ('file' as const),
     path: filePath,
     sourcePath: isDir ? filePath : dirname(filePath),
   };

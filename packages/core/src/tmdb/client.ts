@@ -88,11 +88,7 @@ export class TMDBClient {
     ];
   }
 
-  async fuzzySearch(
-    query: string,
-    type: 'tv' | 'movie',
-    year?: number,
-  ): Promise<TMDBMatch[]> {
+  async fuzzySearch(query: string, type: 'tv' | 'movie', year?: number): Promise<TMDBMatch[]> {
     let results = await this.search(query, type, year);
     if (results.length === 0 && year) {
       results = await this.search(query, type);
@@ -100,11 +96,7 @@ export class TMDBClient {
     return results;
   }
 
-  async search(
-    query: string,
-    type: 'tv' | 'movie',
-    year?: number,
-  ): Promise<TMDBMatch[]> {
+  async search(query: string, type: 'tv' | 'movie', year?: number): Promise<TMDBMatch[]> {
     const results =
       type === 'tv' ? await this.searchTv(query, year) : await this.searchMovie(query, year);
     return results.map((r) => this.toMatch(r, type));

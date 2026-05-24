@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback } from "react";
-import { ipc } from "@/src/renderer/lib/ipc";
+import { useState, useEffect, useCallback } from 'react';
+import { ipc } from '@/src/renderer/lib/ipc';
 
 export interface AppConfig {
   tmdbKey: string;
@@ -11,9 +11,9 @@ export interface AppConfig {
 }
 
 const defaultConfig: AppConfig = {
-  tmdbKey: "",
-  destPath: "",
-  displayLanguage: "zh-CN",
+  tmdbKey: '',
+  destPath: '',
+  displayLanguage: 'zh-CN',
   preferImdbId: true,
 };
 
@@ -25,9 +25,9 @@ export function useConfig() {
     try {
       const raw = await ipc.getConfig();
       setConfigState({
-        tmdbKey: (raw.tmdbKey as string) || "",
-        destPath: (raw.destPath as string) || "",
-        displayLanguage: (raw.displayLanguage as string) || "zh-CN",
+        tmdbKey: (raw.tmdbKey as string) || '',
+        destPath: (raw.destPath as string) || '',
+        displayLanguage: (raw.displayLanguage as string) || 'zh-CN',
         preferImdbId: raw.preferImdbId !== undefined ? (raw.preferImdbId as boolean) : true,
       });
     } catch {
@@ -41,18 +41,21 @@ export function useConfig() {
     loadConfig();
   }, [loadConfig]);
 
-  const setConfig = useCallback(async (updates: Partial<AppConfig>) => {
-    const newConfig = { ...config, ...updates };
-    setConfigState(newConfig);
+  const setConfig = useCallback(
+    async (updates: Partial<AppConfig>) => {
+      const newConfig = { ...config, ...updates };
+      setConfigState(newConfig);
 
-    try {
-      for (const [key, value] of Object.entries(updates)) {
-        await ipc.setConfig(key, value);
+      try {
+        for (const [key, value] of Object.entries(updates)) {
+          await ipc.setConfig(key, value);
+        }
+      } catch {
+        // Ignore in dev mode
       }
-    } catch {
-      // Ignore in dev mode
-    }
-  }, [config]);
+    },
+    [config],
+  );
 
   const showSettings = loaded && !config.tmdbKey;
 

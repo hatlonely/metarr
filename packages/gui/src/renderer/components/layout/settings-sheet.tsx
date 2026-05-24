@@ -1,34 +1,34 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Input } from "@/src/renderer/components/ui/input";
-import { Label } from "@/src/renderer/components/ui/label";
-import { Button } from "@/src/renderer/components/ui/button";
-import { Separator } from "@/src/renderer/components/ui/separator";
-import { Switch } from "@/src/renderer/components/ui/switch";
+import { useState } from 'react';
+import { Input } from '@/src/renderer/components/ui/input';
+import { Label } from '@/src/renderer/components/ui/label';
+import { Button } from '@/src/renderer/components/ui/button';
+import { Separator } from '@/src/renderer/components/ui/separator';
+import { Switch } from '@/src/renderer/components/ui/switch';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/src/renderer/components/ui/select";
+} from '@/src/renderer/components/ui/select';
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@/src/renderer/components/ui/sheet";
-import type { AppConfig } from "@/src/renderer/hooks/use-config";
-import { t } from "@/src/renderer/lib/i18n";
+} from '@/src/renderer/components/ui/sheet';
+import type { AppConfig } from '@/src/renderer/hooks/use-config';
+import { t } from '@/src/renderer/lib/i18n';
 
 interface SettingsSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   config: AppConfig;
   onSave: (updates: Partial<AppConfig>) => void;
-  locale: "zh" | "en";
+  locale: 'zh' | 'en';
 }
 
 export function SettingsSheet({ open, onOpenChange, config, onSave, locale }: SettingsSheetProps) {
@@ -63,9 +63,7 @@ export function SettingsSheet({ open, onOpenChange, config, onSave, locale }: Se
               id="tmdb-key"
               type="password"
               value={localConfig.tmdbKey}
-              onChange={(e) =>
-                setLocalConfig((prev) => ({ ...prev, tmdbKey: e.target.value }))
-              }
+              onChange={(e) => setLocalConfig((prev) => ({ ...prev, tmdbKey: e.target.value }))}
               placeholder={text.tmdbApiKeyPlaceholder}
             />
           </div>
@@ -77,9 +75,7 @@ export function SettingsSheet({ open, onOpenChange, config, onSave, locale }: Se
               id="dest-path"
               type="text"
               value={localConfig.destPath}
-              onChange={(e) =>
-                setLocalConfig((prev) => ({ ...prev, destPath: e.target.value }))
-              }
+              onChange={(e) => setLocalConfig((prev) => ({ ...prev, destPath: e.target.value }))}
               placeholder={text.destPathPlaceholder}
             />
           </div>
@@ -119,9 +115,7 @@ export function SettingsSheet({ open, onOpenChange, config, onSave, locale }: Se
 
           {/* Save Button */}
           <div className="flex justify-end pt-2">
-            <Button onClick={handleSave}>
-              {text.saveSettings}
-            </Button>
+            <Button onClick={handleSave}>{text.saveSettings}</Button>
           </div>
         </div>
       </SheetContent>

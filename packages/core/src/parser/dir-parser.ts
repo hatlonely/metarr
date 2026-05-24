@@ -37,7 +37,10 @@ export function extractFromFileName(fileName: string): {
   working = working.replace(/\.?\d{3,4}[pPiI]\b/g, ' ');
   working = working.replace(/\.?(?:H\.?265|HEVC|x265|H\.?264|AVC|x264|VP9|AV1)\b/gi, ' ');
   working = working.replace(/\.?(?:WEB-DL|WEBRip|BluRay|BDRip|HDTV|HDRip|DVDRip|REMUX)\b/gi, ' ');
-  working = working.replace(/\.?(?:DDP?[\s.]?5[\s.]?1|DTS[\s.]?HD[\s.]?MA|DTS[\s.]?5[\s.]?1|TrueHD|AAC|FLAC|PCM)\b/gi, ' ');
+  working = working.replace(
+    /\.?(?:DDP?[\s.]?5[\s.]?1|DTS[\s.]?HD[\s.]?MA|DTS[\s.]?5[\s.]?1|TrueHD|AAC|FLAC|PCM)\b/gi,
+    ' ',
+  );
   working = working.replace(/\.?(?:HDR|DV|HQ|IQ)\b/gi, ' ');
   working = working.replace(/\.?Dolby[\s.]?Vision\b/gi, ' ');
   working = working.replace(/-\w+\s*$/, ' ');
@@ -51,11 +54,29 @@ export function extractFromFileName(fileName: string): {
 
   // Extract English title (words between S##E## segment and media tags)
   const chineseTitle2 = extractChineseTitle(working);
-  let remaining = working.replace(/[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff\u3000-\u303f\uff00-\uffef]/g, ' ');
+  let remaining = working.replace(
+    /[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff\u3000-\u303f\uff00-\uffef]/g,
+    ' ',
+  );
   remaining = remaining.replace(/\./g, ' ');
   const mediaTagWords = new Set([
-    'the', 'and', 'or', 'for', 'with', 'version', 'complete', 'season', 'episode',
-    'web', 'dl', 'bluray', 'bdrip', 'hdtv', 'hdr', 'dv', 'hq',
+    'the',
+    'and',
+    'or',
+    'for',
+    'with',
+    'version',
+    'complete',
+    'season',
+    'episode',
+    'web',
+    'dl',
+    'bluray',
+    'bdrip',
+    'hdtv',
+    'hdr',
+    'dv',
+    'hq',
   ]);
   const words = remaining
     .split(/\s+/)
@@ -190,15 +211,33 @@ function extractChineseTitle(text: string): string | null {
  */
 function extractEnglishTitle(text: string, chineseTitle: string | null): string | null {
   // Remove Chinese characters
-  let remaining = text.replace(/[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff\u3000-\u303f\uff00-\uffef]/g, ' ');
+  let remaining = text.replace(
+    /[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff\u3000-\u303f\uff00-\uffef]/g,
+    ' ',
+  );
 
   // Remove dots and normalize
   remaining = remaining.replace(/\./g, ' ');
 
   // Split into words, filter out empty and media-tag-like words
   const mediaTagWords = new Set([
-    'the', 'and', 'or', 'for', 'with', 'version', 'complete', 'season', 'episode',
-    'web', 'dl', 'bluray', 'bdrip', 'hdtv', 'hdr', 'dv', 'hq',
+    'the',
+    'and',
+    'or',
+    'for',
+    'with',
+    'version',
+    'complete',
+    'season',
+    'episode',
+    'web',
+    'dl',
+    'bluray',
+    'bdrip',
+    'hdtv',
+    'hdr',
+    'dv',
+    'hq',
   ]);
 
   const words = remaining

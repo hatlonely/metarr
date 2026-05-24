@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { Sidebar } from "./sidebar";
-import { ContentArea } from "./content-area";
-import { SettingsSheet } from "./settings-sheet";
-import { useWorkflow } from "@/src/renderer/hooks/use-workflow";
-import { useConfig } from "@/src/renderer/hooks/use-config";
-import type { StepId } from "@/src/renderer/types/workflow";
-import type { AppConfig } from "@/src/renderer/hooks/use-config";
-import { StepSelect } from "@/src/renderer/components/steps/step-select";
-import { StepParse } from "@/src/renderer/components/steps/step-parse";
-import { StepSearch } from "@/src/renderer/components/steps/step-search";
-import { StepPreview } from "@/src/renderer/components/steps/step-preview";
-import { StepExecute } from "@/src/renderer/components/steps/step-execute";
+import { useState, useEffect } from 'react';
+import { Sidebar } from './sidebar';
+import { ContentArea } from './content-area';
+import { SettingsSheet } from './settings-sheet';
+import { useWorkflow } from '@/src/renderer/hooks/use-workflow';
+import { useConfig } from '@/src/renderer/hooks/use-config';
+import type { StepId } from '@/src/renderer/types/workflow';
+import type { AppConfig } from '@/src/renderer/hooks/use-config';
+import { StepSelect } from '@/src/renderer/components/steps/step-select';
+import { StepParse } from '@/src/renderer/components/steps/step-parse';
+import { StepSearch } from '@/src/renderer/components/steps/step-search';
+import { StepPreview } from '@/src/renderer/components/steps/step-preview';
+import { StepExecute } from '@/src/renderer/components/steps/step-execute';
 
 export function AppShell() {
   const {
@@ -45,7 +45,7 @@ export function AppShell() {
     }
   }, [showSettings]);
 
-  const locale = config.displayLanguage.startsWith("zh") ? "zh" : "en";
+  const locale = config.displayLanguage.startsWith('zh') ? 'zh' : 'en';
 
   const handleSaveConfig = (updates: Partial<AppConfig>) => {
     setConfig(updates);
@@ -57,7 +57,7 @@ export function AppShell() {
 
   const renderStep = () => {
     switch (state.currentStep) {
-      case "select":
+      case 'select':
         return (
           <StepSelect
             locale={locale}
@@ -69,7 +69,7 @@ export function AppShell() {
             onDrop={(filePath) => dropMedia(filePath)}
           />
         );
-      case "parse":
+      case 'parse':
         return state.parsed ? (
           <StepParse
             locale={locale}
@@ -83,7 +83,7 @@ export function AppShell() {
             onMediaTypeChange={setMediaType}
           />
         ) : null;
-      case "search":
+      case 'search':
         return (
           <StepSearch
             locale={locale}
@@ -100,7 +100,7 @@ export function AppShell() {
             }
           />
         );
-      case "preview":
+      case 'preview':
         return state.plan ? (
           <StepPreview
             locale={locale}
@@ -111,7 +111,7 @@ export function AppShell() {
             conflictResolutions={state.conflictResolutions}
             unmatchedFiles={state.unmatchedFiles}
             filesToRemove={state.filesToRemove}
-            onBack={() => goToStep("search")}
+            onBack={() => goToStep('search')}
             onExecute={() => executeRename()}
             onSetConflictResolution={setConflictResolution}
             onSetAllConflictResolutions={setAllConflictResolutions}
@@ -119,9 +119,14 @@ export function AppShell() {
             onSetAllFilesToRemove={setAllFilesToRemove}
           />
         ) : null;
-      case "execute":
+      case 'execute':
         return state.executionResult ? (
-          <StepExecute locale={locale} step={currentStepIndex + 1} result={state.executionResult} onContinue={reset} />
+          <StepExecute
+            locale={locale}
+            step={currentStepIndex + 1}
+            result={state.executionResult}
+            onContinue={reset}
+          />
         ) : null;
       default:
         return null;

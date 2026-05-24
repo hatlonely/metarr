@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { cn } from "@/src/renderer/lib/utils";
-import type { TMDBMatch } from "@metarr/core";
+import { cn } from '@/src/renderer/lib/utils';
+import type { TMDBMatch } from '@metarr/core';
 
 interface PosterCardProps {
   match: TMDBMatch;
   selected: boolean;
   onClick: () => void;
-  locale: "zh" | "en";
+  locale: 'zh' | 'en';
 }
 
 export function PosterCard({ match, selected, onClick }: PosterCardProps) {
@@ -15,10 +15,10 @@ export function PosterCard({ match, selected, onClick }: PosterCardProps) {
     <button
       onClick={onClick}
       className={cn(
-        "w-full rounded-xl border-l-4 p-3 text-left transition-all duration-200",
+        'w-full rounded-xl border-l-4 p-3 text-left transition-all duration-200',
         selected
-          ? "border-l-primary border-y border-r border-primary/30 bg-primary/5 shadow-sm"
-          : "border-l-muted-foreground/20 border-y border-r border-border bg-card hover:border-l-primary/50 hover:shadow-sm",
+          ? 'border-l-primary border-y border-r border-primary/30 bg-primary/5 shadow-sm'
+          : 'border-l-muted-foreground/20 border-y border-r border-border bg-card hover:border-l-primary/50 hover:shadow-sm',
       )}
     >
       <div className="flex gap-3">
@@ -36,9 +36,7 @@ export function PosterCard({ match, selected, onClick }: PosterCardProps) {
         <div className="min-w-0 flex-1">
           <div className="font-medium leading-tight">
             {match.displayName}
-            {match.year > 0 && (
-              <span className="ml-1 text-muted-foreground">({match.year})</span>
-            )}
+            {match.year > 0 && <span className="ml-1 text-muted-foreground">({match.year})</span>}
           </div>
           {match.originalName && match.originalName !== match.displayName && (
             <div className="mt-0.5 truncate text-sm text-muted-foreground">

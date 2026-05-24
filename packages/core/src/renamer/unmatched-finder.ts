@@ -34,8 +34,8 @@ export async function findUnmatchedFiles(
   }
 
   return scanResult.files
-    .filter(file => !plannedPaths.has(file.path))
-    .map(file => ({
+    .filter((file) => !plannedPaths.has(file.path))
+    .map((file) => ({
       path: file.path,
       name: file.name,
       extension: file.extension,

@@ -1,4 +1,12 @@
-import type { ParsedMedia, TMDBMatch, RenamePlan, ExecutionResult, ConflictCheckResult, ConflictResolutionMap, UnmatchedFileInfo } from '@metarr/core';
+import type {
+  ParsedMedia,
+  TMDBMatch,
+  RenamePlan,
+  ExecutionResult,
+  ConflictCheckResult,
+  ConflictResolutionMap,
+  UnmatchedFileInfo,
+} from '@metarr/core';
 
 export type StepId = 'select' | 'parse' | 'search' | 'preview' | 'execute';
 

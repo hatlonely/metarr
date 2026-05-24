@@ -1,7 +1,12 @@
 import { setConfig, getAllConfig, CONFIG_FILE, type MetarrConfig } from '@metarr/core';
 import chalk from 'chalk';
 
-const CONFIG_KEYS: (keyof MetarrConfig)[] = ['tmdbKey', 'destPath', 'displayLanguage', 'preferImdbId'];
+const CONFIG_KEYS: (keyof MetarrConfig)[] = [
+  'tmdbKey',
+  'destPath',
+  'displayLanguage',
+  'preferImdbId',
+];
 
 const KEY_DESCRIPTIONS: Record<string, string> = {
   tmdbKey: 'TMDB API Key',

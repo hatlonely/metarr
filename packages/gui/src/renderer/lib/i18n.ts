@@ -231,7 +231,11 @@ const en = {
 export type Locale = 'zh' | 'en';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type DeepStringify<T> = T extends string ? string : T extends object ? { [K in keyof T]: DeepStringify<T[K]> } : T;
+type DeepStringify<T> = T extends string
+  ? string
+  : T extends object
+    ? { [K in keyof T]: DeepStringify<T[K]> }
+    : T;
 
 export type TranslationMap = DeepStringify<typeof zh>;
 

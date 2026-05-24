@@ -1,31 +1,31 @@
-"use client";
+'use client';
 
-import { Search, Loader2 } from "lucide-react";
-import { Button } from "@/src/renderer/components/ui/button";
-import { Input } from "@/src/renderer/components/ui/input";
-import { Card, CardContent } from "@/src/renderer/components/ui/card";
+import { Search, Loader2 } from 'lucide-react';
+import { Button } from '@/src/renderer/components/ui/button';
+import { Input } from '@/src/renderer/components/ui/input';
+import { Card, CardContent } from '@/src/renderer/components/ui/card';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/src/renderer/components/ui/select";
-import { StepHeader } from "@/src/renderer/components/shared/step-header";
-import { MediaTagBadges } from "@/src/renderer/components/shared/tag-badge";
-import { t, type Locale } from "@/src/renderer/lib/i18n";
-import type { ParsedMedia } from "@metarr/core";
+} from '@/src/renderer/components/ui/select';
+import { StepHeader } from '@/src/renderer/components/shared/step-header';
+import { MediaTagBadges } from '@/src/renderer/components/shared/tag-badge';
+import { t, type Locale } from '@/src/renderer/lib/i18n';
+import type { ParsedMedia } from '@metarr/core';
 
 interface StepParseProps {
   locale: Locale;
   step: number;
   parsed: ParsedMedia;
-  mediaType: "tv" | "movie" | "auto";
+  mediaType: 'tv' | 'movie' | 'auto';
   searchQuery: string;
   loading: boolean;
   onSearchQueryChange: (query: string) => void;
   onSearch: () => void;
-  onMediaTypeChange: (type: "tv" | "movie" | "auto") => void;
+  onMediaTypeChange: (type: 'tv' | 'movie' | 'auto') => void;
 }
 
 export function StepParse({
@@ -41,19 +41,14 @@ export function StepParse({
 }: StepParseProps) {
   const text = t(locale);
 
-  const typeLabel =
-    parsed.type === "tv"
-      ? text.tvShow
-      : parsed.type === "movie"
-        ? text.movie
-        : "-";
+  const typeLabel = parsed.type === 'tv' ? text.tvShow : parsed.type === 'movie' ? text.movie : '-';
 
   const infoItems = [
     { label: text.sourceDir, value: parsed.originalDirName },
     { label: text.mediaType, value: typeLabel },
-    { label: text.chineseTitle, value: parsed.chineseTitle || "-" },
-    { label: text.englishTitle, value: parsed.englishTitle || "-" },
-    { label: text.year, value: String(parsed.year || "-") },
+    { label: text.chineseTitle, value: parsed.chineseTitle || '-' },
+    { label: text.englishTitle, value: parsed.englishTitle || '-' },
+    { label: text.year, value: String(parsed.year || '-') },
     { label: text.fileCount, value: String(parsed.episodes.length) },
   ];
 
@@ -88,7 +83,7 @@ export function StepParse({
           <Input
             value={searchQuery}
             onChange={(e) => onSearchQueryChange(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && onSearch()}
+            onKeyDown={(e) => e.key === 'Enter' && onSearch()}
             placeholder={text.searchPlaceholder}
             className="flex-1"
           />
@@ -104,7 +99,7 @@ export function StepParse({
 
         <Select
           value={mediaType}
-          onValueChange={(v) => onMediaTypeChange(v as "tv" | "movie" | "auto")}
+          onValueChange={(v) => onMediaTypeChange(v as 'tv' | 'movie' | 'auto')}
         >
           <SelectTrigger className="w-40">
             <SelectValue />

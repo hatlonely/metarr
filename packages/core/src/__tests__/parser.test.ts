@@ -60,9 +60,7 @@ describe('parseDirName', () => {
   });
 
   it('should extract media tags correctly', () => {
-    const result = parseDirName(
-      'Some.Show.S01.2025.1080p.BluRay.REMUX.H.264.DTS-HD.MA-Group',
-    );
+    const result = parseDirName('Some.Show.S01.2025.1080p.BluRay.REMUX.H.264.DTS-HD.MA-Group');
     expect(result.tags.resolution).toBe('1080p');
     expect(result.tags.codec).toBe('H.264');
     expect(result.tags.source).toBe('BluRay');
@@ -98,9 +96,7 @@ describe('parseFileName', () => {
   });
 
   it('should extract media tags from file names', () => {
-    const result = parseFileName(
-      'Show.Name.S02E05.2025.2160p.WEB-DL.H265.DV.DDP5.1-Group.mkv',
-    );
+    const result = parseFileName('Show.Name.S02E05.2025.2160p.WEB-DL.H265.DV.DDP5.1-Group.mkv');
     expect(result.tags.resolution).toBe('2160p');
     expect(result.tags.codec).toBe('H.265');
     expect(result.tags.isDV).toBe(true);

@@ -1,23 +1,29 @@
-"use client";
+'use client';
 
-import { Settings, Sun, Moon, Monitor } from "lucide-react";
-import { Separator } from "@/src/renderer/components/ui/separator";
-import { Button } from "@/src/renderer/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/src/renderer/components/ui/tooltip";
-import { SidebarStep } from "./sidebar-step";
-import { t } from "@/src/renderer/lib/i18n";
-import type { StepId } from "@/src/renderer/types/workflow";
-import { useAppTheme } from "@/src/renderer/hooks/use-theme";
+import { Settings, Sun, Moon, Monitor } from 'lucide-react';
+import { Separator } from '@/src/renderer/components/ui/separator';
+import { Button } from '@/src/renderer/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/src/renderer/components/ui/tooltip';
+import { SidebarStep } from './sidebar-step';
+import { t } from '@/src/renderer/lib/i18n';
+import type { StepId } from '@/src/renderer/types/workflow';
+import { useAppTheme } from '@/src/renderer/hooks/use-theme';
 
 interface SidebarProps {
   steps: StepId[];
   currentStepIndex: number;
   onStepClick: (step: StepId) => void;
   onOpenSettings: () => void;
-  locale: "zh" | "en";
+  locale: 'zh' | 'en';
 }
 
-export function Sidebar({ steps, currentStepIndex, onStepClick, onOpenSettings, locale }: SidebarProps) {
+export function Sidebar({
+  steps,
+  currentStepIndex,
+  onStepClick,
+  onOpenSettings,
+  locale,
+}: SidebarProps) {
   const { resolvedTheme, toggleTheme, theme } = useAppTheme();
   const text = t(locale);
 
@@ -75,9 +81,9 @@ export function Sidebar({ steps, currentStepIndex, onStepClick, onOpenSettings, 
         <Tooltip>
           <TooltipTrigger asChild>
             <Button variant="ghost" size="icon" onClick={toggleTheme}>
-              {theme === "system" ? (
+              {theme === 'system' ? (
                 <Monitor className="h-4 w-4" />
-              ) : resolvedTheme === "dark" ? (
+              ) : resolvedTheme === 'dark' ? (
                 <Sun className="h-4 w-4" />
               ) : (
                 <Moon className="h-4 w-4" />
@@ -85,11 +91,7 @@ export function Sidebar({ steps, currentStepIndex, onStepClick, onOpenSettings, 
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            {theme === "system"
-              ? text.system
-              : resolvedTheme === "dark"
-                ? text.dark
-                : text.light}
+            {theme === 'system' ? text.system : resolvedTheme === 'dark' ? text.dark : text.light}
           </TooltipContent>
         </Tooltip>
       </div>

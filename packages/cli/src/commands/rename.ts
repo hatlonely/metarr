@@ -1,6 +1,14 @@
 import { existsSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
-import type { MediaType, ParsedMedia, RenameOptions, RenamePlan, TMDBMatch, ConflictResolution, ConflictResolutionMap } from '@metarr/core';
+import type {
+  MediaType,
+  ParsedMedia,
+  RenameOptions,
+  RenamePlan,
+  TMDBMatch,
+  ConflictResolution,
+  ConflictResolutionMap,
+} from '@metarr/core';
 import {
   parseMediaDir,
   parseMediaFile,
@@ -74,7 +82,9 @@ export async function renameAction(source: string, options: RenameCommandOptions
   console.log(`  中文标题: ${parsed.chineseTitle || chalk.gray('未检测到')}`);
   console.log(`  英文标题: ${parsed.englishTitle || chalk.gray('未检测到')}`);
   console.log(`  年份: ${parsed.year || chalk.gray('未检测到')}`);
-  console.log(`  类型: ${parsed.type === 'unknown' ? chalk.yellow('未确定') : parsed.type === 'tv' ? '电视剧' : '电影'}`);
+  console.log(
+    `  类型: ${parsed.type === 'unknown' ? chalk.yellow('未确定') : parsed.type === 'tv' ? '电视剧' : '电影'}`,
+  );
   console.log(`  文件数: ${parsed.episodes.length}`);
   if (parsed.tags.resolution) console.log(`  分辨率: ${parsed.tags.resolution}`);
   if (parsed.tags.codec) console.log(`  编码: ${parsed.tags.codec}`);
@@ -163,8 +173,10 @@ export async function renameAction(source: string, options: RenameCommandOptions
       message: '选择正确的匹配项:',
       choices: matches.map((m) => {
         const name = m.displayName || m.originalName;
-        const suffix = m.originalName && m.displayName && m.originalName !== m.displayName
-          ? ` - ${m.originalName}` : '';
+        const suffix =
+          m.originalName && m.displayName && m.originalName !== m.displayName
+            ? ` - ${m.originalName}`
+            : '';
         return {
           name: `${name} (${m.year}) [tmdbid-${m.id}]${suffix}`,
           value: m.id,
@@ -227,7 +239,9 @@ export async function renameAction(source: string, options: RenameCommandOptions
     console.log();
     console.log(chalk.bold(`发现 ${unmatchedFiles.length} 个未匹配文件:`));
     for (const file of unmatchedFiles) {
-      console.log(`  ${chalk.gray('[未匹配]')} ${file.name} (${formatFileSize(file.size)}) [${file.type}]`);
+      console.log(
+        `  ${chalk.gray('[未匹配]')} ${file.name} (${formatFileSize(file.size)}) [${file.type}]`,
+      );
     }
 
     const { removeUnmatched } = await inquirer.prompt([
@@ -240,7 +254,7 @@ export async function renameAction(source: string, options: RenameCommandOptions
     ]);
 
     if (removeUnmatched) {
-      filesToRemove = unmatchedFiles.map(f => f.path);
+      filesToRemove = unmatchedFiles.map((f) => f.path);
     }
   }
 
@@ -260,8 +274,12 @@ export async function renameAction(source: string, options: RenameCommandOptions
       } else {
         console.log(`  ${chalk.red('[冲突]')} ${chalk.cyan(shortTarget)}`);
       }
-      console.log(`    源: ${formatFileSize(conflict.sourceInfo.size)}, ${conflict.sourceInfo.mtime}`);
-      console.log(`    目标: ${formatFileSize(conflict.targetInfo.size)}, ${conflict.targetInfo.mtime}`);
+      console.log(
+        `    源: ${formatFileSize(conflict.sourceInfo.size)}, ${conflict.sourceInfo.mtime}`,
+      );
+      console.log(
+        `    目标: ${formatFileSize(conflict.targetInfo.size)}, ${conflict.targetInfo.mtime}`,
+      );
       if (conflict.isSameFile) {
         console.log(chalk.gray('    文件大小和修改时间相同，可能是重复文件'));
       }
@@ -309,7 +327,11 @@ export async function renameAction(source: string, options: RenameCommandOptions
   }
 
   const execSpinner = ora('执行重命名...').start();
-  const result = await executeRenamePlan(plan, resolutions, filesToRemove.length > 0 ? filesToRemove : undefined);
+  const result = await executeRenamePlan(
+    plan,
+    resolutions,
+    filesToRemove.length > 0 ? filesToRemove : undefined,
+  );
   execSpinner.succeed(`完成: ${result.succeeded.length} 个操作成功`);
 
   if (result.failed.length > 0) {

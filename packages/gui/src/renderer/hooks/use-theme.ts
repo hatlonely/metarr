@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useTheme } from "next-themes";
+import { useTheme } from 'next-themes';
 
 export function useAppTheme() {
   const { theme, setTheme, resolvedTheme } = useTheme();
 
   const toggleTheme = () => {
-    if (resolvedTheme === "dark") {
-      setTheme("light");
+    if (resolvedTheme === 'dark') {
+      setTheme('light');
     } else {
-      setTheme("dark");
+      setTheme('dark');
     }
   };
 

@@ -1,27 +1,27 @@
-"use client";
+'use client';
 
-import { useState, useCallback, useEffect } from "react";
-import { FileVideo, Upload, Loader2 } from "lucide-react";
-import { Button } from "@/src/renderer/components/ui/button";
-import { Card, CardContent } from "@/src/renderer/components/ui/card";
+import { useState, useCallback, useEffect } from 'react';
+import { FileVideo, Upload, Loader2 } from 'lucide-react';
+import { Button } from '@/src/renderer/components/ui/button';
+import { Card, CardContent } from '@/src/renderer/components/ui/card';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/src/renderer/components/ui/select";
-import { StepHeader } from "@/src/renderer/components/shared/step-header";
-import { cn } from "@/src/renderer/lib/utils";
-import { ipc } from "@/src/renderer/lib/ipc";
-import { t, type Locale } from "@/src/renderer/lib/i18n";
+} from '@/src/renderer/components/ui/select';
+import { StepHeader } from '@/src/renderer/components/shared/step-header';
+import { cn } from '@/src/renderer/lib/utils';
+import { ipc } from '@/src/renderer/lib/ipc';
+import { t, type Locale } from '@/src/renderer/lib/i18n';
 
 interface StepSelectProps {
   locale: Locale;
   step: number;
   loading: boolean;
-  mediaType: "tv" | "movie" | "auto";
-  onMediaTypeChange: (type: "tv" | "movie" | "auto") => void;
+  mediaType: 'tv' | 'movie' | 'auto';
+  onMediaTypeChange: (type: 'tv' | 'movie' | 'auto') => void;
   onSelect: () => void;
   onDrop: (filePath: string) => void;
 }
@@ -43,11 +43,11 @@ export function StepSelect({
     const prevent = (e: DragEvent) => {
       e.preventDefault();
     };
-    document.addEventListener("dragover", prevent);
-    document.addEventListener("drop", prevent);
+    document.addEventListener('dragover', prevent);
+    document.addEventListener('drop', prevent);
     return () => {
-      document.removeEventListener("dragover", prevent);
-      document.removeEventListener("drop", prevent);
+      document.removeEventListener('dragover', prevent);
+      document.removeEventListener('drop', prevent);
     };
   }, []);
 
@@ -87,7 +87,7 @@ export function StepSelect({
             <label className="text-sm font-medium">{text.mediaType}</label>
             <Select
               value={mediaType}
-              onValueChange={(v) => onMediaTypeChange(v as "tv" | "movie" | "auto")}
+              onValueChange={(v) => onMediaTypeChange(v as 'tv' | 'movie' | 'auto')}
             >
               <SelectTrigger className="w-48">
                 <SelectValue />
@@ -106,17 +106,15 @@ export function StepSelect({
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             className={cn(
-              "flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 transition-all duration-200",
+              'flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 transition-all duration-200',
               dragOver
-                ? "border-primary bg-primary/5"
-                : "border-muted-foreground/25 hover:border-muted-foreground/40",
+                ? 'border-primary bg-primary/5'
+                : 'border-muted-foreground/25 hover:border-muted-foreground/40',
             )}
           >
             <Upload className="mb-3 h-8 w-8 text-muted-foreground/50" />
             <p className="text-sm text-muted-foreground">{text.dragDropHint}</p>
-            <p className="mt-1 text-xs text-muted-foreground/60">
-              {text.dragDropFormats}
-            </p>
+            <p className="mt-1 text-xs text-muted-foreground/60">{text.dragDropFormats}</p>
           </div>
 
           {/* 分隔线 */}

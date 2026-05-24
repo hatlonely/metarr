@@ -1,6 +1,8 @@
 import type { MediaType } from './media.js';
 import type { TMDBMatch } from './tmdb.js';
 
+export type { TMDBMatch };
+
 export interface RenameTask {
   source: string;
   target: string;

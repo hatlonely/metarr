@@ -40,9 +40,15 @@ export interface ParseOptions {
 }
 
 export const VIDEO_EXTENSIONS = new Set([
-  '.mkv', '.mp4', '.avi', '.wmv', '.mov', '.ts', '.rmvb', '.flv', '.webm',
+  '.mkv',
+  '.mp4',
+  '.avi',
+  '.wmv',
+  '.mov',
+  '.ts',
+  '.rmvb',
+  '.flv',
+  '.webm',
 ]);
 
-export const SUBTITLE_EXTENSIONS = new Set([
-  '.srt', '.ass', '.ssa', '.sub', '.idx', '.sup',
-]);
+export const SUBTITLE_EXTENSIONS = new Set(['.srt', '.ass', '.ssa', '.sub', '.idx', '.sup']);
