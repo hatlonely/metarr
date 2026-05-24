@@ -28,7 +28,7 @@ jobs:
         with:
           node-version: 22
 
-      - run: rm -f package-lock.json
+      - run: rm package-lock.json 2>/dev/null || del package-lock.json 2>nul || true
       - run: npm install
 
       - name: Build GUI
@@ -54,7 +54,7 @@ jobs:
         with:
           node-version: 22
 
-      - run: rm -f package-lock.json
+      - run: rm package-lock.json 2>/dev/null || del package-lock.json 2>nul || true
       - run: npm install
 
       - name: Build Web
