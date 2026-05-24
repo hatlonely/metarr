@@ -1,0 +1,32 @@
+name: Deploy Web
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'packages/web/**'
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - run: node -e "require('fs').rmSync('package-lock.json',{force:true})"
+      - run: npm install
+
+      - name: Build Web
+        run: npm run build:web
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          command: pages deploy packages/web/dist --project-name=metarr
