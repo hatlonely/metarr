@@ -10,7 +10,9 @@
     "build": "npm run build:next && npm run build:main",
     "build:next": "next build",
     "build:main": "tsup src/main/main.ts src/preload/preload.ts --outDir dist --format esm --external electron --watch false",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "pack": "npm run build && electron-builder --publish never",
+    "release": "npm run build && electron-builder --publish always"
   },
   "dependencies": {
     "@metarr/core": "*",

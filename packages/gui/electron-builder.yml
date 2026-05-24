@@ -1,0 +1,47 @@
+appId: com.metarr.app
+productName: Metarr
+copyright: Copyright © 2025 hatlonely
+
+directories:
+  output: release
+
+files:
+  - dist/**/*
+  - package.json
+  - node_modules/**/*
+
+extraMetadata:
+  main: dist/main/main.mjs
+
+mac:
+  category: public.app-category.utilities
+  artifactName: ${name}-${version}-mac.${ext}
+  target:
+    - dmg
+    - zip
+
+win:
+  artifactName: ${name}-${version}-win.${ext}
+  target:
+    - nsis
+    - portable
+
+linux:
+  artifactName: ${name}-${version}-linux.${ext}
+  target:
+    - AppImage
+    - deb
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+
+dmg:
+  contents:
+    - x: 410
+      y: 150
+      type: link
+      path: /Applications
+    - x: 130
+      y: 150
+      type: file

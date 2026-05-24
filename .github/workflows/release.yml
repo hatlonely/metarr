@@ -1,0 +1,90 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-gui:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            artifact: mac
+          - os: windows-latest
+            artifact: win
+          - os: ubuntu-latest
+            artifact: linux
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm ci
+
+      - name: Build GUI
+        run: npm run build --workspace=packages/gui
+
+      - name: Build Electron packages
+        run: cd packages/gui && npx electron-builder --publish never
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: gui-${{ matrix.artifact }}
+          path: packages/gui/release/*.{dmg,zip,exe,msi,AppImage,deb}
+          if-no-files-found: error
+
+  build-web:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm ci
+
+      - name: Build Web
+        run: npm run build:web
+
+      - name: Upload Web artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-static
+          path: packages/web/dist/
+
+  create-release:
+    needs: [build-gui, build-web]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: List artifacts
+        run: find artifacts -type f | sort
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            artifacts/gui-mac/*
+            artifacts/gui-win/*
+            artifacts/gui-linux/*
+            artifacts/web-static/**
