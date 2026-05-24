@@ -15,10 +15,10 @@ jobs:
         include:
           - os: macos-latest
             artifact: mac
+            platform: mac
           - os: windows-latest
             artifact: win
-          - os: ubuntu-latest
-            artifact: linux
+            platform: win
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     steps:
@@ -35,7 +35,7 @@ jobs:
         run: npm run build --workspace=packages/gui
 
       - name: Build Electron packages
-        run: cd packages/gui && npx electron-builder --publish never
+        run: cd packages/gui && npx electron-builder --publish never --${{ matrix.platform }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
