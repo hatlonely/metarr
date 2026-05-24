@@ -29,7 +29,6 @@ jobs:
           node-version: 22
 
       - run: npm ci
-      - run: npm rebuild
 
       - name: Build GUI
         run: npm run build --workspace=packages/gui
@@ -55,7 +54,6 @@ jobs:
           node-version: 22
 
       - run: npm ci
-      - run: npm rebuild
 
       - name: Build Web
         run: npm run build:web
