@@ -6,11 +6,18 @@ import { Button } from '@/src/renderer/components/ui/button';
 import { Input } from '@/src/renderer/components/ui/input';
 import { Label } from '@/src/renderer/components/ui/label';
 import { Skeleton } from '@/src/renderer/components/ui/skeleton';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/src/renderer/components/ui/select';
 import { StepHeader } from '@/src/renderer/components/shared/step-header';
 import { PosterCard } from '@/src/renderer/components/shared/poster-card';
 import { t, type Locale } from '@/src/renderer/lib/i18n';
 import { ipc } from '@/src/renderer/lib/ipc';
-import type { TMDBMatch } from '@metarr/core';
+import type { TMDBMatch, NamingTemplate } from '@metarr/core';
 
 interface StepSearchProps {
   locale: Locale;
@@ -20,9 +27,11 @@ interface StepSearchProps {
   searchQuery: string;
   loading: boolean;
   defaultDestPath: string;
+  defaultNamingPreset: string;
+  defaultCustomNamingTemplate: NamingTemplate;
   onSelectMatch: (match: TMDBMatch) => void;
   onReSearch: () => void;
-  onGeneratePlan: (destPath: string) => void;
+  onGeneratePlan: (destPath: string, namingPreset: string, customTemplate?: NamingTemplate) => void;
 }
 
 export function StepSearch({
@@ -33,26 +42,40 @@ export function StepSearch({
   searchQuery,
   loading,
   defaultDestPath,
+  defaultNamingPreset,
+  defaultCustomNamingTemplate,
   onSelectMatch,
   onReSearch,
   onGeneratePlan,
 }: StepSearchProps) {
   const text = t(locale);
   const [destPath, setDestPath] = useState(defaultDestPath);
+  const [namingPreset, setNamingPreset] = useState(defaultNamingPreset);
+  const [customTemplate, setCustomTemplate] = useState<NamingTemplate>(defaultCustomNamingTemplate);
 
   useEffect(() => {
     setDestPath(defaultDestPath);
   }, [defaultDestPath]);
 
+  useEffect(() => {
+    setNamingPreset(defaultNamingPreset);
+  }, [defaultNamingPreset]);
+
+  useEffect(() => {
+    setCustomTemplate(defaultCustomNamingTemplate);
+  }, [defaultCustomNamingTemplate]);
+
   const handleBrowse = async () => {
     try {
       const dir = await ipc.openDirectory();
-      if (dir) {
-        setDestPath(dir);
-      }
+      if (dir) setDestPath(dir);
     } catch {
       // Ignore
     }
+  };
+
+  const handleGeneratePlan = () => {
+    onGeneratePlan(destPath, namingPreset, namingPreset === 'custom' ? customTemplate : undefined);
   };
 
   return (
@@ -108,6 +131,7 @@ export function StepSearch({
 
       {selectedMatch && (
         <div className="mt-6 space-y-3">
+          {/* Output path */}
           <div className="space-y-1.5">
             <Label>{text.outputPath}</Label>
             <div className="flex gap-2">
@@ -124,8 +148,52 @@ export function StepSearch({
               </Button>
             </div>
           </div>
+
+          {/* Naming preset override */}
+          <div className="space-y-2">
+            <Label>{text.namingPreset}</Label>
+            <Select value={namingPreset} onValueChange={setNamingPreset}>
+              <SelectTrigger className="w-48">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="universal">{text.namingPresetUniversal}</SelectItem>
+                <SelectItem value="jellyfin">{text.namingPresetJellyfin}</SelectItem>
+                <SelectItem value="emby">{text.namingPresetEmby}</SelectItem>
+                <SelectItem value="plex">{text.namingPresetPlex}</SelectItem>
+                <SelectItem value="kodi">{text.namingPresetKodi}</SelectItem>
+                <SelectItem value="custom">{text.namingPresetCustom}</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {namingPreset === 'custom' && (
+              <div className="space-y-2 rounded-md border p-3">
+                {(
+                  [
+                    ['tvDir', text.namingTemplateTvDir],
+                    ['seasonDir', text.namingTemplateSeasonDir],
+                    ['episodeFile', text.namingTemplateEpisodeFile],
+                    ['movieDir', text.namingTemplateMovieDir],
+                    ['movieFile', text.namingTemplateMovieFile],
+                  ] as const
+                ).map(([field, label]) => (
+                  <div key={field} className="space-y-1">
+                    <label className="text-xs text-muted-foreground">{label}</label>
+                    <Input
+                      value={customTemplate[field]}
+                      onChange={(e) =>
+                        setCustomTemplate((prev) => ({ ...prev, [field]: e.target.value }))
+                      }
+                      className="font-mono text-xs"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           <div className="flex justify-end">
-            <Button onClick={() => onGeneratePlan(destPath)}>
+            <Button onClick={handleGeneratePlan}>
               {text.generatePlan}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>

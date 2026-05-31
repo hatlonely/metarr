@@ -8,6 +8,7 @@ import type {
   RenamePlan,
   ExecutionResult,
   ConflictResolution,
+  NamingTemplate,
 } from '@metarr/core';
 import type { OpenMediaResult } from '@/src/shared/ipc-types';
 import { ipc } from '@/src/renderer/lib/ipc';
@@ -193,7 +194,13 @@ export function useWorkflow() {
   }, []);
 
   const generatePlan = useCallback(
-    async (tmdbKey: string, destPath: string, preferImdbId: boolean, namingPreset: string) => {
+    async (
+      tmdbKey: string,
+      destPath: string,
+      preferImdbId: boolean,
+      namingPreset: string,
+      customTemplate?: NamingTemplate,
+    ) => {
       if (!state.parsed || !state.selectedMatch) return;
       dispatch({ type: 'SET_LOADING', loading: true });
       dispatch({ type: 'SET_ERROR', error: null });
@@ -202,7 +209,8 @@ export function useWorkflow() {
         const newPlan = await ipc.generateRenamePlan(state.parsed, state.selectedMatch, {
           destPath,
           preferImdbId,
-          namingPreset,
+          namingPreset: namingPreset === 'custom' ? undefined : namingPreset,
+          namingTemplate: namingPreset === 'custom' ? customTemplate : undefined,
         });
         dispatch({ type: 'SET_PLAN', plan: newPlan });
 

@@ -1,5 +1,6 @@
 import type { MediaType } from './media.js';
 import type { TMDBMatch } from './tmdb.js';
+import type { NamingTemplate } from '../renamer/naming.js';
 
 export type { TMDBMatch };
 
@@ -29,6 +30,7 @@ export interface RenameOptions {
   destPath: string;
   preferImdbId: boolean;
   namingPreset?: string;
+  namingTemplate?: NamingTemplate;
 }
 
 export interface ExecutionResult {

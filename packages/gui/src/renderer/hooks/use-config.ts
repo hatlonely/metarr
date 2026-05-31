@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { ipc } from '@/src/renderer/lib/ipc';
+import type { NamingTemplate } from '@metarr/core';
 
 export interface AppConfig {
   tmdbKey: string;
@@ -9,7 +10,16 @@ export interface AppConfig {
   displayLanguage: string;
   preferImdbId: boolean;
   namingPreset: string;
+  customNamingTemplate: NamingTemplate;
 }
+
+export const DEFAULT_CUSTOM_NAMING_TEMPLATE: NamingTemplate = {
+  tvDir: '{name} ({year})',
+  seasonDir: 'Season {season:02}',
+  episodeFile: '{name} S{season:02}E{episode:02}{ext}',
+  movieDir: '{name} ({year})',
+  movieFile: '{name} ({year}){ext}',
+};
 
 const defaultConfig: AppConfig = {
   tmdbKey: '',
@@ -17,7 +27,23 @@ const defaultConfig: AppConfig = {
   displayLanguage: 'zh-CN',
   preferImdbId: true,
   namingPreset: 'universal',
+  customNamingTemplate: DEFAULT_CUSTOM_NAMING_TEMPLATE,
 };
+
+function parseNamingTemplate(raw: unknown): NamingTemplate | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const t = raw as Record<string, unknown>;
+  if (
+    typeof t.tvDir === 'string' &&
+    typeof t.seasonDir === 'string' &&
+    typeof t.episodeFile === 'string' &&
+    typeof t.movieDir === 'string' &&
+    typeof t.movieFile === 'string'
+  ) {
+    return t as unknown as NamingTemplate;
+  }
+  return null;
+}
 
 export function useConfig() {
   const [config, setConfigState] = useState<AppConfig>(defaultConfig);
@@ -32,6 +58,8 @@ export function useConfig() {
         displayLanguage: (raw.displayLanguage as string) || 'zh-CN',
         preferImdbId: raw.preferImdbId !== undefined ? (raw.preferImdbId as boolean) : true,
         namingPreset: (raw.namingPreset as string) || 'universal',
+        customNamingTemplate:
+          parseNamingTemplate(raw.namingTemplate) ?? DEFAULT_CUSTOM_NAMING_TEMPLATE,
       });
     } catch {
       // Use defaults if IPC not available (dev mode)
@@ -51,7 +79,9 @@ export function useConfig() {
 
       try {
         for (const [key, value] of Object.entries(updates)) {
-          await ipc.setConfig(key, value);
+          // customNamingTemplate maps to core's namingTemplate key
+          const configKey = key === 'customNamingTemplate' ? 'namingTemplate' : key;
+          await ipc.setConfig(configKey, value);
         }
       } catch {
         // Ignore in dev mode

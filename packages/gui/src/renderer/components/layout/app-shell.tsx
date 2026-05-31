@@ -93,10 +93,12 @@ export function AppShell() {
             searchQuery={state.searchQuery}
             loading={state.loading}
             defaultDestPath={config.destPath}
+            defaultNamingPreset={config.namingPreset}
+            defaultCustomNamingTemplate={config.customNamingTemplate}
             onSelectMatch={(match) => selectMatch(match, config.tmdbKey)}
             onReSearch={() => searchTmdb(config.tmdbKey)}
-            onGeneratePlan={(destPath) =>
-              generatePlan(config.tmdbKey, destPath, config.preferImdbId, config.namingPreset)
+            onGeneratePlan={(destPath, namingPreset, customTemplate) =>
+              generatePlan(config.tmdbKey, destPath, config.preferImdbId, namingPreset, customTemplate)
             }
           />
         );

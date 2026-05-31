@@ -12,7 +12,7 @@ export function generateMovieRenamePlan(
   options: RenameOptions,
 ): RenamePlan {
   const tasks: RenameTask[] = [];
-  const template = resolveNamingTemplate(options.namingPreset);
+  const template = options.namingTemplate ?? resolveNamingTemplate(options.namingPreset);
 
   const name = tmdbMatch.displayName || tmdbMatch.originalName;
   const { year, id: tmdbId, imdbId } = tmdbMatch;

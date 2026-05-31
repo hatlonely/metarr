@@ -119,8 +119,40 @@ export function SettingsSheet({ open, onOpenChange, config, onSave, locale }: Se
                 <SelectItem value="emby">{text.namingPresetEmby}</SelectItem>
                 <SelectItem value="plex">{text.namingPresetPlex}</SelectItem>
                 <SelectItem value="kodi">{text.namingPresetKodi}</SelectItem>
+                <SelectItem value="custom">{text.namingPresetCustom}</SelectItem>
               </SelectContent>
             </Select>
+
+            {localConfig.namingPreset === 'custom' && (
+              <div className="space-y-2 rounded-md border p-3">
+                {(
+                  [
+                    ['tvDir', text.namingTemplateTvDir],
+                    ['seasonDir', text.namingTemplateSeasonDir],
+                    ['episodeFile', text.namingTemplateEpisodeFile],
+                    ['movieDir', text.namingTemplateMovieDir],
+                    ['movieFile', text.namingTemplateMovieFile],
+                  ] as const
+                ).map(([field, label]) => (
+                  <div key={field} className="space-y-1">
+                    <label className="text-xs text-muted-foreground">{label}</label>
+                    <Input
+                      value={localConfig.customNamingTemplate[field]}
+                      onChange={(e) =>
+                        setLocalConfig((prev) => ({
+                          ...prev,
+                          customNamingTemplate: {
+                            ...prev.customNamingTemplate,
+                            [field]: e.target.value,
+                          },
+                        }))
+                      }
+                      className="font-mono text-xs"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Prefer IMDB ID */}

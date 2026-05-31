@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { homedir } from 'node:os';
+import type { NamingTemplate } from './renamer/naming.js';
 
 const CONFIG_DIR = join(homedir(), '.metarr');
 const CONFIG_FILE = join(CONFIG_DIR, 'config.json');
@@ -11,6 +12,7 @@ export interface MetarrConfig {
   displayLanguage?: string;
   preferImdbId?: boolean;
   namingPreset?: string;
+  namingTemplate?: NamingTemplate;
 }
 
 function readConfigFile(): MetarrConfig {

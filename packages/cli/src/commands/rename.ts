@@ -196,10 +196,12 @@ export async function renameAction(source: string, options: RenameCommandOptions
   }
 
   // Step 6: Generate rename plan
+  const namingPreset = getConfig('namingPreset');
   const renameOptions: RenameOptions = {
     destPath,
     preferImdbId: options.imdb,
-    namingPreset: getConfig('namingPreset'),
+    namingPreset,
+    namingTemplate: namingPreset === 'custom' ? getConfig('namingTemplate') : undefined,
   };
 
   const plan: RenamePlan = generateRenamePlan(parsed, tmdbMatch, renameOptions);
