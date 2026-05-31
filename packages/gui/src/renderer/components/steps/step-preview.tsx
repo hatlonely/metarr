@@ -260,8 +260,9 @@ export function StepPreview({
     const totalConflicts = conflictResult?.conflicts.length ?? 0;
     const skipCount = totalConflicts - overwriteCount;
     const renamedCount = renameTasks.length - skipCount;
-    return { renamedCount, skipCount, overwriteCount, removedCount: filesToRemove.length };
-  }, [plan, conflictResolutions, conflictResult, filesToRemove]);
+    const metadataCount = selectedArtworkPaths.length;
+    return { renamedCount, skipCount, overwriteCount, removedCount: filesToRemove.length, metadataCount };
+  }, [plan, conflictResolutions, conflictResult, filesToRemove, selectedArtworkPaths]);
 
   const handleConfirmExecute = useCallback(() => {
     setConfirmOpen(false);
@@ -768,6 +769,18 @@ export function StepPreview({
                 </div>
                 <span className="tabular-nums font-semibold">{executeSummary.renamedCount}</span>
               </div>
+
+              {executeSummary.metadataCount > 0 && (
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-500/10">
+                      <Image className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    {text.executeMetadata}
+                  </div>
+                  <span className="tabular-nums font-semibold">{executeSummary.metadataCount}</span>
+                </div>
+              )}
 
               {executeSummary.overwriteCount > 0 && (
                 <div className="flex items-center justify-between rounded-md bg-yellow-500/10 px-1.5 py-1 text-sm">
