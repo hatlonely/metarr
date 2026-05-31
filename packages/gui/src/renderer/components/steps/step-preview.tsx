@@ -278,28 +278,30 @@ export function StepPreview({
 
       {/* Output path + naming config */}
       <Card className="mb-4">
-        <CardContent className="space-y-3 pt-4">
-          <div className="flex flex-wrap items-end gap-3">
-            <div className="min-w-0 flex-1 space-y-1.5">
-              <Label>{text.outputPath}</Label>
-              <div className="flex gap-2">
-                <Input
-                  value={destPath}
-                  onChange={(e) => setDestPath(e.target.value)}
-                  placeholder="/path/to/media/library"
-                  className="flex-1 font-mono text-sm"
-                />
-                <Button variant="outline" size="sm" onClick={handleBrowse}>
-                  <FolderOpen className="mr-1.5 h-4 w-4" />
-                  {text.browseDir}
-                </Button>
-              </div>
+        <CardContent className="space-y-4 pt-4">
+          {/* Row 1: output path */}
+          <div className="space-y-1.5">
+            <Label>{text.outputPath}</Label>
+            <div className="flex gap-2">
+              <Input
+                value={destPath}
+                onChange={(e) => setDestPath(e.target.value)}
+                placeholder="/path/to/media/library"
+                className="flex-1 font-mono text-sm"
+              />
+              <Button variant="outline" size="sm" onClick={handleBrowse}>
+                <FolderOpen className="mr-1.5 h-4 w-4" />
+                {text.browseDir}
+              </Button>
             </div>
+          </div>
 
-            <div className="space-y-1.5">
+          {/* Row 2: naming preset + regenerate */}
+          <div className="flex items-end gap-3">
+            <div className="flex-1 space-y-1.5">
               <Label>{text.namingPreset}</Label>
               <Select value={namingPreset} onValueChange={setNamingPreset}>
-                <SelectTrigger className="w-44">
+                <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -312,7 +314,6 @@ export function StepPreview({
                 </SelectContent>
               </Select>
             </div>
-
             <Button
               variant="outline"
               size="sm"
@@ -327,7 +328,6 @@ export function StepPreview({
               {text.regeneratePlan}
             </Button>
           </div>
-
           {namingPreset === 'custom' && (
             <div className="grid grid-cols-2 gap-2 rounded-md border p-3">
               {(
