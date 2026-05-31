@@ -194,17 +194,20 @@ export function useWorkflow() {
   }, []);
 
   const loadArtwork = useCallback(
-    async (tmdbKey: string, match: TMDBMatch, options: Parameters<typeof ipc.generateArtworkPlan>[2]) => {
+    async (
+      tmdbKey: string,
+      match: TMDBMatch,
+      options: Parameters<typeof ipc.generateArtworkPlan>[2],
+      plan: RenamePlan,
+    ) => {
       dispatch({ type: 'SET_ARTWORK_LOADING', loading: true });
       dispatch({ type: 'SET_ARTWORK_PLAN', plan: null });
       dispatch({ type: 'SET_SELECTED_ARTWORK', paths: [] });
       try {
-        const artworkPlan = await ipc.generateArtworkPlan(tmdbKey, match, options);
+        const artworkPlan = await ipc.generateArtworkPlan(tmdbKey, match, options, plan);
         dispatch({ type: 'SET_ARTWORK_PLAN', plan: artworkPlan });
-        // Select all by default
         dispatch({ type: 'SET_SELECTED_ARTWORK', paths: artworkPlan.tasks.map((t) => t.targetPath) });
       } catch {
-        // Artwork is optional — silently ignore errors
         dispatch({ type: 'SET_ARTWORK_PLAN', plan: { tasks: [] } });
       } finally {
         dispatch({ type: 'SET_ARTWORK_LOADING', loading: false });
@@ -255,7 +258,7 @@ export function useWorkflow() {
 
         // Load artwork in background (non-blocking)
         if (tmdbKey) {
-          loadArtwork(tmdbKey, state.selectedMatch, renameOptions);
+          loadArtwork(tmdbKey, state.selectedMatch, renameOptions, newPlan);
         }
       } catch (err) {
         dispatch({ type: 'SET_ERROR', error: `生成计划失败: ${(err as Error).message}` });

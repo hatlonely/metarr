@@ -9,6 +9,7 @@ import type {
   UnmatchedFileInfo,
   ArtworkPlan,
   ArtworkExecutionResult,
+  MetadataTask,
 } from '@metarr/core';
 import type { OpenMediaResult } from '@/src/shared/ipc-types';
 
@@ -68,9 +69,10 @@ export const ipc = {
     apiKey: string,
     match: TMDBMatch,
     options: RenameOptions,
-  ): Promise<ArtworkPlan> => getApi().generateArtworkPlan(apiKey, match, options),
+    plan: RenamePlan,
+  ): Promise<ArtworkPlan> => getApi().generateArtworkPlan(apiKey, match, options, plan),
 
-  executeArtworkPlan: (tasks: ArtworkPlan['tasks']): Promise<ArtworkExecutionResult> =>
+  executeArtworkPlan: (tasks: MetadataTask[]): Promise<ArtworkExecutionResult> =>
     getApi().executeArtworkPlan(tasks),
 
   getPathForFile: (file: File): string => getApi().getPathForFile(file),

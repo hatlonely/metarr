@@ -175,9 +175,9 @@ ipcMain.handle('config:set', async (_event, key: string, value: unknown) => {
 // IPC: Generate artwork plan
 ipcMain.handle(
   'artwork:generatePlan',
-  async (_event, apiKey: string, match: TMDBMatch, options: RenameOptions) => {
+  async (_event, apiKey: string, match: TMDBMatch, options: RenameOptions, plan: RenamePlan) => {
     const client = new TMDBClient({ apiKey, language: 'zh-CN' });
-    return generateArtworkPlan(match, options, client);
+    return generateArtworkPlan(match, options, client, plan);
   },
 );
 

@@ -8,7 +8,15 @@ export type { TMDBClientOptions } from './tmdb/index.js';
 
 // Artwork
 export { generateArtworkPlan, executeArtworkPlan } from './artwork/index.js';
-export type { ArtworkTask, ArtworkPlan, ArtworkExecutionResult, ArtworkType } from './artwork/index.js';
+export type {
+  ArtworkTask,
+  NfoTask,
+  MetadataTask,
+  ArtworkPlan,
+  ArtworkExecutionResult,
+  ArtworkType,
+  NfoType,
+} from './artwork/index.js';
 
 // Renamer
 export {

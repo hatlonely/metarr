@@ -13,6 +13,16 @@ export interface TMDBSearchResult {
   vote_average?: number;
 }
 
+export interface TMDBGenre {
+  id: number;
+  name: string;
+}
+
+export interface TMDBCompany {
+  id: number;
+  name: string;
+}
+
 export interface TMDBTvDetails {
   id: number;
   name: string;
@@ -23,6 +33,11 @@ export interface TMDBTvDetails {
   seasons: TMDBSeason[];
   poster_path?: string;
   backdrop_path?: string;
+  vote_average?: number;
+  vote_count?: number;
+  genres?: TMDBGenre[];
+  networks?: TMDBCompany[];
+  status?: string;
 }
 
 export interface TMDBSeason {
@@ -48,6 +63,7 @@ export interface TMDBEpisode {
   overview?: string;
   air_date?: string;
   still_path?: string;
+  vote_average?: number;
 }
 
 export interface TMDBMovieDetails {
@@ -60,6 +76,11 @@ export interface TMDBMovieDetails {
   poster_path?: string;
   backdrop_path?: string;
   runtime?: number;
+  vote_average?: number;
+  vote_count?: number;
+  tagline?: string;
+  genres?: TMDBGenre[];
+  production_companies?: TMDBCompany[];
 }
 
 export interface TMDBMatch {

@@ -8,6 +8,8 @@ export interface NamingTemplate {
   posterFile?: string;
   /** Fanart/backdrop filename placed in movie/show directory */
   fanartFile?: string;
+  /** NFO filename placed in movie directory (TV show always uses tvshow.nfo) */
+  nfoFile?: string;
 }
 
 const jellyfinTemplate: NamingTemplate = {
@@ -18,6 +20,7 @@ const jellyfinTemplate: NamingTemplate = {
   movieFile: '{name} ({year}) {idTag}{ext}',
   posterFile: 'poster.jpg',
   fanartFile: 'fanart.jpg',
+  nfoFile: 'movie.nfo',
 };
 
 export const NAMING_PRESETS: Record<string, NamingTemplate> = {
@@ -29,6 +32,7 @@ export const NAMING_PRESETS: Record<string, NamingTemplate> = {
     movieFile: '{name} ({year}){ext}',
     posterFile: 'poster.jpg',
     fanartFile: 'fanart.jpg',
+    nfoFile: 'movie.nfo',
   },
   jellyfin: jellyfinTemplate,
   emby: jellyfinTemplate,
@@ -40,6 +44,7 @@ export const NAMING_PRESETS: Record<string, NamingTemplate> = {
     movieFile: '{name} ({year}){ext}',
     posterFile: 'poster.jpg',
     fanartFile: 'background.jpg',
+    nfoFile: 'movie.nfo',
   },
   kodi: {
     tvDir: '{name}',
@@ -49,6 +54,7 @@ export const NAMING_PRESETS: Record<string, NamingTemplate> = {
     movieFile: '{name} ({year}){ext}',
     posterFile: '{name}-poster.jpg',
     fanartFile: '{name}-fanart.jpg',
+    nfoFile: '{name}.nfo',
   },
 };
 

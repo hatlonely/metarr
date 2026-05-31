@@ -1,20 +1,30 @@
-export type ArtworkType = 'poster' | 'fanart' | 'season-poster';
+export type ArtworkType = 'poster' | 'fanart' | 'season-poster' | 'episode-thumb';
+export type NfoType = 'movie' | 'tvshow' | 'episode';
 
 export interface ArtworkTask {
+  kind: 'image';
   type: ArtworkType;
-  /** High-resolution URL for downloading to disk */
   downloadUrl: string;
-  /** w500 URL for UI thumbnail preview */
   previewUrl: string;
   targetPath: string;
   description: string;
 }
 
+export interface NfoTask {
+  kind: 'nfo';
+  type: NfoType;
+  content: string;
+  targetPath: string;
+  description: string;
+}
+
+export type MetadataTask = ArtworkTask | NfoTask;
+
 export interface ArtworkPlan {
-  tasks: ArtworkTask[];
+  tasks: MetadataTask[];
 }
 
 export interface ArtworkExecutionResult {
-  succeeded: ArtworkTask[];
-  failed: { task: ArtworkTask; error: Error }[];
+  succeeded: MetadataTask[];
+  failed: { task: MetadataTask; error: Error }[];
 }

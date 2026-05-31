@@ -59,6 +59,7 @@ import type {
   NamingTemplate,
   ArtworkPlan,
   ArtworkType,
+  MetadataTask,
 } from '@metarr/core';
 
 function formatFileSize(bytes: number): string {
@@ -538,68 +539,94 @@ export function StepPreview({
             </Collapsible>
           )}
 
-          {/* Artwork section */}
-          {(artworkLoading || (artworkPlan && artworkPlan.tasks.length > 0)) && (
-            <Collapsible defaultOpen>
-              <div className="rounded-lg border border-muted bg-muted/50">
-                <CollapsibleTrigger className="flex w-full items-center justify-between p-3 text-left transition-colors hover:bg-muted/30 [&[data-state=open]>svg]:rotate-180">
-                  <div className="flex items-center gap-2 border-l-4 border-blue-500 pl-2">
-                    <span className="text-sm font-semibold">
-                      {text.artwork}
-                      {artworkPlan && ` (${artworkPlan.tasks.length})`}
-                    </span>
-                  </div>
-                  <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200" />
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <div className="border-t px-3 pb-3 pt-2">
-                    {artworkLoading ? (
-                      <p className="py-2 text-xs text-muted-foreground">{text.artworkLoading}</p>
-                    ) : artworkPlan && artworkPlan.tasks.length > 0 ? (
-                      <>
-                        <div className="mb-2 flex justify-end gap-2">
-                          <Button variant="outline" size="sm" onClick={() => onSetAllArtwork(true)}>
-                            {text.artworkSelectAll}
-                          </Button>
-                          <Button variant="outline" size="sm" onClick={() => onSetAllArtwork(false)}>
-                            {text.artworkDeselectAll}
-                          </Button>
+          {/* Artwork + NFO section */}
+          {(artworkLoading || (artworkPlan && artworkPlan.tasks.length > 0)) && (() => {
+            const imageTasks = (artworkPlan?.tasks ?? []).filter((t): t is Extract<MetadataTask, { kind: 'image' }> => t.kind === 'image');
+            const nfoTasks = (artworkPlan?.tasks ?? []).filter((t): t is Extract<MetadataTask, { kind: 'nfo' }> => t.kind === 'nfo');
+            return (
+              <Collapsible defaultOpen>
+                <div className="rounded-lg border border-muted bg-muted/50">
+                  <CollapsibleTrigger className="flex w-full items-center justify-between p-3 text-left transition-colors hover:bg-muted/30 [&[data-state=open]>svg]:rotate-180">
+                    <div className="flex items-center gap-2 border-l-4 border-blue-500 pl-2">
+                      <span className="text-sm font-semibold">
+                        {text.artwork}
+                        {artworkPlan && ` (${artworkPlan.tasks.length})`}
+                      </span>
+                    </div>
+                    <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200" />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="border-t px-3 pb-3 pt-2">
+                      {artworkLoading ? (
+                        <p className="py-2 text-xs text-muted-foreground">{text.artworkLoading}</p>
+                      ) : (
+                        <div className="space-y-3">
+                          {/* Select all / deselect all */}
+                          {artworkPlan && artworkPlan.tasks.length > 0 && (
+                            <div className="flex justify-end gap-2">
+                              <Button variant="outline" size="sm" onClick={() => onSetAllArtwork(true)}>
+                                {text.artworkSelectAll}
+                              </Button>
+                              <Button variant="outline" size="sm" onClick={() => onSetAllArtwork(false)}>
+                                {text.artworkDeselectAll}
+                              </Button>
+                            </div>
+                          )}
+
+                          {/* Image thumbnails */}
+                          {imageTasks.length > 0 && (
+                            <div className="flex flex-wrap gap-3">
+                              {imageTasks.map((task) => {
+                                const selected = selectedArtworkPaths.includes(task.targetPath);
+                                return (
+                                  <div
+                                    key={task.targetPath}
+                                    onClick={() => onToggleArtwork(task.targetPath)}
+                                    className={`relative cursor-pointer overflow-hidden rounded-lg border-2 transition-all ${selected ? 'border-primary' : 'border-transparent opacity-50'}`}
+                                  >
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                      src={task.previewUrl}
+                                      alt={task.description}
+                                      className={`object-cover ${task.type === 'fanart' ? 'h-20 w-36' : task.type === 'episode-thumb' ? 'h-16 w-28' : 'h-28 w-20'}`}
+                                    />
+                                    <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-1.5 py-0.5">
+                                      <p className="truncate text-center text-xs text-white">
+                                        {artworkTypeLabel(task.type, text)}
+                                      </p>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+
+                          {/* NFO file list */}
+                          {nfoTasks.length > 0 && (
+                            <div className="space-y-1">
+                              {nfoTasks.map((task) => {
+                                const selected = selectedArtworkPaths.includes(task.targetPath);
+                                return (
+                                  <div
+                                    key={task.targetPath}
+                                    onClick={() => onToggleArtwork(task.targetPath)}
+                                    className={`flex cursor-pointer items-center gap-2 rounded-md border px-2 py-1 text-xs transition-all ${selected ? 'border-primary bg-primary/5' : 'border-transparent opacity-50'}`}
+                                  >
+                                    <File className="h-3 w-3 shrink-0 text-blue-500" />
+                                    <span className="font-mono text-muted-foreground">{task.description}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
                         </div>
-                        <div className="flex flex-wrap gap-3">
-                          {artworkPlan.tasks.map((task) => {
-                            const selected = selectedArtworkPaths.includes(task.targetPath);
-                            return (
-                              <div
-                                key={task.targetPath}
-                                onClick={() => onToggleArtwork(task.targetPath)}
-                                className={`relative cursor-pointer overflow-hidden rounded-lg border-2 transition-all ${
-                                  selected
-                                    ? 'border-primary'
-                                    : 'border-transparent opacity-50'
-                                }`}
-                              >
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img
-                                  src={task.previewUrl}
-                                  alt={task.description}
-                                  className={`object-cover ${task.type === 'fanart' ? 'h-20 w-36' : 'h-28 w-20'}`}
-                                />
-                                <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-1.5 py-0.5">
-                                  <p className="truncate text-center text-xs text-white">
-                                    {artworkTypeLabel(task.type, text)}
-                                  </p>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </>
-                    ) : null}
-                  </div>
-                </CollapsibleContent>
-              </div>
-            </Collapsible>
-          )}
+                      )}
+                    </div>
+                  </CollapsibleContent>
+                </div>
+              </Collapsible>
+            );
+          })()}
 
           {/* Left-Right two-panel comparison */}
           <div className="grid grid-cols-2 gap-4">
