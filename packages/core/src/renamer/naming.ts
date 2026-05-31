@@ -4,6 +4,10 @@ export interface NamingTemplate {
   episodeFile: string;
   movieDir: string;
   movieFile: string;
+  /** Poster filename placed in movie/show directory and season directories */
+  posterFile?: string;
+  /** Fanart/backdrop filename placed in movie/show directory */
+  fanartFile?: string;
 }
 
 const jellyfinTemplate: NamingTemplate = {
@@ -12,6 +16,8 @@ const jellyfinTemplate: NamingTemplate = {
   episodeFile: '{name} ({year}) S{season:02}E{episode:02}{ext}',
   movieDir: '{name} ({year}) {idTag}',
   movieFile: '{name} ({year}) {idTag}{ext}',
+  posterFile: 'poster.jpg',
+  fanartFile: 'fanart.jpg',
 };
 
 export const NAMING_PRESETS: Record<string, NamingTemplate> = {
@@ -21,6 +27,8 @@ export const NAMING_PRESETS: Record<string, NamingTemplate> = {
     episodeFile: '{name} S{season:02}E{episode:02}{ext}',
     movieDir: '{name} ({year})',
     movieFile: '{name} ({year}){ext}',
+    posterFile: 'poster.jpg',
+    fanartFile: 'fanart.jpg',
   },
   jellyfin: jellyfinTemplate,
   emby: jellyfinTemplate,
@@ -30,6 +38,8 @@ export const NAMING_PRESETS: Record<string, NamingTemplate> = {
     episodeFile: '{name} - S{season:02}E{episode:02}{ext}',
     movieDir: '{name} ({year})',
     movieFile: '{name} ({year}){ext}',
+    posterFile: 'poster.jpg',
+    fanartFile: 'background.jpg',
   },
   kodi: {
     tvDir: '{name}',
@@ -37,6 +47,8 @@ export const NAMING_PRESETS: Record<string, NamingTemplate> = {
     episodeFile: '{name} S{season:02}E{episode:02}{ext}',
     movieDir: '{name} ({year})',
     movieFile: '{name} ({year}){ext}',
+    posterFile: '{name}-poster.jpg',
+    fanartFile: '{name}-fanart.jpg',
   },
 };
 

@@ -124,6 +124,15 @@ const zh = {
   executeRemoved: '移除',
   noResults: '未找到结果',
   mediaTags: '媒体标签',
+  artwork: '封面下载',
+  artworkLoading: '正在加载封面信息...',
+  artworkSelectAll: '全选',
+  artworkDeselectAll: '取消全选',
+  artworkPoster: '海报',
+  artworkFanart: '背景图',
+  artworkSeasonPoster: 'Season 海报',
+  artworkSucceeded: '封面下载完成',
+  artworkFailed: '封面下载失败',
 } as const;
 
 const en = {
@@ -252,6 +261,15 @@ const en = {
   executeRemoved: 'Removed',
   noResults: 'No results found',
   mediaTags: 'Media Tags',
+  artwork: 'Artwork',
+  artworkLoading: 'Loading artwork info...',
+  artworkSelectAll: 'Select All',
+  artworkDeselectAll: 'Deselect All',
+  artworkPoster: 'Poster',
+  artworkFanart: 'Fanart',
+  artworkSeasonPoster: 'Season Poster',
+  artworkSucceeded: 'Artwork downloaded',
+  artworkFailed: 'Artwork download failed',
 } as const;
 
 export type Locale = 'zh' | 'en';

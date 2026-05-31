@@ -29,6 +29,8 @@ export function AppShell() {
     selectMatch,
     generatePlan,
     executeRename,
+    toggleArtworkTask,
+    setAllArtworkSelected,
     setConflictResolution,
     setAllConflictResolutions,
     toggleFileRemoval,
@@ -117,6 +119,9 @@ export function AppShell() {
             conflictResolutions={state.conflictResolutions}
             unmatchedFiles={state.unmatchedFiles}
             filesToRemove={state.filesToRemove}
+            artworkPlan={state.artworkPlan}
+            artworkLoading={state.artworkLoading}
+            selectedArtworkPaths={state.selectedArtworkPaths}
             initialNamingPreset={config.namingPreset}
             initialCustomNamingTemplate={config.customNamingTemplate}
             onBack={() => goToStep('search')}
@@ -128,6 +133,8 @@ export function AppShell() {
             onSetAllConflictResolutions={setAllConflictResolutions}
             onToggleFileRemoval={toggleFileRemoval}
             onSetAllFilesToRemove={setAllFilesToRemove}
+            onToggleArtwork={toggleArtworkTask}
+            onSetAllArtwork={setAllArtworkSelected}
           />
         ) : null;
       case 'execute':

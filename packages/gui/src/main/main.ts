@@ -10,6 +10,8 @@ import {
   executeRenamePlan,
   checkConflicts,
   findUnmatchedFiles,
+  generateArtworkPlan,
+  executeArtworkPlan,
   getAllConfig,
   setConfig as coreSetConfig,
 } from '@metarr/core';
@@ -20,6 +22,7 @@ import type {
   TMDBMatch,
   RenamePlan,
   ConflictResolutionMap,
+  ArtworkPlan,
 } from '@metarr/core';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -167,6 +170,20 @@ ipcMain.handle('config:get', async () => {
 
 ipcMain.handle('config:set', async (_event, key: string, value: unknown) => {
   coreSetConfig(key as keyof import('@metarr/core').MetarrConfig, value as never);
+});
+
+// IPC: Generate artwork plan
+ipcMain.handle(
+  'artwork:generatePlan',
+  async (_event, apiKey: string, match: TMDBMatch, options: RenameOptions) => {
+    const client = new TMDBClient({ apiKey, language: 'zh-CN' });
+    return generateArtworkPlan(match, options, client);
+  },
+);
+
+// IPC: Execute artwork plan
+ipcMain.handle('artwork:execute', async (_event, tasks: ArtworkPlan['tasks']) => {
+  return executeArtworkPlan(tasks);
 });
 
 app.whenReady().then(createWindow);

@@ -6,6 +6,8 @@ import type {
   ConflictCheckResult,
   ConflictResolutionMap,
   UnmatchedFileInfo,
+  ArtworkPlan,
+  ArtworkExecutionResult,
 } from '@metarr/core';
 
 export type StepId = 'select' | 'parse' | 'search' | 'preview' | 'execute';
@@ -24,6 +26,10 @@ export interface WorkflowState {
   conflictResolutions: ConflictResolutionMap;
   unmatchedFiles: UnmatchedFileInfo[];
   filesToRemove: string[];
+  artworkPlan: ArtworkPlan | null;
+  artworkLoading: boolean;
+  selectedArtworkPaths: string[];
+  artworkResult: ArtworkExecutionResult | null;
   executing: boolean;
   error: string | null;
   loading: boolean;
@@ -43,6 +49,10 @@ export type WorkflowAction =
   | { type: 'SET_CONFLICT_RESOLUTIONS'; resolutions: ConflictResolutionMap }
   | { type: 'SET_UNMATCHED_FILES'; files: UnmatchedFileInfo[] }
   | { type: 'SET_FILES_TO_REMOVE'; paths: string[] }
+  | { type: 'SET_ARTWORK_PLAN'; plan: ArtworkPlan | null }
+  | { type: 'SET_ARTWORK_LOADING'; loading: boolean }
+  | { type: 'SET_SELECTED_ARTWORK'; paths: string[] }
+  | { type: 'SET_ARTWORK_RESULT'; result: ArtworkExecutionResult | null }
   | { type: 'SET_EXECUTING'; executing: boolean }
   | { type: 'SET_ERROR'; error: string | null }
   | { type: 'SET_LOADING'; loading: boolean }

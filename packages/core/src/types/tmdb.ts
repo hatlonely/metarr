@@ -31,6 +31,7 @@ export interface TMDBSeason {
   name: string;
   episode_count: number;
   air_date?: string;
+  poster_path?: string;
 }
 
 export interface TMDBSeasonDetail {
@@ -70,6 +71,7 @@ export interface TMDBMatch {
   imdbId?: string;
   overview: string;
   posterUrl?: string;
+  backdropUrl?: string;
 }
 
 export const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';

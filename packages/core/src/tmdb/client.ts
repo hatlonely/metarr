@@ -117,6 +117,7 @@ export class TMDBClient {
       imdbId: undefined,
       overview: result.overview || '',
       posterUrl: result.poster_path ? `${TMDB_IMAGE_BASE}${result.poster_path}` : undefined,
+      backdropUrl: result.backdrop_path ? `${TMDB_IMAGE_BASE}${result.backdrop_path}` : undefined,
     };
   }
 }

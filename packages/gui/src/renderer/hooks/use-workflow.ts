@@ -9,6 +9,7 @@ import type {
   ExecutionResult,
   ConflictResolution,
   NamingTemplate,
+  ArtworkPlan,
 } from '@metarr/core';
 import type { OpenMediaResult } from '@/src/shared/ipc-types';
 import { ipc } from '@/src/renderer/lib/ipc';
@@ -29,6 +30,10 @@ const initialState: WorkflowState = {
   conflictResolutions: {},
   unmatchedFiles: [],
   filesToRemove: [],
+  artworkPlan: null,
+  artworkLoading: false,
+  selectedArtworkPaths: [],
+  artworkResult: null,
   executing: false,
   error: null,
   loading: false,
@@ -62,6 +67,14 @@ function workflowReducer(state: WorkflowState, action: WorkflowAction): Workflow
       return { ...state, unmatchedFiles: action.files };
     case 'SET_FILES_TO_REMOVE':
       return { ...state, filesToRemove: action.paths };
+    case 'SET_ARTWORK_PLAN':
+      return { ...state, artworkPlan: action.plan };
+    case 'SET_ARTWORK_LOADING':
+      return { ...state, artworkLoading: action.loading };
+    case 'SET_SELECTED_ARTWORK':
+      return { ...state, selectedArtworkPaths: action.paths };
+    case 'SET_ARTWORK_RESULT':
+      return { ...state, artworkResult: action.result };
     case 'SET_EXECUTING':
       return { ...state, executing: action.executing };
     case 'SET_ERROR':
@@ -69,10 +82,7 @@ function workflowReducer(state: WorkflowState, action: WorkflowAction): Workflow
     case 'SET_LOADING':
       return { ...state, loading: action.loading };
     case 'RESET':
-      return {
-        ...initialState,
-        currentStep: 'select',
-      };
+      return { ...initialState, currentStep: 'select' };
     default:
       return state;
   }
@@ -109,10 +119,7 @@ export function useWorkflow() {
           : await ipc.parseDirectory(result.path);
 
       dispatch({ type: 'SET_PARSED', parsed });
-      dispatch({
-        type: 'SET_SEARCH_QUERY',
-        query: parsed.chineseTitle || parsed.englishTitle || '',
-      });
+      dispatch({ type: 'SET_SEARCH_QUERY', query: parsed.chineseTitle || parsed.englishTitle || '' });
 
       if (parsed.type === 'tv' || parsed.type === 'movie') {
         dispatch({ type: 'SET_MEDIA_TYPE', mediaType: parsed.type });
@@ -152,15 +159,11 @@ export function useWorkflow() {
 
       try {
         const q = query || state.searchQuery;
-        if (!q) {
-          dispatch({ type: 'SET_LOADING', loading: false });
-          return;
-        }
+        if (!q) { dispatch({ type: 'SET_LOADING', loading: false }); return; }
+
         const type =
           state.mediaType === 'auto'
-            ? state.parsed.type === 'movie'
-              ? 'movie'
-              : 'tv'
+            ? state.parsed.type === 'movie' ? 'movie' : 'tv'
             : state.mediaType;
 
         const results = await ipc.tmdbSearch(tmdbKey, q, type, state.parsed.year, language);
@@ -182,16 +185,33 @@ export function useWorkflow() {
       try {
         const details = await ipc.tmdbGetMovieDetails(tmdbKey, match.id);
         if (details.imdb_id) {
-          dispatch({
-            type: 'SELECT_MATCH',
-            match: { ...match, imdbId: details.imdb_id },
-          });
+          dispatch({ type: 'SELECT_MATCH', match: { ...match, imdbId: details.imdb_id } });
         }
       } catch {
         // Ignore
       }
     }
   }, []);
+
+  const loadArtwork = useCallback(
+    async (tmdbKey: string, match: TMDBMatch, options: Parameters<typeof ipc.generateArtworkPlan>[2]) => {
+      dispatch({ type: 'SET_ARTWORK_LOADING', loading: true });
+      dispatch({ type: 'SET_ARTWORK_PLAN', plan: null });
+      dispatch({ type: 'SET_SELECTED_ARTWORK', paths: [] });
+      try {
+        const artworkPlan = await ipc.generateArtworkPlan(tmdbKey, match, options);
+        dispatch({ type: 'SET_ARTWORK_PLAN', plan: artworkPlan });
+        // Select all by default
+        dispatch({ type: 'SET_SELECTED_ARTWORK', paths: artworkPlan.tasks.map((t) => t.targetPath) });
+      } catch {
+        // Artwork is optional — silently ignore errors
+        dispatch({ type: 'SET_ARTWORK_PLAN', plan: { tasks: [] } });
+      } finally {
+        dispatch({ type: 'SET_ARTWORK_LOADING', loading: false });
+      }
+    },
+    [],
+  );
 
   const generatePlan = useCallback(
     async (
@@ -206,18 +226,19 @@ export function useWorkflow() {
       dispatch({ type: 'SET_ERROR', error: null });
 
       try {
-        const newPlan = await ipc.generateRenamePlan(state.parsed, state.selectedMatch, {
+        const renameOptions = {
           destPath,
           preferImdbId,
           namingPreset: namingPreset === 'custom' ? undefined : namingPreset,
           namingTemplate: namingPreset === 'custom' ? customTemplate : undefined,
-        });
+        };
+
+        const newPlan = await ipc.generateRenamePlan(state.parsed, state.selectedMatch, renameOptions);
         dispatch({ type: 'SET_PLAN', plan: newPlan });
 
         const conflictResult = await ipc.checkConflicts(newPlan);
         dispatch({ type: 'SET_CONFLICT_RESULT', result: conflictResult });
 
-        // Initialize all conflict resolutions to 'skip' by default
         if (conflictResult.hasConflicts) {
           const defaultResolutions: Record<number, ConflictResolution> = {};
           for (const conflict of conflictResult.conflicts) {
@@ -231,13 +252,42 @@ export function useWorkflow() {
         dispatch({ type: 'SET_FILES_TO_REMOVE', paths: [] });
 
         dispatch({ type: 'SET_STEP', step: 'preview' });
+
+        // Load artwork in background (non-blocking)
+        if (tmdbKey) {
+          loadArtwork(tmdbKey, state.selectedMatch, renameOptions);
+        }
       } catch (err) {
         dispatch({ type: 'SET_ERROR', error: `生成计划失败: ${(err as Error).message}` });
       } finally {
         dispatch({ type: 'SET_LOADING', loading: false });
       }
     },
-    [state.parsed, state.selectedMatch],
+    [state.parsed, state.selectedMatch, loadArtwork],
+  );
+
+  const toggleArtworkTask = useCallback(
+    (targetPath: string) => {
+      const current = new Set(state.selectedArtworkPaths);
+      if (current.has(targetPath)) {
+        current.delete(targetPath);
+      } else {
+        current.add(targetPath);
+      }
+      dispatch({ type: 'SET_SELECTED_ARTWORK', paths: Array.from(current) });
+    },
+    [state.selectedArtworkPaths],
+  );
+
+  const setAllArtworkSelected = useCallback(
+    (select: boolean) => {
+      if (!state.artworkPlan) return;
+      dispatch({
+        type: 'SET_SELECTED_ARTWORK',
+        paths: select ? state.artworkPlan.tasks.map((t) => t.targetPath) : [],
+      });
+    },
+    [state.artworkPlan],
   );
 
   const executeRename = useCallback(async () => {
@@ -246,20 +296,29 @@ export function useWorkflow() {
     dispatch({ type: 'SET_ERROR', error: null });
 
     try {
-      const hasFilesToRemove = state.filesToRemove.length > 0;
       const result = await ipc.executeRename(
         state.plan,
         state.conflictResolutions,
-        hasFilesToRemove ? state.filesToRemove : undefined,
+        state.filesToRemove.length > 0 ? state.filesToRemove : undefined,
       );
       dispatch({ type: 'SET_EXECUTION_RESULT', result });
+
+      // Execute selected artwork downloads
+      const selectedTasks = (state.artworkPlan?.tasks ?? []).filter((t) =>
+        state.selectedArtworkPaths.includes(t.targetPath),
+      );
+      if (selectedTasks.length > 0) {
+        const artworkResult = await ipc.executeArtworkPlan(selectedTasks);
+        dispatch({ type: 'SET_ARTWORK_RESULT', result: artworkResult });
+      }
+
       dispatch({ type: 'SET_STEP', step: 'execute' });
     } catch (err) {
       dispatch({ type: 'SET_ERROR', error: `执行失败: ${(err as Error).message}` });
     } finally {
       dispatch({ type: 'SET_EXECUTING', executing: false });
     }
-  }, [state.plan, state.conflictResolutions, state.filesToRemove]);
+  }, [state.plan, state.conflictResolutions, state.filesToRemove, state.artworkPlan, state.selectedArtworkPaths]);
 
   const setConflictResolution = useCallback(
     (taskIndex: number, resolution: ConflictResolution) => {
@@ -286,11 +345,7 @@ export function useWorkflow() {
   const toggleFileRemoval = useCallback(
     (filePath: string) => {
       const current = new Set(state.filesToRemove);
-      if (current.has(filePath)) {
-        current.delete(filePath);
-      } else {
-        current.add(filePath);
-      }
+      if (current.has(filePath)) { current.delete(filePath); } else { current.add(filePath); }
       dispatch({ type: 'SET_FILES_TO_REMOVE', paths: Array.from(current) });
     },
     [state.filesToRemove],
@@ -298,14 +353,10 @@ export function useWorkflow() {
 
   const setAllFilesToRemove = useCallback(
     (remove: boolean) => {
-      if (remove) {
-        dispatch({
-          type: 'SET_FILES_TO_REMOVE',
-          paths: state.unmatchedFiles.map((f) => f.path),
-        });
-      } else {
-        dispatch({ type: 'SET_FILES_TO_REMOVE', paths: [] });
-      }
+      dispatch({
+        type: 'SET_FILES_TO_REMOVE',
+        paths: remove ? state.unmatchedFiles.map((f) => f.path) : [],
+      });
     },
     [state.unmatchedFiles],
   );
@@ -330,6 +381,8 @@ export function useWorkflow() {
     selectMatch,
     generatePlan,
     executeRename,
+    toggleArtworkTask,
+    setAllArtworkSelected,
     setConflictResolution,
     setAllConflictResolutions,
     toggleFileRemoval,

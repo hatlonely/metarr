@@ -7,6 +7,8 @@ import type {
   ConflictCheckResult,
   ConflictResolutionMap,
   UnmatchedFileInfo,
+  ArtworkPlan,
+  ArtworkExecutionResult,
 } from '@metarr/core';
 import type { OpenMediaResult } from '@/src/shared/ipc-types';
 
@@ -61,6 +63,15 @@ export const ipc = {
   getConfig: (): Promise<Record<string, unknown>> => getApi().getConfig(),
 
   setConfig: (key: string, value: unknown): Promise<void> => getApi().setConfig(key, value),
+
+  generateArtworkPlan: (
+    apiKey: string,
+    match: TMDBMatch,
+    options: RenameOptions,
+  ): Promise<ArtworkPlan> => getApi().generateArtworkPlan(apiKey, match, options),
+
+  executeArtworkPlan: (tasks: ArtworkPlan['tasks']): Promise<ArtworkExecutionResult> =>
+    getApi().executeArtworkPlan(tasks),
 
   getPathForFile: (file: File): string => getApi().getPathForFile(file),
 };

@@ -56,6 +56,8 @@ import type {
   ConflictResolution,
   UnmatchedFileInfo,
   NamingTemplate,
+  ArtworkPlan,
+  ArtworkType,
 } from '@metarr/core';
 
 function formatFileSize(bytes: number): string {
@@ -76,6 +78,9 @@ interface StepPreviewProps {
   conflictResolutions: ConflictResolutionMap;
   unmatchedFiles: UnmatchedFileInfo[];
   filesToRemove: string[];
+  artworkPlan: ArtworkPlan | null;
+  artworkLoading: boolean;
+  selectedArtworkPaths: string[];
   initialNamingPreset: string;
   initialCustomNamingTemplate: NamingTemplate;
   onBack: () => void;
@@ -85,6 +90,8 @@ interface StepPreviewProps {
   onSetAllConflictResolutions: (resolution: ConflictResolution) => void;
   onToggleFileRemoval: (filePath: string) => void;
   onSetAllFilesToRemove: (remove: boolean) => void;
+  onToggleArtwork: (targetPath: string) => void;
+  onSetAllArtwork: (select: boolean) => void;
 }
 
 interface PairNode {
@@ -178,6 +185,12 @@ function PathDisplay({ path }: { path: string }) {
   );
 }
 
+function artworkTypeLabel(type: ArtworkType, text: ReturnType<typeof t>): string {
+  if (type === 'poster') return text.artworkPoster;
+  if (type === 'fanart') return text.artworkFanart;
+  return text.artworkSeasonPoster;
+}
+
 export function StepPreview({
   locale,
   step,
@@ -188,6 +201,9 @@ export function StepPreview({
   conflictResolutions,
   unmatchedFiles,
   filesToRemove,
+  artworkPlan,
+  artworkLoading,
+  selectedArtworkPaths,
   initialNamingPreset,
   initialCustomNamingTemplate,
   onBack,
@@ -197,6 +213,8 @@ export function StepPreview({
   onSetAllConflictResolutions,
   onToggleFileRemoval,
   onSetAllFilesToRemove,
+  onToggleArtwork,
+  onSetAllArtwork,
 }: StepPreviewProps) {
   const text = t(locale);
   const leftRef = useRef<HTMLDivElement>(null);
@@ -500,6 +518,69 @@ export function StepPreview({
                         </div>
                       ))}
                     </div>
+                  </div>
+                </CollapsibleContent>
+              </div>
+            </Collapsible>
+          )}
+
+          {/* Artwork section */}
+          {(artworkLoading || (artworkPlan && artworkPlan.tasks.length > 0)) && (
+            <Collapsible defaultOpen>
+              <div className="rounded-lg border border-muted bg-muted/50">
+                <CollapsibleTrigger className="flex w-full items-center justify-between p-3 text-left transition-colors hover:bg-muted/30 [&[data-state=open]>svg]:rotate-180">
+                  <div className="flex items-center gap-2 border-l-4 border-blue-500 pl-2">
+                    <span className="text-sm font-semibold">
+                      {text.artwork}
+                      {artworkPlan && ` (${artworkPlan.tasks.length})`}
+                    </span>
+                  </div>
+                  <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200" />
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <div className="border-t px-3 pb-3 pt-2">
+                    {artworkLoading ? (
+                      <p className="py-2 text-xs text-muted-foreground">{text.artworkLoading}</p>
+                    ) : artworkPlan && artworkPlan.tasks.length > 0 ? (
+                      <>
+                        <div className="mb-2 flex justify-end gap-2">
+                          <Button variant="outline" size="sm" onClick={() => onSetAllArtwork(true)}>
+                            {text.artworkSelectAll}
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => onSetAllArtwork(false)}>
+                            {text.artworkDeselectAll}
+                          </Button>
+                        </div>
+                        <div className="flex flex-wrap gap-3">
+                          {artworkPlan.tasks.map((task) => {
+                            const selected = selectedArtworkPaths.includes(task.targetPath);
+                            return (
+                              <div
+                                key={task.targetPath}
+                                onClick={() => onToggleArtwork(task.targetPath)}
+                                className={`relative cursor-pointer overflow-hidden rounded-lg border-2 transition-all ${
+                                  selected
+                                    ? 'border-primary'
+                                    : 'border-transparent opacity-50'
+                                }`}
+                              >
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={task.previewUrl}
+                                  alt={task.description}
+                                  className={`object-cover ${task.type === 'fanart' ? 'h-20 w-36' : 'h-28 w-20'}`}
+                                />
+                                <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-1.5 py-0.5">
+                                  <p className="truncate text-center text-xs text-white">
+                                    {artworkTypeLabel(task.type, text)}
+                                  </p>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </>
+                    ) : null}
                   </div>
                 </CollapsibleContent>
               </div>
