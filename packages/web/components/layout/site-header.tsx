@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import { useLocale } from '@/hooks/use-locale';
@@ -13,6 +13,9 @@ export function SiteHeader() {
   const { theme, setTheme } = useTheme();
   const tr = t(locale);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   const navItems = [
     { href: '/features', label: tr.nav.features },
@@ -55,7 +58,15 @@ export function SiteHeader() {
               else setTheme('light');
             }}
           >
-            {theme === 'dark' ? <Sun className="h-4 w-4" /> : theme === 'light' ? <Moon className="h-4 w-4" /> : <Monitor className="h-4 w-4" />}
+            {!mounted ? (
+              <Monitor className="h-4 w-4" />
+            ) : theme === 'dark' ? (
+              <Sun className="h-4 w-4" />
+            ) : theme === 'light' ? (
+              <Moon className="h-4 w-4" />
+            ) : (
+              <Monitor className="h-4 w-4" />
+            )}
           </Button>
 
           {/* Mobile hamburger */}
