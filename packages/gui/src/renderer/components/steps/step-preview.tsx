@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useCallback, useState } from 'react';
+import { useMemo, useRef, useCallback, useState, useEffect } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
@@ -15,9 +15,13 @@ import {
   FileEdit,
   Ban,
   ShieldAlert,
+  FolderOpen,
+  RefreshCw,
 } from 'lucide-react';
 import { Button } from '@/src/renderer/components/ui/button';
 import { Card, CardContent } from '@/src/renderer/components/ui/card';
+import { Input } from '@/src/renderer/components/ui/input';
+import { Label } from '@/src/renderer/components/ui/label';
 import {
   Collapsible,
   CollapsibleContent,
@@ -44,12 +48,14 @@ import {
 import { Switch } from '@/src/renderer/components/ui/switch';
 import { StepHeader } from '@/src/renderer/components/shared/step-header';
 import { t, type Locale } from '@/src/renderer/lib/i18n';
+import { ipc } from '@/src/renderer/lib/ipc';
 import type {
   RenamePlan,
   ConflictCheckResult,
   ConflictResolutionMap,
   ConflictResolution,
   UnmatchedFileInfo,
+  NamingTemplate,
 } from '@metarr/core';
 
 function formatFileSize(bytes: number): string {
@@ -65,12 +71,16 @@ interface StepPreviewProps {
   step: number;
   plan: RenamePlan;
   executing: boolean;
+  regenerating: boolean;
   conflictResult: ConflictCheckResult | null;
   conflictResolutions: ConflictResolutionMap;
   unmatchedFiles: UnmatchedFileInfo[];
   filesToRemove: string[];
+  initialNamingPreset: string;
+  initialCustomNamingTemplate: NamingTemplate;
   onBack: () => void;
   onExecute: () => void;
+  onRegenerate: (destPath: string, namingPreset: string, customTemplate?: NamingTemplate) => void;
   onSetConflictResolution: (taskIndex: number, resolution: ConflictResolution) => void;
   onSetAllConflictResolutions: (resolution: ConflictResolution) => void;
   onToggleFileRemoval: (filePath: string) => void;
@@ -173,12 +183,16 @@ export function StepPreview({
   step,
   plan,
   executing,
+  regenerating,
   conflictResult,
   conflictResolutions,
   unmatchedFiles,
   filesToRemove,
+  initialNamingPreset,
+  initialCustomNamingTemplate,
   onBack,
   onExecute,
+  onRegenerate,
   onSetConflictResolution,
   onSetAllConflictResolutions,
   onToggleFileRemoval,
@@ -189,6 +203,27 @@ export function StepPreview({
   const rightRef = useRef<HTMLDivElement>(null);
   const syncing = useRef(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const [destPath, setDestPath] = useState(plan.destPath);
+  const [namingPreset, setNamingPreset] = useState(initialNamingPreset);
+  const [customTemplate, setCustomTemplate] = useState<NamingTemplate>(initialCustomNamingTemplate);
+
+  useEffect(() => {
+    setDestPath(plan.destPath);
+  }, [plan.destPath]);
+
+  const handleBrowse = async () => {
+    try {
+      const dir = await ipc.openDirectory();
+      if (dir) setDestPath(dir);
+    } catch {
+      // Ignore
+    }
+  };
+
+  const handleRegenerate = () => {
+    onRegenerate(destPath, namingPreset, namingPreset === 'custom' ? customTemplate : undefined);
+  };
 
   const executeSummary = useMemo(() => {
     const renameTasks = plan.tasks.filter((t) => t.operation === 'rename');
@@ -240,6 +275,85 @@ export function StepPreview({
   return (
     <>
       <StepHeader title={text.previewPlan} description={text.stepDesc.preview} step={step} />
+
+      {/* Output path + naming config */}
+      <Card className="mb-4">
+        <CardContent className="space-y-3 pt-4">
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="min-w-0 flex-1 space-y-1.5">
+              <Label>{text.outputPath}</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={destPath}
+                  onChange={(e) => setDestPath(e.target.value)}
+                  placeholder="/path/to/media/library"
+                  className="flex-1 font-mono text-sm"
+                />
+                <Button variant="outline" size="sm" onClick={handleBrowse}>
+                  <FolderOpen className="mr-1.5 h-4 w-4" />
+                  {text.browseDir}
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>{text.namingPreset}</Label>
+              <Select value={namingPreset} onValueChange={setNamingPreset}>
+                <SelectTrigger className="w-44">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="universal">{text.namingPresetUniversal}</SelectItem>
+                  <SelectItem value="jellyfin">{text.namingPresetJellyfin}</SelectItem>
+                  <SelectItem value="emby">{text.namingPresetEmby}</SelectItem>
+                  <SelectItem value="plex">{text.namingPresetPlex}</SelectItem>
+                  <SelectItem value="kodi">{text.namingPresetKodi}</SelectItem>
+                  <SelectItem value="custom">{text.namingPresetCustom}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRegenerate}
+              disabled={regenerating || executing}
+            >
+              {regenerating ? (
+                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="mr-1.5 h-4 w-4" />
+              )}
+              {text.regeneratePlan}
+            </Button>
+          </div>
+
+          {namingPreset === 'custom' && (
+            <div className="grid grid-cols-2 gap-2 rounded-md border p-3">
+              {(
+                [
+                  ['tvDir', text.namingTemplateTvDir],
+                  ['seasonDir', text.namingTemplateSeasonDir],
+                  ['episodeFile', text.namingTemplateEpisodeFile],
+                  ['movieDir', text.namingTemplateMovieDir],
+                  ['movieFile', text.namingTemplateMovieFile],
+                ] as const
+              ).map(([field, label]) => (
+                <div key={field} className="space-y-1">
+                  <label className="text-xs text-muted-foreground">{label}</label>
+                  <Input
+                    value={customTemplate[field]}
+                    onChange={(e) =>
+                      setCustomTemplate((prev) => ({ ...prev, [field]: e.target.value }))
+                    }
+                    className="font-mono text-xs"
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <p className="mb-4 text-sm text-muted-foreground">
         {plan.summary.mediaType === 'tv'

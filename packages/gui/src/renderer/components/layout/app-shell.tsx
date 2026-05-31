@@ -92,13 +92,16 @@ export function AppShell() {
             selectedMatch={state.selectedMatch}
             searchQuery={state.searchQuery}
             loading={state.loading}
-            defaultDestPath={config.destPath}
-            defaultNamingPreset={config.namingPreset}
-            defaultCustomNamingTemplate={config.customNamingTemplate}
             onSelectMatch={(match) => selectMatch(match, config.tmdbKey)}
             onReSearch={() => searchTmdb(config.tmdbKey)}
-            onGeneratePlan={(destPath, namingPreset, customTemplate) =>
-              generatePlan(config.tmdbKey, destPath, config.preferImdbId, namingPreset, customTemplate)
+            onGeneratePlan={() =>
+              generatePlan(
+                config.tmdbKey,
+                config.destPath,
+                config.preferImdbId,
+                config.namingPreset,
+                config.namingPreset === 'custom' ? config.customNamingTemplate : undefined,
+              )
             }
           />
         );
@@ -109,12 +112,18 @@ export function AppShell() {
             step={currentStepIndex + 1}
             plan={state.plan}
             executing={state.executing}
+            regenerating={state.loading}
             conflictResult={state.conflictResult}
             conflictResolutions={state.conflictResolutions}
             unmatchedFiles={state.unmatchedFiles}
             filesToRemove={state.filesToRemove}
+            initialNamingPreset={config.namingPreset}
+            initialCustomNamingTemplate={config.customNamingTemplate}
             onBack={() => goToStep('search')}
             onExecute={() => executeRename()}
+            onRegenerate={(destPath, namingPreset, customTemplate) =>
+              generatePlan(config.tmdbKey, destPath, config.preferImdbId, namingPreset, customTemplate)
+            }
             onSetConflictResolution={setConflictResolution}
             onSetAllConflictResolutions={setAllConflictResolutions}
             onToggleFileRemoval={toggleFileRemoval}
