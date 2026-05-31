@@ -10,6 +10,9 @@ import type {
   ArtworkPlan,
   ArtworkExecutionResult,
   MetadataTask,
+  SubtitlePlan,
+  SubtitleExecutionResult,
+  SubtitleTask,
 } from '@metarr/core';
 import type { OpenMediaResult } from '@/src/shared/ipc-types';
 
@@ -74,6 +77,15 @@ export const ipc = {
 
   executeArtworkPlan: (tasks: MetadataTask[]): Promise<ArtworkExecutionResult> =>
     getApi().executeArtworkPlan(tasks),
+
+  generateSubtitlePlan: (
+    match: TMDBMatch,
+    plan: RenamePlan,
+    options: { subdlApiKey?: string; assrtToken?: string; languages: string[] },
+  ): Promise<SubtitlePlan> => getApi().generateSubtitlePlan(match, plan, options),
+
+  executeSubtitlePlan: (tasks: SubtitleTask[]): Promise<SubtitleExecutionResult> =>
+    getApi().executeSubtitlePlan(tasks),
 
   getPathForFile: (file: File): string => getApi().getPathForFile(file),
 };

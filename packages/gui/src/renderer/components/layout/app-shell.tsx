@@ -31,6 +31,8 @@ export function AppShell() {
     executeRename,
     toggleArtworkTask,
     setAllArtworkSelected,
+    toggleSubtitleTask,
+    setAllSubtitlesSelected,
     setConflictResolution,
     setAllConflictResolutions,
     toggleFileRemoval,
@@ -103,6 +105,11 @@ export function AppShell() {
                 config.preferImdbId,
                 config.namingPreset,
                 config.namingPreset === 'custom' ? config.customNamingTemplate : undefined,
+                {
+                  subdlApiKey: config.subdlApiKey || undefined,
+                  assrtToken: config.assrtToken || undefined,
+                  languages: config.subtitleLanguages,
+                },
               )
             }
           />
@@ -127,7 +134,14 @@ export function AppShell() {
             onBack={() => goToStep('search')}
             onExecute={() => executeRename()}
             onRegenerate={(destPath, namingPreset, customTemplate) =>
-              generatePlan(config.tmdbKey, destPath, config.preferImdbId, namingPreset, customTemplate)
+              generatePlan(
+                config.tmdbKey, destPath, config.preferImdbId, namingPreset, customTemplate,
+                {
+                  subdlApiKey: config.subdlApiKey || undefined,
+                  assrtToken: config.assrtToken || undefined,
+                  languages: config.subtitleLanguages,
+                },
+              )
             }
             onSetConflictResolution={setConflictResolution}
             onSetAllConflictResolutions={setAllConflictResolutions}
@@ -135,6 +149,11 @@ export function AppShell() {
             onSetAllFilesToRemove={setAllFilesToRemove}
             onToggleArtwork={toggleArtworkTask}
             onSetAllArtwork={setAllArtworkSelected}
+            subtitlePlan={state.subtitlePlan}
+            subtitleLoading={state.subtitleLoading}
+            selectedSubtitlePaths={state.selectedSubtitlePaths}
+            onToggleSubtitle={toggleSubtitleTask}
+            onSetAllSubtitles={setAllSubtitlesSelected}
           />
         ) : null;
       case 'execute':
@@ -144,6 +163,7 @@ export function AppShell() {
             step={currentStepIndex + 1}
             result={state.executionResult}
             artworkResult={state.artworkResult}
+            subtitleResult={state.subtitleResult}
             onContinue={reset}
           />
         ) : null;

@@ -11,6 +11,9 @@ export interface AppConfig {
   preferImdbId: boolean;
   namingPreset: string;
   customNamingTemplate: NamingTemplate;
+  subdlApiKey: string;
+  assrtToken: string;
+  subtitleLanguages: string[];
 }
 
 export const DEFAULT_CUSTOM_NAMING_TEMPLATE: NamingTemplate = {
@@ -28,6 +31,9 @@ const defaultConfig: AppConfig = {
   preferImdbId: true,
   namingPreset: 'universal',
   customNamingTemplate: DEFAULT_CUSTOM_NAMING_TEMPLATE,
+  subdlApiKey: '',
+  assrtToken: '',
+  subtitleLanguages: ['zh', 'en'],
 };
 
 function parseNamingTemplate(raw: unknown): NamingTemplate | null {
@@ -60,6 +66,11 @@ export function useConfig() {
         namingPreset: (raw.namingPreset as string) || 'universal',
         customNamingTemplate:
           parseNamingTemplate(raw.namingTemplate) ?? DEFAULT_CUSTOM_NAMING_TEMPLATE,
+        subdlApiKey: (raw.subdlApiKey as string) || '',
+        assrtToken: (raw.assrtToken as string) || '',
+        subtitleLanguages: Array.isArray(raw.subtitleLanguages)
+          ? (raw.subtitleLanguages as string[])
+          : ['zh', 'en'],
       });
     } catch {
       // Use defaults if IPC not available (dev mode)

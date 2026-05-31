@@ -10,6 +10,9 @@ import type {
   ArtworkPlan,
   ArtworkExecutionResult,
   MetadataTask,
+  SubtitlePlan,
+  SubtitleExecutionResult,
+  SubtitleTask,
 } from '@metarr/core';
 
 export interface OpenMediaResult {
@@ -48,6 +51,12 @@ export interface IPCApi {
   getConfig(): Promise<Record<string, unknown>>;
   setConfig(key: string, value: unknown): Promise<void>;
   generateArtworkPlan(apiKey: string, match: TMDBMatch, options: RenameOptions, plan: RenamePlan): Promise<ArtworkPlan>;
+  generateSubtitlePlan(
+    match: TMDBMatch,
+    plan: RenamePlan,
+    options: { subdlApiKey?: string; assrtToken?: string; languages: string[] },
+  ): Promise<SubtitlePlan>;
+  executeSubtitlePlan(tasks: SubtitleTask[]): Promise<SubtitleExecutionResult>;
   executeArtworkPlan(tasks: MetadataTask[]): Promise<ArtworkExecutionResult>;
   getPathForFile(file: File): string;
 }

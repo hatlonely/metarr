@@ -13,6 +13,9 @@ export interface MetarrConfig {
   preferImdbId?: boolean;
   namingPreset?: string;
   namingTemplate?: NamingTemplate;
+  subdlApiKey?: string;
+  assrtToken?: string;
+  subtitleLanguages?: string[];
 }
 
 function readConfigFile(): MetarrConfig {

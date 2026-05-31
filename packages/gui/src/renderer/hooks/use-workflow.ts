@@ -10,6 +10,7 @@ import type {
   ConflictResolution,
   NamingTemplate,
   ArtworkPlan,
+  SubtitlePlan,
 } from '@metarr/core';
 import type { OpenMediaResult } from '@/src/shared/ipc-types';
 import { ipc } from '@/src/renderer/lib/ipc';
@@ -34,6 +35,10 @@ const initialState: WorkflowState = {
   artworkLoading: false,
   selectedArtworkPaths: [],
   artworkResult: null,
+  subtitlePlan: null,
+  subtitleLoading: false,
+  selectedSubtitlePaths: [],
+  subtitleResult: null,
   executing: false,
   error: null,
   loading: false,
@@ -75,6 +80,14 @@ function workflowReducer(state: WorkflowState, action: WorkflowAction): Workflow
       return { ...state, selectedArtworkPaths: action.paths };
     case 'SET_ARTWORK_RESULT':
       return { ...state, artworkResult: action.result };
+    case 'SET_SUBTITLE_PLAN':
+      return { ...state, subtitlePlan: action.plan };
+    case 'SET_SUBTITLE_LOADING':
+      return { ...state, subtitleLoading: action.loading };
+    case 'SET_SELECTED_SUBTITLES':
+      return { ...state, selectedSubtitlePaths: action.paths };
+    case 'SET_SUBTITLE_RESULT':
+      return { ...state, subtitleResult: action.result };
     case 'SET_EXECUTING':
       return { ...state, executing: action.executing };
     case 'SET_ERROR':
@@ -193,6 +206,29 @@ export function useWorkflow() {
     }
   }, []);
 
+  const loadSubtitles = useCallback(
+    async (
+      match: TMDBMatch,
+      plan: RenamePlan,
+      options: { subdlApiKey?: string; assrtToken?: string; languages: string[] },
+    ) => {
+      if (!options.subdlApiKey && !options.assrtToken) return;
+      dispatch({ type: 'SET_SUBTITLE_LOADING', loading: true });
+      dispatch({ type: 'SET_SUBTITLE_PLAN', plan: null });
+      dispatch({ type: 'SET_SELECTED_SUBTITLES', paths: [] });
+      try {
+        const subtitlePlan = await ipc.generateSubtitlePlan(match, plan, options);
+        dispatch({ type: 'SET_SUBTITLE_PLAN', plan: subtitlePlan });
+        dispatch({ type: 'SET_SELECTED_SUBTITLES', paths: subtitlePlan.tasks.map((t) => t.targetPath) });
+      } catch {
+        dispatch({ type: 'SET_SUBTITLE_PLAN', plan: { tasks: [] } });
+      } finally {
+        dispatch({ type: 'SET_SUBTITLE_LOADING', loading: false });
+      }
+    },
+    [],
+  );
+
   const loadArtwork = useCallback(
     async (
       tmdbKey: string,
@@ -223,6 +259,7 @@ export function useWorkflow() {
       preferImdbId: boolean,
       namingPreset: string,
       customTemplate?: NamingTemplate,
+      subtitleOptions?: { subdlApiKey?: string; assrtToken?: string; languages: string[] },
     ) => {
       if (!state.parsed || !state.selectedMatch) return;
       dispatch({ type: 'SET_LOADING', loading: true });
@@ -256,9 +293,12 @@ export function useWorkflow() {
 
         dispatch({ type: 'SET_STEP', step: 'preview' });
 
-        // Load artwork in background (non-blocking)
+        // Load artwork + subtitles in background (non-blocking)
         if (tmdbKey) {
           loadArtwork(tmdbKey, state.selectedMatch, renameOptions, newPlan);
+        }
+        if (subtitleOptions) {
+          loadSubtitles(state.selectedMatch, newPlan, subtitleOptions);
         }
       } catch (err) {
         dispatch({ type: 'SET_ERROR', error: `生成计划失败: ${(err as Error).message}` });
@@ -267,6 +307,25 @@ export function useWorkflow() {
       }
     },
     [state.parsed, state.selectedMatch, loadArtwork],
+  );
+
+  const toggleSubtitleTask = useCallback(
+    (targetPath: string) => {
+      const current = new Set(state.selectedSubtitlePaths);
+      if (current.has(targetPath)) { current.delete(targetPath); } else { current.add(targetPath); }
+      dispatch({ type: 'SET_SELECTED_SUBTITLES', paths: Array.from(current) });
+    },
+    [state.selectedSubtitlePaths],
+  );
+
+  const setAllSubtitlesSelected = useCallback(
+    (select: boolean) => {
+      dispatch({
+        type: 'SET_SELECTED_SUBTITLES',
+        paths: select ? (state.subtitlePlan?.tasks ?? []).map((t) => t.targetPath) : [],
+      });
+    },
+    [state.subtitlePlan],
   );
 
   const toggleArtworkTask = useCallback(
@@ -307,12 +366,21 @@ export function useWorkflow() {
       dispatch({ type: 'SET_EXECUTION_RESULT', result });
 
       // Execute selected artwork downloads
-      const selectedTasks = (state.artworkPlan?.tasks ?? []).filter((t) =>
+      const selectedArtworkTasks = (state.artworkPlan?.tasks ?? []).filter((t) =>
         state.selectedArtworkPaths.includes(t.targetPath),
       );
-      if (selectedTasks.length > 0) {
-        const artworkResult = await ipc.executeArtworkPlan(selectedTasks);
+      if (selectedArtworkTasks.length > 0) {
+        const artworkResult = await ipc.executeArtworkPlan(selectedArtworkTasks);
         dispatch({ type: 'SET_ARTWORK_RESULT', result: artworkResult });
+      }
+
+      // Execute selected subtitle downloads
+      const selectedSubtitleTasks = (state.subtitlePlan?.tasks ?? []).filter((t) =>
+        state.selectedSubtitlePaths.includes(t.targetPath),
+      );
+      if (selectedSubtitleTasks.length > 0) {
+        const subtitleResult = await ipc.executeSubtitlePlan(selectedSubtitleTasks);
+        dispatch({ type: 'SET_SUBTITLE_RESULT', result: subtitleResult });
       }
 
       dispatch({ type: 'SET_STEP', step: 'execute' });
@@ -386,6 +454,8 @@ export function useWorkflow() {
     executeRename,
     toggleArtworkTask,
     setAllArtworkSelected,
+    toggleSubtitleTask,
+    setAllSubtitlesSelected,
     setConflictResolution,
     setAllConflictResolutions,
     toggleFileRemoval,

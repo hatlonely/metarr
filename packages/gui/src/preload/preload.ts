@@ -23,6 +23,9 @@ contextBridge.exposeInMainWorld('metarrAPI', {
   setConfig: (key: string, value: unknown) => ipcRenderer.invoke('config:set', key, value),
   generateArtworkPlan: (apiKey: string, match: unknown, options: unknown, plan: unknown) =>
     ipcRenderer.invoke('artwork:generatePlan', apiKey, match, options, plan),
+  generateSubtitlePlan: (match: unknown, plan: unknown, options: unknown) =>
+    ipcRenderer.invoke('subtitle:generatePlan', match, plan, options),
+  executeSubtitlePlan: (tasks: unknown) => ipcRenderer.invoke('subtitle:execute', tasks),
   executeArtworkPlan: (tasks: unknown) => ipcRenderer.invoke('artwork:execute', tasks),
   getPathForFile: (file: File) => webUtils.getPathForFile(file),
 } satisfies Record<string, (...args: unknown[]) => unknown>);

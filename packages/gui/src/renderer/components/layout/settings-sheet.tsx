@@ -167,6 +167,67 @@ export function SettingsSheet({ open, onOpenChange, config, onSave, locale }: Se
             />
           </div>
 
+          <Separator />
+
+          {/* SubDL API Key */}
+          <div className="space-y-2">
+            <Label htmlFor="subdl-key">{text.subdlApiKey}</Label>
+            <Input
+              id="subdl-key"
+              type="password"
+              value={localConfig.subdlApiKey}
+              onChange={(e) => setLocalConfig((prev) => ({ ...prev, subdlApiKey: e.target.value }))}
+              placeholder={text.subdlApiKeyPlaceholder}
+            />
+          </div>
+
+          {/* Assrt Token */}
+          <div className="space-y-2">
+            <Label htmlFor="assrt-token">{text.assrtToken}</Label>
+            <Input
+              id="assrt-token"
+              type="password"
+              value={localConfig.assrtToken}
+              onChange={(e) => setLocalConfig((prev) => ({ ...prev, assrtToken: e.target.value }))}
+              placeholder={text.assrtTokenPlaceholder}
+            />
+          </div>
+
+          {/* Subtitle Languages */}
+          <div className="space-y-2">
+            <Label>{text.subtitleLanguages}</Label>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { key: 'zh', label: '简体中文' },
+                { key: 'zh-TW', label: '繁體中文' },
+                { key: 'en', label: 'English' },
+                { key: 'ja', label: '日本語' },
+                { key: 'ko', label: '한국어' },
+              ].map(({ key, label }) => {
+                const selected = localConfig.subtitleLanguages.includes(key);
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => {
+                      const langs = selected
+                        ? localConfig.subtitleLanguages.filter((l) => l !== key)
+                        : [...localConfig.subtitleLanguages, key];
+                      setLocalConfig((prev) => ({ ...prev, subtitleLanguages: langs }));
+                    }}
+                    className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                      selected
+                        ? 'border-primary bg-primary text-primary-foreground'
+                        : 'border-muted-foreground/30 text-muted-foreground hover:border-primary/50'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Save Button */}
           <div className="flex justify-end pt-2">
             <Button onClick={handleSave}>{text.saveSettings}</Button>

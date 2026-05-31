@@ -6,6 +6,10 @@ export { TMDBClient } from './tmdb/index.js';
 export { TMDBError } from './tmdb/index.js';
 export type { TMDBClientOptions } from './tmdb/index.js';
 
+// Subtitle
+export { generateSubtitlePlan, executeSubtitlePlan, LANGUAGE_CONFIG, DEFAULT_SUBTITLE_LANGUAGES } from './subtitle/index.js';
+export type { SubtitleTask, SubtitlePlan, SubtitleExecutionResult, SubtitleSource } from './subtitle/index.js';
+
 // Artwork
 export { generateArtworkPlan, executeArtworkPlan } from './artwork/index.js';
 export type {

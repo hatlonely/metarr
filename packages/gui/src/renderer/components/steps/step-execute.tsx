@@ -9,6 +9,7 @@ import {
   Ban,
   AlertTriangle,
   Image,
+  File,
 } from 'lucide-react';
 import { Button } from '@/src/renderer/components/ui/button';
 import {
@@ -22,17 +23,18 @@ import {
 import { Card, CardContent } from '@/src/renderer/components/ui/card';
 import { StepHeader } from '@/src/renderer/components/shared/step-header';
 import { t, type Locale } from '@/src/renderer/lib/i18n';
-import type { ExecutionResult, ArtworkExecutionResult } from '@metarr/core';
+import type { ExecutionResult, ArtworkExecutionResult, SubtitleExecutionResult } from '@metarr/core';
 
 interface StepExecuteProps {
   locale: Locale;
   step: number;
   result: ExecutionResult;
   artworkResult?: ArtworkExecutionResult | null;
+  subtitleResult?: SubtitleExecutionResult | null;
   onContinue: () => void;
 }
 
-export function StepExecute({ locale, step, result, artworkResult, onContinue }: StepExecuteProps) {
+export function StepExecute({ locale, step, result, artworkResult, subtitleResult, onContinue }: StepExecuteProps) {
   const text = t(locale);
 
   const renamedCount = result.succeeded.filter((t) => t.operation === 'rename').length;
@@ -41,15 +43,17 @@ export function StepExecute({ locale, step, result, artworkResult, onContinue }:
   const removedCount = result.removedUnmatched?.length ?? 0;
   const metadataSucceeded = artworkResult?.succeeded.length ?? 0;
   const metadataFailed = artworkResult?.failed.length ?? 0;
-  const hasIssues = result.failed.length > 0 || overwrittenCount > 0 || removedCount > 0 || metadataFailed > 0;
+  const subtitleSucceeded = subtitleResult?.succeeded.length ?? 0;
+  const subtitleFailed = subtitleResult?.failed.length ?? 0;
+  const hasIssues = result.failed.length > 0 || overwrittenCount > 0 || removedCount > 0 || metadataFailed > 0 || subtitleFailed > 0;
 
   return (
     <>
       <StepHeader title={text.executionComplete} description={text.stepDesc.execute} step={step} />
 
       {/* Main stats */}
-      <div className={`mb-6 grid gap-3 ${metadataSucceeded > 0 ? 'grid-cols-3' : 'grid-cols-2'}`}>
-        <Card className="overflow-hidden">
+      <div className="mb-6 flex flex-wrap gap-3">
+        <Card className="flex-1 overflow-hidden">
           <CardContent className="flex items-center gap-4 pt-6">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500/10">
               <FileEdit className="h-5 w-5 text-green-600 dark:text-green-400" />
@@ -62,7 +66,7 @@ export function StepExecute({ locale, step, result, artworkResult, onContinue }:
         </Card>
 
         {metadataSucceeded > 0 && (
-          <Card className="overflow-hidden">
+          <Card className="flex-1 overflow-hidden">
             <CardContent className="flex items-center gap-4 pt-6">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/10">
                 <Image className="h-5 w-5 text-blue-600 dark:text-blue-400" />
@@ -75,7 +79,21 @@ export function StepExecute({ locale, step, result, artworkResult, onContinue }:
           </Card>
         )}
 
-        <Card className="overflow-hidden">
+        {subtitleSucceeded > 0 && (
+          <Card className="flex-1 overflow-hidden">
+            <CardContent className="flex items-center gap-4 pt-6">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500/10">
+                <File className="h-5 w-5 text-green-600 dark:text-green-400" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold tabular-nums tracking-tight">{subtitleSucceeded}</div>
+                <div className="text-xs text-muted-foreground">{text.subtitleSucceeded}</div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        <Card className="flex-1 overflow-hidden">
           <CardContent className="flex items-center gap-4 pt-6">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
               <Ban className="h-5 w-5 text-muted-foreground" />
@@ -130,6 +148,19 @@ export function StepExecute({ locale, step, result, artworkResult, onContinue }:
                     <span className="text-destructive">{text.failed}</span>
                     <span className="ml-2 font-semibold tabular-nums text-destructive">
                       {result.failed.length}
+                    </span>
+                  </div>
+                </div>
+              )}
+              {subtitleFailed > 0 && (
+                <div className="flex items-center gap-3 text-sm">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-destructive/10">
+                    <File className="h-4 w-4 text-destructive" />
+                  </div>
+                  <div className="flex-1">
+                    <span className="text-destructive">{text.subtitleFailed}</span>
+                    <span className="ml-2 font-semibold tabular-nums text-destructive">
+                      {subtitleFailed}
                     </span>
                   </div>
                 </div>

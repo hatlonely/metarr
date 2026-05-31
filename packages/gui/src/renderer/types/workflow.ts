@@ -8,6 +8,8 @@ import type {
   UnmatchedFileInfo,
   ArtworkPlan,
   ArtworkExecutionResult,
+  SubtitlePlan,
+  SubtitleExecutionResult,
 } from '@metarr/core';
 
 export type StepId = 'select' | 'parse' | 'search' | 'preview' | 'execute';
@@ -30,6 +32,10 @@ export interface WorkflowState {
   artworkLoading: boolean;
   selectedArtworkPaths: string[];
   artworkResult: ArtworkExecutionResult | null;
+  subtitlePlan: SubtitlePlan | null;
+  subtitleLoading: boolean;
+  selectedSubtitlePaths: string[];
+  subtitleResult: SubtitleExecutionResult | null;
   executing: boolean;
   error: string | null;
   loading: boolean;
@@ -53,6 +59,10 @@ export type WorkflowAction =
   | { type: 'SET_ARTWORK_LOADING'; loading: boolean }
   | { type: 'SET_SELECTED_ARTWORK'; paths: string[] }
   | { type: 'SET_ARTWORK_RESULT'; result: ArtworkExecutionResult | null }
+  | { type: 'SET_SUBTITLE_PLAN'; plan: SubtitlePlan | null }
+  | { type: 'SET_SUBTITLE_LOADING'; loading: boolean }
+  | { type: 'SET_SELECTED_SUBTITLES'; paths: string[] }
+  | { type: 'SET_SUBTITLE_RESULT'; result: SubtitleExecutionResult | null }
   | { type: 'SET_EXECUTING'; executing: boolean }
   | { type: 'SET_ERROR'; error: string | null }
   | { type: 'SET_LOADING'; loading: boolean }

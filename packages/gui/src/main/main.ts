@@ -12,6 +12,8 @@ import {
   findUnmatchedFiles,
   generateArtworkPlan,
   executeArtworkPlan,
+  generateSubtitlePlan,
+  executeSubtitlePlan,
   getAllConfig,
   setConfig as coreSetConfig,
 } from '@metarr/core';
@@ -23,6 +25,7 @@ import type {
   RenamePlan,
   ConflictResolutionMap,
   ArtworkPlan,
+  SubtitleTask,
 } from '@metarr/core';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -184,6 +187,24 @@ ipcMain.handle(
 // IPC: Execute artwork plan
 ipcMain.handle('artwork:execute', async (_event, tasks: ArtworkPlan['tasks']) => {
   return executeArtworkPlan(tasks);
+});
+
+// IPC: Generate subtitle plan
+ipcMain.handle(
+  'subtitle:generatePlan',
+  async (
+    _event,
+    match: TMDBMatch,
+    plan: RenamePlan,
+    options: { subdlApiKey?: string; assrtToken?: string; languages: string[] },
+  ) => {
+    return generateSubtitlePlan(match, plan, options);
+  },
+);
+
+// IPC: Execute subtitle plan
+ipcMain.handle('subtitle:execute', async (_event, tasks: SubtitleTask[]) => {
+  return executeSubtitlePlan(tasks);
 });
 
 app.whenReady().then(createWindow);

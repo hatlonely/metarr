@@ -60,6 +60,7 @@ import type {
   ArtworkPlan,
   ArtworkType,
   MetadataTask,
+  SubtitlePlan,
 } from '@metarr/core';
 
 function formatFileSize(bytes: number): string {
@@ -94,6 +95,11 @@ interface StepPreviewProps {
   onSetAllFilesToRemove: (remove: boolean) => void;
   onToggleArtwork: (targetPath: string) => void;
   onSetAllArtwork: (select: boolean) => void;
+  subtitlePlan: SubtitlePlan | null;
+  subtitleLoading: boolean;
+  selectedSubtitlePaths: string[];
+  onToggleSubtitle: (targetPath: string) => void;
+  onSetAllSubtitles: (select: boolean) => void;
 }
 
 interface PairNode {
@@ -224,6 +230,11 @@ export function StepPreview({
   onSetAllFilesToRemove,
   onToggleArtwork,
   onSetAllArtwork,
+  subtitlePlan,
+  subtitleLoading,
+  selectedSubtitlePaths,
+  onToggleSubtitle,
+  onSetAllSubtitles,
 }: StepPreviewProps) {
   const text = t(locale);
   const leftRef = useRef<HTMLDivElement>(null);
@@ -628,6 +639,72 @@ export function StepPreview({
               </Collapsible>
             );
           })()}
+
+          {/* Subtitle section */}
+          {(subtitleLoading || (subtitlePlan && subtitlePlan.tasks.length > 0)) && (
+            <Collapsible defaultOpen>
+              <div className="rounded-lg border border-muted bg-muted/50">
+                <CollapsibleTrigger className="flex w-full items-center justify-between p-3 text-left transition-colors hover:bg-muted/30 [&[data-state=open]>svg]:rotate-180">
+                  <div className="flex items-center gap-2 border-l-4 border-green-500 pl-2">
+                    <span className="text-sm font-semibold">
+                      {text.subtitleSection}
+                      {subtitlePlan && ` (${subtitlePlan.tasks.length})`}
+                    </span>
+                  </div>
+                  <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200" />
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <div className="border-t px-3 pb-3 pt-2">
+                    {subtitleLoading ? (
+                      <p className="py-2 text-xs text-muted-foreground">{text.subtitleLoading}</p>
+                    ) : subtitlePlan && subtitlePlan.tasks.length > 0 ? (
+                      <>
+                        <div className="mb-2 flex justify-end gap-2">
+                          <Button variant="outline" size="sm" onClick={() => onSetAllSubtitles(true)}>
+                            {text.subtitleSelectAll}
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => onSetAllSubtitles(false)}>
+                            {text.subtitleDeselectAll}
+                          </Button>
+                        </div>
+                        <div className="space-y-1">
+                          {subtitlePlan.tasks.map((task) => {
+                            const selected = selectedSubtitlePaths.includes(task.targetPath);
+                            return (
+                              <div
+                                key={task.targetPath}
+                                onClick={() => onToggleSubtitle(task.targetPath)}
+                                className={`flex cursor-pointer items-center gap-2 rounded-md border px-2 py-1.5 text-xs transition-all ${
+                                  selected ? 'border-primary bg-primary/5' : 'border-transparent opacity-50'
+                                }`}
+                              >
+                                <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${
+                                  task.source === 'subdl'
+                                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                                    : 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300'
+                                }`}>
+                                  {task.source === 'subdl' ? 'SubDL' : 'Assrt'}
+                                </span>
+                                <span className="font-medium text-foreground">{task.languageDisplay}</span>
+                                <span className="truncate text-muted-foreground">{task.description}</span>
+                                {task.downloadCount > 0 && (
+                                  <span className="ml-auto shrink-0 text-muted-foreground">
+                                    ↓{task.downloadCount.toLocaleString()}
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </>
+                    ) : (
+                      <p className="py-2 text-xs text-muted-foreground">{text.subtitleNoResults}</p>
+                    )}
+                  </div>
+                </CollapsibleContent>
+              </div>
+            </Collapsible>
+          )}
 
           {/* Left-Right two-panel comparison */}
           <div className="grid grid-cols-2 gap-4">

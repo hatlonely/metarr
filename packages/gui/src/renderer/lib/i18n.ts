@@ -134,6 +134,18 @@ const zh = {
   artworkSeasonPoster: 'Season 海报',
   artworkSucceeded: '封面下载完成',
   artworkFailed: '封面下载失败',
+  subtitleSection: '字幕下载',
+  subtitleLoading: '正在搜索字幕...',
+  subtitleSelectAll: '全选',
+  subtitleDeselectAll: '取消全选',
+  subtitleNoResults: '未找到字幕',
+  subtitleSucceeded: '字幕下载完成',
+  subtitleFailed: '字幕下载失败',
+  subdlApiKey: 'SubDL API Key',
+  subdlApiKeyPlaceholder: '从 subdl.com 获取',
+  assrtToken: '射手网 Token',
+  assrtTokenPlaceholder: '从 assrt.net 获取',
+  subtitleLanguages: '字幕语言',
 } as const;
 
 const en = {
@@ -272,6 +284,18 @@ const en = {
   artworkSeasonPoster: 'Season Poster',
   artworkSucceeded: 'Artwork downloaded',
   artworkFailed: 'Artwork download failed',
+  subtitleSection: 'Subtitles',
+  subtitleLoading: 'Searching subtitles...',
+  subtitleSelectAll: 'Select All',
+  subtitleDeselectAll: 'Deselect All',
+  subtitleNoResults: 'No subtitles found',
+  subtitleSucceeded: 'Subtitles downloaded',
+  subtitleFailed: 'Subtitle download failed',
+  subdlApiKey: 'SubDL API Key',
+  subdlApiKeyPlaceholder: 'Get from subdl.com',
+  assrtToken: 'Assrt Token',
+  assrtTokenPlaceholder: 'Get from assrt.net',
+  subtitleLanguages: 'Subtitle Languages',
 } as const;
 
 export type Locale = 'zh' | 'en';
