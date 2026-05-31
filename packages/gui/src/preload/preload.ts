@@ -14,8 +14,8 @@ contextBridge.exposeInMainWorld('metarrAPI', {
   generateRenamePlan: (parsed: unknown, match: unknown, options: unknown) =>
     ipcRenderer.invoke('rename:generatePlan', parsed, match, options),
   checkConflicts: (plan: unknown) => ipcRenderer.invoke('rename:checkConflicts', plan),
-  findUnmatchedFiles: (sourcePath: string, plan: unknown, selectedFile?: string) =>
-    ipcRenderer.invoke('unmatched:find', sourcePath, plan, selectedFile),
+  findUnmatchedFiles: (plan: unknown, selectedFile?: string) =>
+    ipcRenderer.invoke('unmatched:find', plan, selectedFile),
   executeRename: (plan: unknown, resolutions?: unknown, filesToRemove?: unknown) =>
     ipcRenderer.invoke('rename:execute', plan, resolutions, filesToRemove),
   resolveMediaPath: (path: string) => ipcRenderer.invoke('fs:resolveMediaPath', path),

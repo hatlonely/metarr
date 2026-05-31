@@ -47,11 +47,8 @@ export const ipc = {
 
   checkConflicts: (plan: RenamePlan): Promise<ConflictCheckResult> => getApi().checkConflicts(plan),
 
-  findUnmatchedFiles: (
-    sourcePath: string,
-    plan: RenamePlan,
-    selectedFile?: string,
-  ): Promise<UnmatchedFileInfo[]> => getApi().findUnmatchedFiles(sourcePath, plan, selectedFile),
+  findUnmatchedFiles: (plan: RenamePlan, selectedFile?: string): Promise<UnmatchedFileInfo[]> =>
+    getApi().findUnmatchedFiles(plan, selectedFile),
 
   executeRename: (
     plan: RenamePlan,

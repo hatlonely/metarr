@@ -16,7 +16,6 @@ function classifyFile(extension: string): UnmatchedFileInfo['type'] {
  * In single-file mode (selectedFile is set), returns empty since other files are intentionally ignored.
  */
 export async function findUnmatchedFiles(
-  sourcePath: string,
   plan: RenamePlan,
   selectedFile?: string,
 ): Promise<UnmatchedFileInfo[]> {
@@ -24,7 +23,7 @@ export async function findUnmatchedFiles(
     return [];
   }
 
-  const scanResult = await scanDirectory(sourcePath);
+  const scanResult = await scanDirectory(plan.sourcePath);
 
   const plannedPaths = new Set<string>();
   for (const task of plan.tasks) {

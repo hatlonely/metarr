@@ -4,7 +4,6 @@ import type {
   MediaType,
   ParsedMedia,
   RenameOptions,
-  RenamePlan,
   TMDBMatch,
   ConflictResolution,
   ConflictResolutionMap,
@@ -13,8 +12,7 @@ import {
   parseMediaDir,
   parseMediaFile,
   TMDBClient,
-  generateTvRenamePlan,
-  generateMovieRenamePlan,
+  generateRenamePlan,
   executeRenamePlan,
   checkConflicts,
   findUnmatchedFiles,
@@ -200,14 +198,10 @@ export async function renameAction(source: string, options: RenameCommandOptions
   // Step 6: Generate rename plan
   const renameOptions: RenameOptions = {
     destPath,
-    dryRun: options.dryRun,
     preferImdbId: options.imdb,
   };
 
-  const plan: RenamePlan =
-    mediaType === 'tv'
-      ? generateTvRenamePlan(parsed, tmdbMatch, renameOptions)
-      : generateMovieRenamePlan(parsed, tmdbMatch, renameOptions);
+  const plan: RenamePlan = generateRenamePlan(parsed, tmdbMatch, renameOptions);
 
   // Step 7: Display rename plan
   console.log();
@@ -232,7 +226,7 @@ export async function renameAction(source: string, options: RenameCommandOptions
   }
 
   // Step 7.3: Find unmatched files
-  const unmatchedFiles = await findUnmatchedFiles(parsed.sourcePath, plan, parsed.selectedFile);
+  const unmatchedFiles = await findUnmatchedFiles(plan, parsed.selectedFile);
   let filesToRemove: string[] = [];
 
   if (unmatchedFiles.length > 0) {

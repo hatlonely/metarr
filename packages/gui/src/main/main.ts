@@ -6,8 +6,7 @@ import {
   parseMediaDir,
   parseMediaFile,
   TMDBClient,
-  generateTvRenamePlan,
-  generateMovieRenamePlan,
+  generateRenamePlan,
   executeRenamePlan,
   checkConflicts,
   findUnmatchedFiles,
@@ -120,10 +119,7 @@ ipcMain.handle('tmdb:getMovieDetails', async (_event, apiKey: string, id: number
 ipcMain.handle(
   'rename:generatePlan',
   async (_event, parsed: ParsedMedia, match: TMDBMatch, options: RenameOptions) => {
-    if (match.type === 'tv') {
-      return generateTvRenamePlan(parsed, match, options);
-    }
-    return generateMovieRenamePlan(parsed, match, options);
+    return generateRenamePlan(parsed, match, options);
   },
 );
 
@@ -148,8 +144,8 @@ ipcMain.handle('rename:checkConflicts', async (_event, plan: RenamePlan) => {
 // IPC: Find unmatched files
 ipcMain.handle(
   'unmatched:find',
-  async (_event, sourcePath: string, plan: RenamePlan, selectedFile?: string) => {
-    return findUnmatchedFiles(sourcePath, plan, selectedFile);
+  async (_event, plan: RenamePlan, selectedFile?: string) => {
+    return findUnmatchedFiles(plan, selectedFile);
   },
 );
 

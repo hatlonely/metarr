@@ -6,7 +6,7 @@ export type { TMDBMatch };
 export interface RenameTask {
   source: string;
   target: string;
-  operation: 'rename' | 'move' | 'create-dir';
+  operation: 'rename' | 'create-dir';
   description: string;
 }
 
@@ -27,7 +27,6 @@ export interface RenamePlan {
 
 export interface RenameOptions {
   destPath: string;
-  dryRun: boolean;
   preferImdbId: boolean;
 }
 

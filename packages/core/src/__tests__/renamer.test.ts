@@ -1,8 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type { ParsedMedia } from '../types/media.js';
 import type { TMDBMatch, RenameOptions } from '../types/renamer.js';
-import { generateTvRenamePlan } from '../renamer/tv-renamer.js';
-import { generateMovieRenamePlan } from '../renamer/movie-renamer.js';
+import { generateRenamePlan } from '../renamer/index.js';
 
 const baseParsedMedia: ParsedMedia = {
   type: 'tv',
@@ -44,13 +43,12 @@ const baseTmdbMatch: TMDBMatch = {
 
 const baseOptions: RenameOptions = {
   destPath: '/tmp/test-dest',
-  dryRun: false,
   preferImdbId: true,
 };
 
-describe('generateTvRenamePlan', () => {
+describe('generateRenamePlan (tv)', () => {
   it('should generate correct plan for TV show', () => {
-    const plan = generateTvRenamePlan(baseParsedMedia, baseTmdbMatch, baseOptions);
+    const plan = generateRenamePlan(baseParsedMedia, baseTmdbMatch, baseOptions);
 
     expect(plan.mediaType).toBe('tv');
     expect(plan.tasks.length).toBe(4); // 1 root dir + 1 season dir + 2 file renames
@@ -65,14 +63,14 @@ describe('generateTvRenamePlan', () => {
 
   it('should fallback to originalName when displayName is empty', () => {
     const noDisplayName = { ...baseTmdbMatch, displayName: '' };
-    const plan = generateTvRenamePlan(baseParsedMedia, noDisplayName, baseOptions);
+    const plan = generateRenamePlan(baseParsedMedia, noDisplayName, baseOptions);
 
     expect(plan.tasks[0].target).toContain('Born with Luck (2026) [tmdbid-12345]');
     expect(plan.tasks[2].target).toContain('Born with Luck (2026) S01E01.mkv');
   });
 });
 
-describe('generateMovieRenamePlan', () => {
+describe('generateRenamePlan (movie)', () => {
   const movieParsed: ParsedMedia = {
     ...baseParsedMedia,
     type: 'movie',
@@ -95,7 +93,7 @@ describe('generateMovieRenamePlan', () => {
   };
 
   it('should generate plan using imdbid when available', () => {
-    const plan = generateMovieRenamePlan(movieParsed, movieMatch, baseOptions);
+    const plan = generateRenamePlan(movieParsed, movieMatch, baseOptions);
 
     expect(plan.mediaType).toBe('movie');
     expect(plan.tasks.length).toBe(2); // 1 root dir + 1 file rename
@@ -105,13 +103,13 @@ describe('generateMovieRenamePlan', () => {
 
   it('should fallback to tmdbid when no imdbId', () => {
     const noImdbMatch = { ...movieMatch, imdbId: undefined };
-    const plan = generateMovieRenamePlan(movieParsed, noImdbMatch, baseOptions);
+    const plan = generateRenamePlan(movieParsed, noImdbMatch, baseOptions);
 
     expect(plan.tasks[0].target).toContain('[tmdbid-12345]');
   });
 
   it('should use tmdbid when preferImdbId is false', () => {
-    const plan = generateMovieRenamePlan(movieParsed, movieMatch, {
+    const plan = generateRenamePlan(movieParsed, movieMatch, {
       ...baseOptions,
       preferImdbId: false,
     });
@@ -130,7 +128,7 @@ describe('generateMovieRenamePlan', () => {
       ],
     };
 
-    const plan = generateMovieRenamePlan(movieWithSubs, movieMatch, baseOptions);
+    const plan = generateRenamePlan(movieWithSubs, movieMatch, baseOptions);
 
     expect(plan.tasks.length).toBe(3); // dir + movie + subtitle
     expect(plan.tasks[2].operation).toBe('rename');

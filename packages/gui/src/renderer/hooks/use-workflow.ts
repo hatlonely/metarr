@@ -201,7 +201,6 @@ export function useWorkflow() {
       try {
         const newPlan = await ipc.generateRenamePlan(state.parsed, state.selectedMatch, {
           destPath,
-          dryRun: false,
           preferImdbId,
         });
         dispatch({ type: 'SET_PLAN', plan: newPlan });
@@ -218,11 +217,7 @@ export function useWorkflow() {
           dispatch({ type: 'SET_CONFLICT_RESOLUTIONS', resolutions: defaultResolutions });
         }
 
-        const unmatchedFiles = await ipc.findUnmatchedFiles(
-          state.parsed.sourcePath,
-          newPlan,
-          state.parsed.selectedFile,
-        );
+        const unmatchedFiles = await ipc.findUnmatchedFiles(newPlan, state.parsed.selectedFile);
         dispatch({ type: 'SET_UNMATCHED_FILES', files: unmatchedFiles });
         dispatch({ type: 'SET_FILES_TO_REMOVE', paths: [] });
 

@@ -1,12 +1,5 @@
 // Parser
-export {
-  parseMediaDir,
-  parseMediaFile,
-  parseDirName,
-  parseFileName,
-  scanDirectory,
-  scanMediaDirectories,
-} from './parser/index.js';
+export { parseMediaDir, parseMediaFile } from './parser/index.js';
 
 // TMDB
 export { TMDBClient } from './tmdb/index.js';
@@ -15,8 +8,7 @@ export type { TMDBClientOptions } from './tmdb/index.js';
 
 // Renamer
 export {
-  generateTvRenamePlan,
-  generateMovieRenamePlan,
+  generateRenamePlan,
   executeRenamePlan,
   checkConflicts,
   findUnmatchedFiles,
@@ -33,18 +25,9 @@ export type {
   ParsedEpisode,
   ParsedMedia,
   ParseOptions,
-  VIDEO_EXTENSIONS,
-  SUBTITLE_EXTENSIONS,
 } from './types/media.js';
-export type {
-  TMDBMatch,
-  TMDBSearchResult,
-  TMDBTvDetails,
-  TMDBMovieDetails,
-  TMDBSeasonDetail,
-  TMDBEpisode,
-  TMDBSeason,
-} from './types/tmdb.js';
+export { VIDEO_EXTENSIONS, SUBTITLE_EXTENSIONS } from './types/media.js';
+export type { TMDBMatch } from './types/tmdb.js';
 export type {
   RenameTask,
   RenamePlan,
