@@ -8,6 +8,7 @@ import {
   Loader2,
   Folder,
   File,
+  Image,
   AlertTriangle,
   FileQuestion,
   Trash2,
@@ -136,6 +137,7 @@ interface TreeRow {
   dirName?: string;
   source?: string;
   target?: string;
+  isArtwork?: boolean;
 }
 
 function flattenTree(node: PairNode, depth: number): TreeRow[] {
@@ -151,7 +153,13 @@ function flattenTree(node: PairNode, depth: number): TreeRow[] {
       walk(child, d + 1);
     }
     for (const file of n.files) {
-      rows.push({ type: 'file', depth: d, source: file.source, target: file.target });
+      rows.push({
+        type: 'file',
+        depth: d,
+        source: file.source,
+        target: file.target,
+        isArtwork: !file.source,
+      });
     }
   }
 
@@ -275,13 +283,19 @@ export function StepPreview({
   const { rows, stats } = useMemo(() => {
     const renameTasks = plan.tasks.filter((task) => task.operation === 'rename');
     const dirCount = plan.tasks.filter((task) => task.operation === 'create-dir').length;
-    const tree = buildPairTree(renameTasks, plan.sourcePath, plan.destPath);
+
+    // Inject selected artwork as download-only entries (no source)
+    const artworkTasks = (artworkPlan?.tasks ?? [])
+      .filter((t) => selectedArtworkPaths.includes(t.targetPath))
+      .map((t) => ({ source: '', target: t.targetPath }));
+
+    const tree = buildPairTree([...renameTasks, ...artworkTasks], plan.sourcePath, plan.destPath);
 
     return {
       rows: flattenTree(tree, 0),
       stats: { dirCount, fileCount: renameTasks.length },
     };
-  }, [plan]);
+  }, [plan, artworkPlan, selectedArtworkPaths]);
 
   const conflictedTargets = useMemo(() => {
     if (!conflictResult) return new Set<string>();
@@ -604,18 +618,23 @@ export function StepPreview({
                 >
                   {rows.map((row, i) =>
                     row.type === 'file' ? (
-                      <div
-                        key={i}
-                        className={`flex items-center gap-1.5 whitespace-nowrap py-0.5 text-xs text-muted-foreground ${
-                          conflictedTargets.has(plan.destPath + '/' + (row.target || ''))
-                            ? 'rounded bg-yellow-100 dark:bg-yellow-900/30'
-                            : ''
-                        }`}
-                        style={indent(row.depth + 1)}
-                      >
-                        <File className="h-3 w-3 shrink-0" />
-                        <span className="font-mono">{row.source}</span>
-                      </div>
+                      row.isArtwork ? (
+                        // Artwork rows: blank placeholder keeps scroll in sync
+                        <div key={i} className="h-5 py-0.5" style={indent(row.depth + 1)} />
+                      ) : (
+                        <div
+                          key={i}
+                          className={`flex items-center gap-1.5 whitespace-nowrap py-0.5 text-xs text-muted-foreground ${
+                            conflictedTargets.has(plan.destPath + '/' + (row.target || ''))
+                              ? 'rounded bg-yellow-100 dark:bg-yellow-900/30'
+                              : ''
+                          }`}
+                          style={indent(row.depth + 1)}
+                        >
+                          <File className="h-3 w-3 shrink-0" />
+                          <span className="font-mono">{row.source}</span>
+                        </div>
+                      )
                     ) : (
                       <div key={i} className="h-6" />
                     ),
@@ -646,6 +665,16 @@ export function StepPreview({
                       >
                         <Folder className="h-3.5 w-3.5 text-muted-foreground" />
                         {row.dirName}
+                      </div>
+                    ) : row.isArtwork ? (
+                      // Artwork file: image icon + blue tint
+                      <div
+                        key={i}
+                        className="flex items-center gap-1.5 whitespace-nowrap py-0.5 text-xs text-blue-500 dark:text-blue-400"
+                        style={indent(row.depth + 1)}
+                      >
+                        <Image className="h-3 w-3 shrink-0" />
+                        <span className="font-mono">{row.target}</span>
                       </div>
                     ) : (
                       <div
