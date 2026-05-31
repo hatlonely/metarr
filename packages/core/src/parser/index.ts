@@ -42,10 +42,11 @@ export async function parseMediaFile(
   const dirInfo = parseDirName(basename(dirPath));
   const fileInfo = extractFromFileName(fileName);
 
-  const chineseTitle = dirInfo.chineseTitle || fileInfo.chineseTitle;
-  const englishTitle = dirInfo.englishTitle || fileInfo.englishTitle;
-  const year = dirInfo.year || fileInfo.year;
-  const tags = dirInfo.tags.resolution ? dirInfo.tags : fileInfo.tags;
+  // In single-file mode, prioritize info extracted from the file name over the parent directory
+  const chineseTitle = fileInfo.chineseTitle || dirInfo.chineseTitle;
+  const englishTitle = fileInfo.englishTitle || dirInfo.englishTitle;
+  const year = fileInfo.year || dirInfo.year;
+  const tags = fileInfo.tags.resolution ? fileInfo.tags : dirInfo.tags;
 
   const type: MediaType | 'unknown' =
     options?.type && options.type !== 'auto' ? options.type : 'movie';
@@ -57,7 +58,7 @@ export async function parseMediaFile(
     year,
     tags,
     episodes: [selectedEpisode],
-    originalDirName: basename(dirPath),
+    originalDirName: fileName,
     sourcePath: dirPath,
     isClean: dirInfo.isClean,
     selectedFile: filePath,
