@@ -41,32 +41,47 @@ const baseTmdbMatch: TMDBMatch = {
   overview: 'A crime drama.',
 };
 
-const baseOptions: RenameOptions = {
+const universalOptions: RenameOptions = {
   destPath: '/tmp/test-dest',
   preferImdbId: true,
+  namingPreset: 'universal',
 };
 
-describe('generateRenamePlan (tv)', () => {
-  it('should generate correct plan for TV show', () => {
-    const plan = generateRenamePlan(baseParsedMedia, baseTmdbMatch, baseOptions);
+const jellyfinOptions: RenameOptions = {
+  destPath: '/tmp/test-dest',
+  preferImdbId: true,
+  namingPreset: 'jellyfin',
+};
+
+describe('generateRenamePlan (tv) - universal preset', () => {
+  it('should generate correct plan', () => {
+    const plan = generateRenamePlan(baseParsedMedia, baseTmdbMatch, universalOptions);
 
     expect(plan.mediaType).toBe('tv');
-    expect(plan.tasks.length).toBe(4); // 1 root dir + 1 season dir + 2 file renames
+    expect(plan.tasks.length).toBe(4);
     expect(plan.tasks[0].operation).toBe('create-dir');
-    expect(plan.tasks[0].target).toContain('低智商犯罪 (2026) [tmdbid-12345]');
-    expect(plan.tasks[1].operation).toBe('create-dir');
+    expect(plan.tasks[0].target).toContain('低智商犯罪 (2026)');
+    expect(plan.tasks[0].target).not.toContain('tmdbid');
     expect(plan.tasks[1].target).toContain('Season 01');
-    expect(plan.tasks[2].operation).toBe('rename');
-    expect(plan.tasks[2].target).toContain('低智商犯罪 (2026) S01E01.mkv');
-    expect(plan.tasks[3].target).toContain('低智商犯罪 (2026) S01E02.mkv');
+    expect(plan.tasks[2].target).toContain('低智商犯罪 S01E01.mkv');
+    expect(plan.tasks[3].target).toContain('低智商犯罪 S01E02.mkv');
   });
 
   it('should fallback to originalName when displayName is empty', () => {
     const noDisplayName = { ...baseTmdbMatch, displayName: '' };
-    const plan = generateRenamePlan(baseParsedMedia, noDisplayName, baseOptions);
+    const plan = generateRenamePlan(baseParsedMedia, noDisplayName, universalOptions);
 
-    expect(plan.tasks[0].target).toContain('Born with Luck (2026) [tmdbid-12345]');
-    expect(plan.tasks[2].target).toContain('Born with Luck (2026) S01E01.mkv');
+    expect(plan.tasks[0].target).toContain('Born with Luck (2026)');
+    expect(plan.tasks[2].target).toContain('Born with Luck S01E01.mkv');
+  });
+});
+
+describe('generateRenamePlan (tv) - jellyfin preset', () => {
+  it('should include tmdbid tag in directory and year in episode file', () => {
+    const plan = generateRenamePlan(baseParsedMedia, baseTmdbMatch, jellyfinOptions);
+
+    expect(plan.tasks[0].target).toContain('低智商犯罪 (2026) [tmdbid-12345]');
+    expect(plan.tasks[2].target).toContain('低智商犯罪 (2026) S01E01.mkv');
   });
 });
 
@@ -92,25 +107,33 @@ describe('generateRenamePlan (movie)', () => {
     imdbId: 'tt1234567',
   };
 
-  it('should generate plan using imdbid when available', () => {
-    const plan = generateRenamePlan(movieParsed, movieMatch, baseOptions);
+  it('universal: no id tag in output', () => {
+    const plan = generateRenamePlan(movieParsed, movieMatch, universalOptions);
 
     expect(plan.mediaType).toBe('movie');
-    expect(plan.tasks.length).toBe(2); // 1 root dir + 1 file rename
+    expect(plan.tasks.length).toBe(2);
+    expect(plan.tasks[0].target).toContain('低智商犯罪 (2026)');
+    expect(plan.tasks[0].target).not.toContain('imdbid');
+    expect(plan.tasks[1].target).toContain('低智商犯罪 (2026).mkv');
+  });
+
+  it('jellyfin: uses imdbid when available', () => {
+    const plan = generateRenamePlan(movieParsed, movieMatch, jellyfinOptions);
+
     expect(plan.tasks[0].target).toContain('[imdbid-tt1234567]');
     expect(plan.tasks[1].target).toContain('[imdbid-tt1234567]');
   });
 
-  it('should fallback to tmdbid when no imdbId', () => {
+  it('jellyfin: fallback to tmdbid when no imdbId', () => {
     const noImdbMatch = { ...movieMatch, imdbId: undefined };
-    const plan = generateRenamePlan(movieParsed, noImdbMatch, baseOptions);
+    const plan = generateRenamePlan(movieParsed, noImdbMatch, jellyfinOptions);
 
     expect(plan.tasks[0].target).toContain('[tmdbid-12345]');
   });
 
-  it('should use tmdbid when preferImdbId is false', () => {
+  it('jellyfin: use tmdbid when preferImdbId is false', () => {
     const plan = generateRenamePlan(movieParsed, movieMatch, {
-      ...baseOptions,
+      ...jellyfinOptions,
       preferImdbId: false,
     });
 
@@ -120,18 +143,36 @@ describe('generateRenamePlan (movie)', () => {
   it('should rename associated subtitle files', () => {
     const movieWithSubs: ParsedMedia = {
       ...movieParsed,
-      episodes: [
-        {
-          ...movieParsed.episodes[0],
-          associatedFiles: ['Movie.2026.zh.srt'],
-        },
-      ],
+      episodes: [{ ...movieParsed.episodes[0], associatedFiles: ['Movie.2026.zh.srt'] }],
     };
 
-    const plan = generateRenamePlan(movieWithSubs, movieMatch, baseOptions);
+    const plan = generateRenamePlan(movieWithSubs, movieMatch, universalOptions);
 
-    expect(plan.tasks.length).toBe(3); // dir + movie + subtitle
+    expect(plan.tasks.length).toBe(3);
     expect(plan.tasks[2].operation).toBe('rename');
     expect(plan.tasks[2].target).toContain('.zh.srt');
+  });
+});
+
+describe('generateRenamePlan (tv) - plex preset', () => {
+  it('should use dash separator before episode code', () => {
+    const plan = generateRenamePlan(baseParsedMedia, baseTmdbMatch, {
+      ...universalOptions,
+      namingPreset: 'plex',
+    });
+
+    expect(plan.tasks[2].target).toContain('低智商犯罪 - S01E01.mkv');
+  });
+});
+
+describe('generateRenamePlan (tv) - kodi preset', () => {
+  it('should omit year from directory and use unpadded season', () => {
+    const plan = generateRenamePlan(baseParsedMedia, baseTmdbMatch, {
+      ...universalOptions,
+      namingPreset: 'kodi',
+    });
+
+    expect(plan.tasks[0].target).toMatch(/低智商犯罪$/);
+    expect(plan.tasks[1].target).toContain('Season 1');
   });
 });

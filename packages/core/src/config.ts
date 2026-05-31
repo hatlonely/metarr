@@ -10,6 +10,7 @@ export interface MetarrConfig {
   destPath?: string;
   displayLanguage?: string;
   preferImdbId?: boolean;
+  namingPreset?: string;
 }
 
 function readConfigFile(): MetarrConfig {

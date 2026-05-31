@@ -1,12 +1,7 @@
 import { join } from 'node:path';
-import type {
-  ParsedMedia,
-  RenameOptions,
-  RenamePlan,
-  RenameTask,
-  MediaType,
-} from '../types/index.js';
+import type { ParsedMedia, RenameOptions, RenamePlan, RenameTask, MediaType } from '../types/index.js';
 import type { TMDBMatch } from '../types/tmdb.js';
+import { resolveNamingTemplate, renderTemplate } from './naming.js';
 
 /**
  * Generate a rename plan for a movie.
@@ -17,16 +12,16 @@ export function generateMovieRenamePlan(
   options: RenameOptions,
 ): RenamePlan {
   const tasks: RenameTask[] = [];
-  const movieName = tmdbMatch.displayName || tmdbMatch.originalName;
-  const year = tmdbMatch.year;
+  const template = resolveNamingTemplate(options.namingPreset);
 
-  // Determine ID tag: prefer imdbid, fallback to tmdbid
+  const name = tmdbMatch.displayName || tmdbMatch.originalName;
+  const { year, id: tmdbId, imdbId } = tmdbMatch;
   const idTag =
-    options.preferImdbId && tmdbMatch.imdbId
-      ? `[imdbid-${tmdbMatch.imdbId}]`
-      : `[tmdbid-${tmdbMatch.id}]`;
+    options.preferImdbId && imdbId ? `[imdbid-${imdbId}]` : `[tmdbid-${tmdbId}]`;
 
-  const newDirName = `${movieName} (${year}) ${idTag}`;
+  const baseVars = { name, year, tmdbId, imdbId, idTag };
+
+  const newDirName = renderTemplate(template.movieDir, baseVars);
   const newDirPath = join(options.destPath, newDirName);
 
   tasks.push({
@@ -36,10 +31,13 @@ export function generateMovieRenamePlan(
     description: `创建目录 ${newDirName}`,
   });
 
-  // Rename the main video file
   const mainVideo = parsed.episodes[0];
   if (mainVideo) {
-    const newFileName = `${movieName} (${year}) ${idTag}${mainVideo.extension}`;
+    const newFileName = renderTemplate(template.movieFile, {
+      ...baseVars,
+      ext: mainVideo.extension,
+    });
+
     tasks.push({
       operation: 'rename',
       source: join(parsed.sourcePath, mainVideo.originalFileName),
@@ -47,7 +45,6 @@ export function generateMovieRenamePlan(
       description: `${mainVideo.originalFileName} -> ${newFileName}`,
     });
 
-    // Rename associated subtitle files
     for (const assocFile of mainVideo.associatedFiles) {
       const newSubFileName = replaceBaseName(assocFile, mainVideo.originalFileName, newFileName);
       tasks.push({
@@ -65,7 +62,7 @@ export function generateMovieRenamePlan(
     sourcePath: parsed.sourcePath,
     destPath: options.destPath,
     tasks,
-    summary: { name: movieName, mediaType: 'movie' as MediaType, fileCount: 1 },
+    summary: { name, mediaType: 'movie' as MediaType, fileCount: 1 },
   };
 }
 

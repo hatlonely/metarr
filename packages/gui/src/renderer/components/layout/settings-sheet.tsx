@@ -101,6 +101,28 @@ export function SettingsSheet({ open, onOpenChange, config, onSave, locale }: Se
             </Select>
           </div>
 
+          {/* Naming Preset */}
+          <div className="space-y-2">
+            <Label>{text.namingPreset}</Label>
+            <Select
+              value={localConfig.namingPreset}
+              onValueChange={(value) =>
+                setLocalConfig((prev) => ({ ...prev, namingPreset: value }))
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="universal">{text.namingPresetUniversal}</SelectItem>
+                <SelectItem value="jellyfin">{text.namingPresetJellyfin}</SelectItem>
+                <SelectItem value="emby">{text.namingPresetEmby}</SelectItem>
+                <SelectItem value="plex">{text.namingPresetPlex}</SelectItem>
+                <SelectItem value="kodi">{text.namingPresetKodi}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* Prefer IMDB ID */}
           <div className="flex items-center justify-between">
             <Label htmlFor="prefer-imdb">{text.preferImdbId}</Label>

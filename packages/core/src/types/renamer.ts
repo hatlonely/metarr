@@ -28,6 +28,7 @@ export interface RenamePlan {
 export interface RenameOptions {
   destPath: string;
   preferImdbId: boolean;
+  namingPreset?: string;
 }
 
 export interface ExecutionResult {

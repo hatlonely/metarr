@@ -199,6 +199,7 @@ export async function renameAction(source: string, options: RenameCommandOptions
   const renameOptions: RenameOptions = {
     destPath,
     preferImdbId: options.imdb,
+    namingPreset: getConfig('namingPreset'),
   };
 
   const plan: RenamePlan = generateRenamePlan(parsed, tmdbMatch, renameOptions);

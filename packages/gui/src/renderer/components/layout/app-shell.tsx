@@ -96,7 +96,7 @@ export function AppShell() {
             onSelectMatch={(match) => selectMatch(match, config.tmdbKey)}
             onReSearch={() => searchTmdb(config.tmdbKey)}
             onGeneratePlan={(destPath) =>
-              generatePlan(config.tmdbKey, destPath, config.preferImdbId)
+              generatePlan(config.tmdbKey, destPath, config.preferImdbId, config.namingPreset)
             }
           />
         );

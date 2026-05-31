@@ -8,6 +8,7 @@ export interface AppConfig {
   destPath: string;
   displayLanguage: string;
   preferImdbId: boolean;
+  namingPreset: string;
 }
 
 const defaultConfig: AppConfig = {
@@ -15,6 +16,7 @@ const defaultConfig: AppConfig = {
   destPath: '',
   displayLanguage: 'zh-CN',
   preferImdbId: true,
+  namingPreset: 'universal',
 };
 
 export function useConfig() {
@@ -29,6 +31,7 @@ export function useConfig() {
         destPath: (raw.destPath as string) || '',
         displayLanguage: (raw.displayLanguage as string) || 'zh-CN',
         preferImdbId: raw.preferImdbId !== undefined ? (raw.preferImdbId as boolean) : true,
+        namingPreset: (raw.namingPreset as string) || 'universal',
       });
     } catch {
       // Use defaults if IPC not available (dev mode)

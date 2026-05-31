@@ -5,6 +5,7 @@ import type { ParsedMedia, RenameOptions, RenamePlan, TMDBMatch } from '../types
 export { executeRenamePlan } from './executor.js';
 export { checkConflicts } from './conflict-checker.js';
 export { findUnmatchedFiles } from './unmatched-finder.js';
+export { NAMING_PRESETS, DEFAULT_NAMING_PRESET, resolveNamingTemplate } from './naming.js';
 
 export function generateRenamePlan(
   parsed: ParsedMedia,

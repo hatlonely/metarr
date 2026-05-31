@@ -193,7 +193,7 @@ export function useWorkflow() {
   }, []);
 
   const generatePlan = useCallback(
-    async (tmdbKey: string, destPath: string, preferImdbId: boolean) => {
+    async (tmdbKey: string, destPath: string, preferImdbId: boolean, namingPreset: string) => {
       if (!state.parsed || !state.selectedMatch) return;
       dispatch({ type: 'SET_LOADING', loading: true });
       dispatch({ type: 'SET_ERROR', error: null });
@@ -202,6 +202,7 @@ export function useWorkflow() {
         const newPlan = await ipc.generateRenamePlan(state.parsed, state.selectedMatch, {
           destPath,
           preferImdbId,
+          namingPreset,
         });
         dispatch({ type: 'SET_PLAN', plan: newPlan });
 

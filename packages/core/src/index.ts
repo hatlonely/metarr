@@ -12,6 +12,9 @@ export {
   executeRenamePlan,
   checkConflicts,
   findUnmatchedFiles,
+  NAMING_PRESETS,
+  DEFAULT_NAMING_PRESET,
+  resolveNamingTemplate,
 } from './renamer/index.js';
 
 // Config
@@ -28,6 +31,7 @@ export type {
 } from './types/media.js';
 export { VIDEO_EXTENSIONS, SUBTITLE_EXTENSIONS } from './types/media.js';
 export type { TMDBMatch } from './types/tmdb.js';
+export type { NamingTemplate } from './renamer/naming.js';
 export type {
   RenameTask,
   RenamePlan,
