@@ -143,6 +143,7 @@ export function AppShell() {
             locale={locale}
             step={currentStepIndex + 1}
             result={state.executionResult}
+            artworkResult={state.artworkResult}
             onContinue={reset}
           />
         ) : null;

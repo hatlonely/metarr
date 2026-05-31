@@ -8,6 +8,7 @@ import {
   FileEdit,
   Ban,
   AlertTriangle,
+  Image,
 } from 'lucide-react';
 import { Button } from '@/src/renderer/components/ui/button';
 import {
@@ -21,30 +22,33 @@ import {
 import { Card, CardContent } from '@/src/renderer/components/ui/card';
 import { StepHeader } from '@/src/renderer/components/shared/step-header';
 import { t, type Locale } from '@/src/renderer/lib/i18n';
-import type { ExecutionResult } from '@metarr/core';
+import type { ExecutionResult, ArtworkExecutionResult } from '@metarr/core';
 
 interface StepExecuteProps {
   locale: Locale;
   step: number;
   result: ExecutionResult;
+  artworkResult?: ArtworkExecutionResult | null;
   onContinue: () => void;
 }
 
-export function StepExecute({ locale, step, result, onContinue }: StepExecuteProps) {
+export function StepExecute({ locale, step, result, artworkResult, onContinue }: StepExecuteProps) {
   const text = t(locale);
 
   const renamedCount = result.succeeded.filter((t) => t.operation === 'rename').length;
   const skippedCount = result.skippedCount;
   const overwrittenCount = result.overwrittenCount;
   const removedCount = result.removedUnmatched?.length ?? 0;
-  const hasIssues = result.failed.length > 0 || overwrittenCount > 0 || removedCount > 0;
+  const metadataSucceeded = artworkResult?.succeeded.length ?? 0;
+  const metadataFailed = artworkResult?.failed.length ?? 0;
+  const hasIssues = result.failed.length > 0 || overwrittenCount > 0 || removedCount > 0 || metadataFailed > 0;
 
   return (
     <>
       <StepHeader title={text.executionComplete} description={text.stepDesc.execute} step={step} />
 
       {/* Main stats */}
-      <div className="mb-6 grid grid-cols-2 gap-3">
+      <div className={`mb-6 grid gap-3 ${metadataSucceeded > 0 ? 'grid-cols-3' : 'grid-cols-2'}`}>
         <Card className="overflow-hidden">
           <CardContent className="flex items-center gap-4 pt-6">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500/10">
@@ -56,6 +60,21 @@ export function StepExecute({ locale, step, result, onContinue }: StepExecutePro
             </div>
           </CardContent>
         </Card>
+
+        {metadataSucceeded > 0 && (
+          <Card className="overflow-hidden">
+            <CardContent className="flex items-center gap-4 pt-6">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/10">
+                <Image className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold tabular-nums tracking-tight">{metadataSucceeded}</div>
+                <div className="text-xs text-muted-foreground">{text.executeMetadata}</div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <Card className="overflow-hidden">
           <CardContent className="flex items-center gap-4 pt-6">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
@@ -111,6 +130,19 @@ export function StepExecute({ locale, step, result, onContinue }: StepExecutePro
                     <span className="text-destructive">{text.failed}</span>
                     <span className="ml-2 font-semibold tabular-nums text-destructive">
                       {result.failed.length}
+                    </span>
+                  </div>
+                </div>
+              )}
+              {metadataFailed > 0 && (
+                <div className="flex items-center gap-3 text-sm">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-destructive/10">
+                    <Image className="h-4 w-4 text-destructive" />
+                  </div>
+                  <div className="flex-1">
+                    <span className="text-destructive">{text.artworkFailed}</span>
+                    <span className="ml-2 font-semibold tabular-nums text-destructive">
+                      {metadataFailed}
                     </span>
                   </div>
                 </div>
