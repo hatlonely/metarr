@@ -4,7 +4,7 @@ import { useLocale } from '@/hooks/use-locale';
 import { t } from '@/lib/i18n';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { demoData, type DemoPreset } from '@/lib/demo-data';
+import { demoData } from '@/lib/demo-data';
 import { Search } from 'lucide-react';
 import { useState } from 'react';
 import type { Locale } from '@/lib/i18n';

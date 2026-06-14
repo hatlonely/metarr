@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  CheckCircle2,
   XCircle,
   RotateCcw,
   Trash2,

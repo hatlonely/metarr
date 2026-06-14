@@ -41,7 +41,7 @@ export function AppShell() {
     reset,
   } = useWorkflow();
 
-  const { config, loaded, setConfig, showSettings } = useConfig();
+  const { config, setConfig, showSettings } = useConfig();
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {

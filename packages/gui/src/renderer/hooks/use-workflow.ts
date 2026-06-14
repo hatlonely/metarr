@@ -3,14 +3,10 @@
 import { useReducer, useCallback } from 'react';
 import type { WorkflowState, WorkflowAction, StepId } from '@/src/renderer/types/workflow';
 import type {
-  ParsedMedia,
   TMDBMatch,
   RenamePlan,
-  ExecutionResult,
   ConflictResolution,
   NamingTemplate,
-  ArtworkPlan,
-  SubtitlePlan,
 } from '@metarr/core';
 import type { OpenMediaResult } from '@/src/shared/ipc-types';
 import { ipc } from '@/src/renderer/lib/ipc';
