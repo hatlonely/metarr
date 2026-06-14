@@ -9,6 +9,7 @@ import {
   Folder,
   File,
   Image,
+  Captions,
   AlertTriangle,
   FileQuestion,
   Trash2,
@@ -102,17 +103,22 @@ interface StepPreviewProps {
   onSetAllSubtitles: (select: boolean) => void;
 }
 
+/** Extra (download-only) entries injected into the tree alongside renames. */
+type FileKind = 'artwork' | 'subtitle';
+
+interface PairFile {
+  source: string;
+  target: string;
+  kind?: FileKind;
+}
+
 interface PairNode {
   name: string;
   children: PairNode[];
-  files: { source: string; target: string }[];
+  files: PairFile[];
 }
 
-function buildPairTree(
-  tasks: { source: string; target: string }[],
-  sourceRoot: string,
-  targetRoot: string,
-): PairNode {
+function buildPairTree(tasks: PairFile[], sourceRoot: string, targetRoot: string): PairNode {
   const root: PairNode = { name: '', children: [], files: [] };
 
   for (const task of tasks) {
@@ -131,7 +137,7 @@ function buildPairTree(
       }
       node = child;
     }
-    node.files.push({ source: srcName, target: tgtParts[tgtParts.length - 1] });
+    node.files.push({ source: srcName, target: tgtParts[tgtParts.length - 1], kind: task.kind });
   }
 
   return root;
@@ -144,7 +150,8 @@ interface TreeRow {
   dirName?: string;
   source?: string;
   target?: string;
-  isArtwork?: boolean;
+  /** Set for injected download-only entries (artwork / subtitle) */
+  kind?: FileKind;
 }
 
 function flattenTree(node: PairNode, depth: number): TreeRow[] {
@@ -165,7 +172,7 @@ function flattenTree(node: PairNode, depth: number): TreeRow[] {
         depth: d,
         source: file.source,
         target: file.target,
-        isArtwork: !file.source,
+        kind: file.kind,
       });
     }
   }
@@ -297,18 +304,25 @@ export function StepPreview({
     const renameTasks = plan.tasks.filter((task) => task.operation === 'rename');
     const dirCount = plan.tasks.filter((task) => task.operation === 'create-dir').length;
 
-    // Inject selected artwork as download-only entries (no source)
-    const artworkTasks = (artworkPlan?.tasks ?? [])
+    // Inject selected artwork + subtitles as download-only entries (no source)
+    const artworkTasks: PairFile[] = (artworkPlan?.tasks ?? [])
       .filter((t) => selectedArtworkPaths.includes(t.targetPath))
-      .map((t) => ({ source: '', target: t.targetPath }));
+      .map((t) => ({ source: '', target: t.targetPath, kind: 'artwork' }));
+    const subtitleTasks: PairFile[] = (subtitlePlan?.tasks ?? [])
+      .filter((t) => selectedSubtitlePaths.includes(t.targetPath))
+      .map((t) => ({ source: '', target: t.targetPath, kind: 'subtitle' }));
 
-    const tree = buildPairTree([...renameTasks, ...artworkTasks], plan.sourcePath, plan.destPath);
+    const tree = buildPairTree(
+      [...renameTasks, ...artworkTasks, ...subtitleTasks],
+      plan.sourcePath,
+      plan.destPath,
+    );
 
     return {
       rows: flattenTree(tree, 0),
       stats: { dirCount, fileCount: renameTasks.length },
     };
-  }, [plan, artworkPlan, selectedArtworkPaths]);
+  }, [plan, artworkPlan, selectedArtworkPaths, subtitlePlan, selectedSubtitlePaths]);
 
   const conflictedTargets = useMemo(() => {
     if (!conflictResult) return new Set<string>();
@@ -723,8 +737,8 @@ export function StepPreview({
                 >
                   {rows.map((row, i) =>
                     row.type === 'file' ? (
-                      row.isArtwork ? (
-                        // Artwork rows: blank placeholder keeps scroll in sync
+                      row.kind ? (
+                        // Injected (artwork/subtitle) rows have no source: blank placeholder keeps scroll in sync
                         <div key={i} className="h-5 py-0.5" style={indent(row.depth + 1)} />
                       ) : (
                         <div
@@ -771,7 +785,7 @@ export function StepPreview({
                         <Folder className="h-3.5 w-3.5 text-muted-foreground" />
                         {row.dirName}
                       </div>
-                    ) : row.isArtwork ? (
+                    ) : row.kind === 'artwork' ? (
                       // Artwork file: image icon + blue tint
                       <div
                         key={i}
@@ -779,6 +793,16 @@ export function StepPreview({
                         style={indent(row.depth + 1)}
                       >
                         <Image className="h-3 w-3 shrink-0" />
+                        <span className="font-mono">{row.target}</span>
+                      </div>
+                    ) : row.kind === 'subtitle' ? (
+                      // Subtitle file: captions icon + green tint
+                      <div
+                        key={i}
+                        className="flex items-center gap-1.5 whitespace-nowrap py-0.5 text-xs text-green-600 dark:text-green-400"
+                        style={indent(row.depth + 1)}
+                      >
+                        <Captions className="h-3 w-3 shrink-0" />
                         <span className="font-mono">{row.target}</span>
                       </div>
                     ) : (
