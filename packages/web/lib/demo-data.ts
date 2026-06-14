@@ -230,6 +230,66 @@ export const demoData: DemoDataSet = {
   },
 };
 
+// --- Derived demo data for subtitle & artwork steps ---
+
+export interface DemoSubtitleGroup {
+  /** Leaf name of the video file, e.g. "S01E01 - 繁花.mkv" */
+  videoFile: string;
+  items: { language: string; source: 'SubDL' | 'Assrt'; file: string }[];
+}
+
+export interface DemoArtworkResult {
+  images: { type: string; file: string }[];
+  nfos: { type: string; file: string }[];
+}
+
+const SUBTITLE_LANGS = [
+  { display: '简体中文', suffix: 'zh', source: 'SubDL' as const },
+  { display: 'English', suffix: 'en', source: 'Assrt' as const },
+];
+
+/** Build the subtitle download preview from a rename plan (one entry per video file). */
+export function deriveSubtitles(plan: FakeRenamePlan): DemoSubtitleGroup[] {
+  return plan.files.map((file) => {
+    const noExt = file.renamed.replace(/\.[^./]+$/, '');
+    const leaf = file.renamed.split('/').pop() ?? file.renamed;
+    return {
+      videoFile: leaf,
+      items: SUBTITLE_LANGS.map((l) => ({
+        language: l.display,
+        source: l.source,
+        file: `${noExt}.${l.suffix}.srt`.split('/').pop() ?? '',
+      })),
+    };
+  });
+}
+
+/** Build the artwork/NFO preview from a rename plan and media type. */
+export function deriveArtwork(plan: FakeRenamePlan, type: 'tv' | 'movie'): DemoArtworkResult {
+  if (type === 'movie') {
+    return {
+      images: [
+        { type: 'poster', file: 'poster.jpg' },
+        { type: 'fanart', file: 'fanart.jpg' },
+      ],
+      nfos: [{ type: 'movie', file: 'movie.nfo' }],
+    };
+  }
+  const hasSeason = plan.files.some((f) => f.renamed.includes('/'));
+  return {
+    images: [
+      { type: 'poster', file: 'poster.jpg' },
+      { type: 'fanart', file: 'fanart.jpg' },
+      ...(hasSeason ? [{ type: 'season-poster', file: 'Season 01/poster.jpg' }] : []),
+      ...(hasSeason ? [{ type: 'episode-thumb', file: 'Season 01/S01E01-thumb.jpg' }] : []),
+    ],
+    nfos: [
+      { type: 'tvshow', file: 'tvshow.nfo' },
+      ...(hasSeason ? [{ type: 'episode', file: 'Season 01/S01E01.nfo' }] : []),
+    ],
+  };
+}
+
 export function findDemoDataKey(chineseTitle?: string, englishTitle?: string): string {
   if (chineseTitle) {
     for (const key of Object.keys(demoData.searchResults)) {

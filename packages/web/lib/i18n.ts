@@ -7,40 +7,229 @@ const zh = {
     docs: '文档',
     download: '下载',
     changelog: '更新日志',
+    github: 'GitHub',
   },
-  landing: {
-    heroTitle: '智能媒体文件重命名',
-    heroSubtitle:
-      '自动解析影视文件名，匹配 TMDB 信息，一键重命名为 Jellyfin 兼容格式。支持桌面应用、命令行和在线体验。',
-    tryDemo: '在线体验',
-    download: '立即下载',
-    feature1Title: '智能解析',
-    feature1Desc: '自动识别中文/英文标题、年份、分辨率、编码格式、音轨等媒体标签信息。',
-    feature2Title: 'TMDB 匹配',
-    feature2Desc: '通过 TMDB 数据库精确匹配影视信息，获取准确的中文标题和剧集数据。',
-    feature3Title: '一键重命名',
-    feature3Desc: '生成符合 Jellyfin/Emby/Plex 规范的目录结构和文件名，整理媒体库。',
-    demoTeaserTitle: '亲自试试',
-    demoTeaserDesc: '无需安装，直接在浏览器中体验完整的解析和重命名流程。',
-    demoTeaserBtn: '开始体验',
-    downloadCtaTitle: '开始使用 Metarr',
-    downloadCtaDesc: '桌面应用功能最完整，支持批量处理和自动重命名。',
+  hero: {
+    badge: '为 Jellyfin · Emby · Plex · Kodi 打造',
+    title: '让媒体库',
+    titleHighlight: '自动归位',
+    subtitle:
+      '解析杂乱的影视文件名，匹配 TMDB 信息，下载多语言字幕，刮削海报与 NFO，一键重命名为媒体服务器认得的标准结构。',
+    ctaPrimary: '在线体验',
+    ctaSecondary: '下载桌面应用',
+    terminalBefore: '整理前',
+    terminalAfter: '整理后（Metarr）',
+    terminalCaption: '解析 · 匹配 · 字幕 · 刮削 · 重命名，一步到位',
+  },
+  capabilities: {
+    title: '一个工具，搞定媒体库整理的每一步',
+    subtitle: '从乱糟糟的下载目录到媒体服务器里的精致海报墙，Metarr 全程接管。',
+    items: [
+      {
+        key: 'parse',
+        title: '智能解析',
+        desc: '从复杂文件名中提取标题、年份、季集、分辨率、编码、音轨、HDR、片源等结构化信息。',
+      },
+      {
+        key: 'tmdb',
+        title: 'TMDB 匹配',
+        desc: '连接 TheMovieDB，精确匹配电视剧与电影，获取规范的中英文标题和剧集数据。',
+      },
+      {
+        key: 'rename',
+        title: '一键重命名',
+        desc: '生成符合媒体服务器规范的目录与文件名，支持冲突检测、未匹配清理与预览。',
+      },
+      {
+        key: 'subtitle',
+        title: '字幕下载',
+        desc: 'SubDL + Assrt 双源搜索，自动从压缩包中挑出对应语言与集数的字幕并跟随放置。',
+      },
+      {
+        key: 'artwork',
+        title: '海报刮削',
+        desc: '下载海报、背景图、季海报与分集缩略图，生成 movie / tvshow / episode NFO 元数据。',
+      },
+      {
+        key: 'presets',
+        title: '多平台命名',
+        desc: '内置 Jellyfin / Emby / Plex / Kodi / 通用预设，也支持完全自定义命名模板。',
+      },
+    ],
+  },
+  workflow: {
+    title: '清晰可控的整理流程',
+    subtitle: '每一步都能预览和确认，绝不会在你看不见的地方动你的文件。',
+    steps: [
+      { title: '扫描解析', desc: '选择目录，自动扫描并解析所有媒体文件名。' },
+      { title: '搜索匹配', desc: '从 TMDB 搜索结果中选择正确的影视条目。' },
+      { title: '重命名预览', desc: '预览新的目录结构和文件名，逐条核对。' },
+      { title: '字幕下载', desc: '按需搜索并下载多语言字幕，跟随主文件命名。' },
+      { title: '刮削元数据', desc: '下载海报背景图、生成 NFO，喂饱媒体服务器。' },
+      { title: '确认执行', desc: '确认无误后一次性执行，支持冲突处理。' },
+    ],
+  },
+  presets: {
+    title: '适配你的媒体服务器',
+    subtitle: '选一个预设，或写一套自己的命名模板。',
+    note: '命名模板支持 {name} {year} {season} {episode} {tmdbId} 等占位符与零填充。',
+    columns: { tv: '电视剧', movie: '电影' },
+    items: [
+      {
+        key: 'jellyfin',
+        name: 'Jellyfin / Emby',
+        tv: '剧名 (年份) [tmdbid-xxxx]/Season 01/剧名 (年份) S01E01.mkv',
+        movie: '片名 (年份) [tmdbid-xxxx]/片名 (年份).mkv',
+      },
+      {
+        key: 'plex',
+        name: 'Plex',
+        tv: '剧名 (年份)/Season 01/剧名 - S01E01.mkv',
+        movie: '片名 (年份)/片名 (年份).mkv',
+      },
+      {
+        key: 'kodi',
+        name: 'Kodi',
+        tv: '剧名/Season 1/剧名 S01E01.mkv',
+        movie: '片名 (年份)/片名 (年份).mkv',
+      },
+      {
+        key: 'universal',
+        name: '通用',
+        tv: '剧名 (年份)/Season 01/剧名 S01E01.mkv',
+        movie: '片名 (年份)/片名 (年份).mkv',
+      },
+    ],
+  },
+  subtitleHighlight: {
+    label: '字幕下载',
+    title: '多语言字幕，自动对号入座',
+    desc: '同时搜索 SubDL 与 Assrt 两个字幕源，自动下载并从 zip / rar 压缩包中挑出语言和集数都正确的那一条，按主文件名放到对应位置。',
+    points: [
+      '双源搜索：SubDL + Assrt，结果更全',
+      '5 种语言：简体 / 繁体中文、英语、日语、韩语',
+      '智能解包：自动从 zip / rar 中识别正确文件',
+      '季包匹配：整季压缩包按集精准提取',
+    ],
+    languages: ['简体中文', '繁體中文', 'English', '日本語', '한국어'],
+  },
+  artworkHighlight: {
+    label: '海报刮削',
+    title: '海报、背景图与 NFO，一并备齐',
+    desc: '从 TMDB 拉取高清海报、背景图、季海报和分集缩略图，并按媒体服务器规范生成 NFO 元数据文件，扫一下就是精致的海报墙。',
+    points: [
+      '图片：海报 / 背景图 / 季海报 / 分集缩略图',
+      'NFO：movie / tvshow / episode 三类元数据',
+      '命名跟随所选预设（poster.jpg / background.jpg…）',
+      '与重命名同一套计划，预览后统一执行',
+    ],
+    artworkTypes: ['海报 poster', '背景图 fanart', '季海报', '分集缩略图', 'NFO 元数据'],
+  },
+  demoTeaser: {
+    title: '不用安装，先在浏览器里试试',
+    desc: '输入一个真实的影视文件名，看 Metarr 如何一步步把它整理干净。',
+    btn: '打开在线体验',
+  },
+  downloadCta: {
+    title: '准备好整理你的媒体库了吗？',
+    desc: '桌面应用功能最完整，支持批量处理与可视化预览；命令行适合自动化与高级用户。',
+    primary: '下载桌面应用',
+    secondary: '查看安装方式',
+  },
+  features: {
+    title: '功能详情',
+    subtitle: 'Metarr 的六大核心能力',
+    sections: [
+      {
+        key: 'parse',
+        title: '智能名称解析',
+        desc: '用规则引擎从复杂的影视文件名中提取结构化信息，中英文混排也不在话下：',
+        points: [
+          '中英文双语标题识别',
+          '年份、季号、集号自动提取',
+          '分辨率（480p / 720p / 1080p / 2160p）',
+          '编码（H.264 / H.265 / AV1 / VP9）',
+          '音轨（DDP5.1 / DTS-HD MA / TrueHD / FLAC）',
+          'HDR / 杜比视界检测',
+          '片源识别（WEB-DL / BluRay / REMUX / HDTV）',
+        ],
+      },
+      {
+        key: 'tmdb',
+        title: 'TMDB 信息匹配',
+        desc: '集成 TheMovieDB 数据库，为媒体库提供准确的元数据：',
+        points: [
+          '电视剧与电影搜索',
+          '中英文标题精确匹配',
+          '自动获取剧集信息',
+          '电影可选优先使用 IMDB ID 命名',
+        ],
+      },
+      {
+        key: 'rename',
+        title: '一键重命名',
+        desc: '把媒体文件整理为媒体服务器认得的标准目录结构：',
+        points: [
+          '电视剧 / 电影两种媒体类型',
+          '冲突检测（跳过 / 覆盖）',
+          '未匹配文件检测与清理',
+          '关联字幕文件自动跟随',
+          '执行前完整预览，支持批量处理',
+        ],
+      },
+      {
+        key: 'subtitle',
+        title: '字幕下载',
+        desc: 'SubDL 与 Assrt 双源搜索，自动下载并匹配正确语言与集数：',
+        points: [
+          '双字幕源：SubDL + Assrt',
+          '5 种语言：简繁中文 / 英 / 日 / 韩',
+          '自动从 zip / rar 压缩包中解包',
+          '整季压缩包按集精准提取',
+          '字幕按主文件名跟随放置',
+        ],
+      },
+      {
+        key: 'artwork',
+        title: '海报与元数据刮削',
+        desc: '下载图片资源并生成 NFO，打造精致海报墙：',
+        points: [
+          '海报 / 背景图 / 季海报 / 分集缩略图',
+          'movie / tvshow / episode 三类 NFO',
+          '图片命名跟随所选媒体服务器预设',
+          '与重命名共用一套计划，预览后执行',
+        ],
+      },
+      {
+        key: 'presets',
+        title: '多平台命名预设',
+        desc: '为不同媒体服务器内置命名规范，也支持完全自定义：',
+        points: [
+          '内置 Jellyfin / Emby / Plex / Kodi / 通用预设',
+          '自定义命名模板',
+          '占位符：{name} {year} {season} {episode} {tmdbId}',
+          '支持零填充（如 {season:02}）',
+        ],
+      },
+    ],
   },
   demo: {
-    title: '在线 Demo',
-    step1Title: '输入文件名',
-    step1Desc: '输入一个影视目录名或文件名，或选择一个预设示例。',
-    step2Title: '解析结果',
-    step2Desc: 'Metarr 会自动提取标题、年份和媒体标签信息。',
-    step3Title: '搜索匹配',
-    step3Desc: '从 TMDB 搜索结果中选择正确的影视条目。',
-    step4Title: '重命名预览',
-    step4Desc: '预览重命名后的目录结构和文件名。',
+    title: '在线体验',
+    subtitle: '真实解析在浏览器中运行；搜索、字幕与刮削使用预置示例数据演示完整流程。',
+    steps: [
+      { title: '输入文件名', desc: '输入一个影视目录名或文件名，或选择一个预设示例。' },
+      { title: '解析结果', desc: 'Metarr 自动提取标题、年份与媒体标签信息。' },
+      { title: '搜索匹配', desc: '从 TMDB 搜索结果中选择正确的影视条目。' },
+      { title: '重命名预览', desc: '预览重命名后的目录结构与文件名。' },
+      { title: '字幕下载', desc: '查看为各集匹配到的多语言字幕。' },
+      { title: '刮削产物', desc: '查看将要下载的海报、背景图与生成的 NFO。' },
+    ],
     parse: '解析',
     searchTmdb: '搜索 TMDB',
     selectMatch: '选择此结果',
     restart: '重新开始',
     next: '下一步',
+    prev: '上一步',
     preset: '预设示例',
     presetPlaceholder: '选择一个示例...',
     inputPlaceholder: '输入影视目录名或文件名...',
@@ -49,6 +238,9 @@ const zh = {
     dirName: '目录名',
     titleLabel: '标题',
     year: '年份',
+    type: '类型',
+    typeTv: '电视剧',
+    typeMovie: '电影',
     tags: '标签',
     episodes: '文件列表',
     season: '季',
@@ -56,127 +248,290 @@ const zh = {
     original: '原始文件名',
     renamed: '重命名后',
     newStructure: '新目录结构',
+    subtitleFor: '字幕',
+    artworkImages: '图片资源',
+    artworkNfo: 'NFO 元数据',
+    source: '来源',
+    language: '语言',
+    demoDataNote: '以下结果为演示用预置数据',
   },
   docs: {
     title: '文档',
-    subtitle: '快速了解如何使用 Metarr',
-    gettingStarted: '快速开始',
-    installation: '安装指南',
-    configuration: '配置说明',
-    faq: '常见问题',
+    subtitle: '快速上手并用好 Metarr',
+    onThisPage: '本页目录',
   },
   download: {
     title: '下载',
     subtitle: '选择适合你的使用方式',
     desktop: '桌面应用',
-    desktopDesc: '功能最完整的版本，支持图形界面批量处理。',
+    desktopDesc: '功能最完整，图形界面批量处理，所见即所得地预览每一步。',
+    desktopBadge: '推荐',
     windows: 'Windows',
     macOS: 'macOS',
     linux: 'Linux',
-    downloadFromGithub: '从 GitHub 下载',
+    downloadFromGithub: '前往 GitHub Releases',
     cli: '命令行工具',
-    cliDesc: '轻量级命令行工具，适合自动化脚本和高级用户。',
-    cliInstall: '安装命令',
+    cliDesc: '轻量命令行，适合自动化脚本与高级用户。',
+    cliInstall: '安装',
+    cliRun: '免安装运行',
     copy: '复制',
     copied: '已复制',
     requirements: '系统要求',
     requirementsList: 'Node.js >= 20.0.0',
     webDemo: '在线体验',
-    webDemoDesc: '无需安装，直接在浏览器中体验核心功能。',
-    webDemoBtn: '打开在线 Demo',
+    webDemoDesc: '无需安装，直接在浏览器中体验核心解析流程。',
+    webDemoBtn: '打开在线体验',
   },
   changelog: {
     title: '更新日志',
     subtitle: 'Metarr 的版本更新记录',
+    types: { feature: '新功能', fix: '修复', change: '变更' },
   },
   footer: {
-    description: '智能媒体文件重命名工具，为 Jellyfin 用户打造。',
-    copyright: 'Metarr',
-    links: '链接',
-  },
-  features: {
-    title: '功能详情',
-    subtitle: '了解 Metarr 的核心能力',
-    smartParse: {
-      title: '智能名称解析',
-      desc: 'Metarr 使用正则表达式和规则引擎，从复杂的影视文件名中提取结构化信息：',
-      item1: '中英文双语标题识别',
-      item2: '年份自动提取',
-      item3: '分辨率检测（480p / 720p / 1080p / 2160p）',
-      item4: '编码格式识别（H.264 / H.265 / AV1 / VP9）',
-      item5: '音轨信息（DDP5.1 / DTS-HD MA / TrueHD / FLAC）',
-      item6: 'HDR / 杜比视界检测',
-      item7: '来源识别（WEB-DL / BluRay / REMUX / HDTV）',
-    },
-    tmdbMatch: {
-      title: 'TMDB 信息匹配',
-      desc: '集成 TheMovieDB 数据库，为你的媒体库提供准确的元数据：',
-      item1: '支持电视剧和电影搜索',
-      item2: '中英文标题精确匹配',
-      item3: '自动获取剧集信息',
-      item4: '返回标准化媒体信息',
-    },
-    autoRename: {
-      title: '自动重命名',
-      desc: '一键将媒体文件整理为标准的 Jellyfin 目录结构：',
-      item1: '电视剧：剧名 (年份)/Season 季/S季E集 - 集名.扩展名',
-      item2: '电影：电影名 (年份)/电影名 (年份).扩展名',
-      item3: '关联字幕文件自动跟随',
-      item4: '冲突检测和预览',
-      item5: '支持批量处理',
-    },
+    description: '智能媒体库整理工具，为家庭影院用户打造。',
+    tagline: '解析 · 匹配 · 字幕 · 刮削 · 重命名',
+    product: '产品',
+    resources: '资源',
+    copyright: '保留所有权利。',
   },
   theme: {
     light: '浅色',
     dark: '深色',
     system: '跟随系统',
   },
-} as const;
+};
 
-const en = {
+const en: typeof zh = {
   nav: {
     features: 'Features',
     demo: 'Demo',
     docs: 'Docs',
     download: 'Download',
     changelog: 'Changelog',
+    github: 'GitHub',
   },
-  landing: {
-    heroTitle: 'Smart Media File Renamer',
-    heroSubtitle:
-      'Automatically parse media filenames, match TMDB info, and rename to Jellyfin-compatible format. Desktop app, CLI, and online demo available.',
-    tryDemo: 'Try Online',
-    download: 'Download',
-    feature1Title: 'Smart Parsing',
-    feature1Desc:
-      'Automatically recognize Chinese/English titles, year, resolution, codec, audio tracks and other media tags.',
-    feature2Title: 'TMDB Matching',
-    feature2Desc:
-      'Accurately match media info via TMDB database, getting correct titles and episode data.',
-    feature3Title: 'One-Click Rename',
-    feature3Desc:
-      'Generate Jellyfin/Emby/Plex compliant directory structures and filenames for your media library.',
-    demoTeaserTitle: 'Try It Yourself',
-    demoTeaserDesc: 'Experience the full parsing and renaming workflow right in your browser.',
-    demoTeaserBtn: 'Start Demo',
-    downloadCtaTitle: 'Get Started with Metarr',
-    downloadCtaDesc: 'The desktop app offers the most complete features, with batch processing and auto-rename.',
+  hero: {
+    badge: 'Built for Jellyfin · Emby · Plex · Kodi',
+    title: 'Your media library,',
+    titleHighlight: 'organized automatically',
+    subtitle:
+      'Parse messy media filenames, match TMDB info, download multilingual subtitles, scrape posters and NFOs, and rename everything into the structure your media server understands.',
+    ctaPrimary: 'Try Online',
+    ctaSecondary: 'Download Desktop App',
+    terminalBefore: 'Before',
+    terminalAfter: 'After (Metarr)',
+    terminalCaption: 'Parse · match · subtitles · artwork · rename — all in one pass',
+  },
+  capabilities: {
+    title: 'One tool for every step of library cleanup',
+    subtitle: 'From a chaotic download folder to a polished poster wall in your media server.',
+    items: [
+      {
+        key: 'parse',
+        title: 'Smart Parsing',
+        desc: 'Extract title, year, season/episode, resolution, codec, audio, HDR and source from complex filenames.',
+      },
+      {
+        key: 'tmdb',
+        title: 'TMDB Matching',
+        desc: 'Connect to TheMovieDB to precisely match shows and movies with canonical titles and episode data.',
+      },
+      {
+        key: 'rename',
+        title: 'One-Click Rename',
+        desc: 'Generate media-server-compliant directories and filenames, with conflict detection, cleanup and preview.',
+      },
+      {
+        key: 'subtitle',
+        title: 'Subtitle Download',
+        desc: 'Search SubDL + Assrt, auto-extract the right language and episode from archives, and place them alongside.',
+      },
+      {
+        key: 'artwork',
+        title: 'Artwork Scraping',
+        desc: 'Download posters, fanart, season posters and episode thumbs, plus movie / tvshow / episode NFO metadata.',
+      },
+      {
+        key: 'presets',
+        title: 'Multi-Platform Naming',
+        desc: 'Built-in Jellyfin / Emby / Plex / Kodi / universal presets, plus fully customizable naming templates.',
+      },
+    ],
+  },
+  workflow: {
+    title: 'A clear, controllable workflow',
+    subtitle: 'Every step is previewed and confirmed — nothing touches your files out of sight.',
+    steps: [
+      { title: 'Scan & Parse', desc: 'Pick a folder and auto-scan and parse every media filename.' },
+      { title: 'Search & Match', desc: 'Choose the correct entry from TMDB search results.' },
+      { title: 'Rename Preview', desc: 'Preview the new structure and filenames, item by item.' },
+      { title: 'Subtitles', desc: 'Search and download multilingual subtitles named after the file.' },
+      { title: 'Artwork & NFO', desc: 'Download posters and fanart, generate NFO for your server.' },
+      { title: 'Confirm & Run', desc: 'Execute in one pass once confirmed, with conflict handling.' },
+    ],
+  },
+  presets: {
+    title: 'Matches your media server',
+    subtitle: 'Pick a preset, or write your own naming template.',
+    note: 'Templates support {name} {year} {season} {episode} {tmdbId} placeholders and zero-padding.',
+    columns: { tv: 'TV Shows', movie: 'Movies' },
+    items: [
+      {
+        key: 'jellyfin',
+        name: 'Jellyfin / Emby',
+        tv: 'Show (Year) [tmdbid-xxxx]/Season 01/Show (Year) S01E01.mkv',
+        movie: 'Movie (Year) [tmdbid-xxxx]/Movie (Year).mkv',
+      },
+      {
+        key: 'plex',
+        name: 'Plex',
+        tv: 'Show (Year)/Season 01/Show - S01E01.mkv',
+        movie: 'Movie (Year)/Movie (Year).mkv',
+      },
+      {
+        key: 'kodi',
+        name: 'Kodi',
+        tv: 'Show/Season 1/Show S01E01.mkv',
+        movie: 'Movie (Year)/Movie (Year).mkv',
+      },
+      {
+        key: 'universal',
+        name: 'Universal',
+        tv: 'Show (Year)/Season 01/Show S01E01.mkv',
+        movie: 'Movie (Year)/Movie (Year).mkv',
+      },
+    ],
+  },
+  subtitleHighlight: {
+    label: 'Subtitle Download',
+    title: 'Multilingual subtitles, matched automatically',
+    desc: 'Search both SubDL and Assrt, download and pick the entry with the right language and episode out of zip / rar archives, then place it next to the file.',
+    points: [
+      'Dual sources: SubDL + Assrt for broader coverage',
+      '5 languages: Simplified / Traditional Chinese, English, Japanese, Korean',
+      'Smart unpacking: detect the right file inside zip / rar',
+      'Season packs: extract per-episode from full-season archives',
+    ],
+    languages: ['简体中文', '繁體中文', 'English', '日本語', '한국어'],
+  },
+  artworkHighlight: {
+    label: 'Artwork Scraping',
+    title: 'Posters, fanart and NFO — all in place',
+    desc: 'Pull HD posters, fanart, season posters and episode thumbnails from TMDB, and generate NFO metadata to your media server spec for an instant poster wall.',
+    points: [
+      'Images: poster / fanart / season poster / episode thumb',
+      'NFO: movie / tvshow / episode metadata',
+      'Filenames follow your chosen preset (poster.jpg / background.jpg…)',
+      'Same plan as renaming — preview then execute together',
+    ],
+    artworkTypes: ['poster', 'fanart', 'season poster', 'episode thumb', 'NFO'],
+  },
+  demoTeaser: {
+    title: 'No install — try it in your browser first',
+    desc: 'Type a real media filename and watch Metarr tidy it up step by step.',
+    btn: 'Open Demo',
+  },
+  downloadCta: {
+    title: 'Ready to organize your media library?',
+    desc: 'The desktop app is the most complete, with batch processing and visual preview; the CLI suits automation and power users.',
+    primary: 'Download Desktop App',
+    secondary: 'See install options',
+  },
+  features: {
+    title: 'Features',
+    subtitle: "Metarr's six core capabilities",
+    sections: [
+      {
+        key: 'parse',
+        title: 'Smart Name Parsing',
+        desc: 'A rule engine extracts structured info from complex filenames, even mixed Chinese/English:',
+        points: [
+          'Bilingual Chinese/English title recognition',
+          'Year, season and episode extraction',
+          'Resolution (480p / 720p / 1080p / 2160p)',
+          'Codec (H.264 / H.265 / AV1 / VP9)',
+          'Audio (DDP5.1 / DTS-HD MA / TrueHD / FLAC)',
+          'HDR / Dolby Vision detection',
+          'Source (WEB-DL / BluRay / REMUX / HDTV)',
+        ],
+      },
+      {
+        key: 'tmdb',
+        title: 'TMDB Info Matching',
+        desc: 'Integrated with TheMovieDB for accurate library metadata:',
+        points: [
+          'TV show and movie search',
+          'Precise Chinese/English title matching',
+          'Automatic episode info retrieval',
+          'Optional IMDB ID naming for movies',
+        ],
+      },
+      {
+        key: 'rename',
+        title: 'One-Click Rename',
+        desc: 'Organize files into the structure your media server understands:',
+        points: [
+          'TV and movie media types',
+          'Conflict detection (skip / overwrite)',
+          'Unmatched file detection and cleanup',
+          'Associated subtitles follow automatically',
+          'Full preview before running, batch supported',
+        ],
+      },
+      {
+        key: 'subtitle',
+        title: 'Subtitle Download',
+        desc: 'Dual-source search across SubDL and Assrt with correct language and episode:',
+        points: [
+          'Dual sources: SubDL + Assrt',
+          '5 languages: Chinese (S/T) / EN / JA / KO',
+          'Auto-extract from zip / rar archives',
+          'Per-episode extraction from season packs',
+          'Subtitles named after the main file',
+        ],
+      },
+      {
+        key: 'artwork',
+        title: 'Artwork & Metadata',
+        desc: 'Download image assets and generate NFO for a polished poster wall:',
+        points: [
+          'Poster / fanart / season poster / episode thumb',
+          'movie / tvshow / episode NFO',
+          'Image names follow your media-server preset',
+          'Shares one plan with renaming, preview then run',
+        ],
+      },
+      {
+        key: 'presets',
+        title: 'Multi-Platform Naming',
+        desc: 'Built-in naming specs for each media server, fully customizable:',
+        points: [
+          'Built-in Jellyfin / Emby / Plex / Kodi / universal',
+          'Custom naming templates',
+          'Placeholders: {name} {year} {season} {episode} {tmdbId}',
+          'Zero-padding supported (e.g. {season:02})',
+        ],
+      },
+    ],
   },
   demo: {
     title: 'Online Demo',
-    step1Title: 'Input Filename',
-    step1Desc: 'Enter a media directory or file name, or select a preset example.',
-    step2Title: 'Parse Result',
-    step2Desc: 'Metarr automatically extracts title, year and media tag information.',
-    step3Title: 'Search Match',
-    step3Desc: 'Select the correct media entry from TMDB search results.',
-    step4Title: 'Rename Preview',
-    step4Desc: 'Preview the renamed directory structure and filenames.',
+    subtitle:
+      'Real parsing runs in your browser; search, subtitles and artwork use preset sample data to illustrate the full flow.',
+    steps: [
+      { title: 'Input Filename', desc: 'Enter a media directory or file name, or pick a preset.' },
+      { title: 'Parse Result', desc: 'Metarr extracts title, year and media tags automatically.' },
+      { title: 'Search Match', desc: 'Select the correct entry from TMDB search results.' },
+      { title: 'Rename Preview', desc: 'Preview the renamed directory structure and filenames.' },
+      { title: 'Subtitles', desc: 'See the multilingual subtitles matched for each episode.' },
+      { title: 'Artwork', desc: 'See the posters, fanart and NFO that would be generated.' },
+    ],
     parse: 'Parse',
     searchTmdb: 'Search TMDB',
     selectMatch: 'Select this match',
     restart: 'Restart',
     next: 'Next',
+    prev: 'Back',
     preset: 'Preset',
     presetPlaceholder: 'Select an example...',
     inputPlaceholder: 'Enter media directory or file name...',
@@ -185,6 +540,9 @@ const en = {
     dirName: 'Directory Name',
     titleLabel: 'Title',
     year: 'Year',
+    type: 'Type',
+    typeTv: 'TV',
+    typeMovie: 'Movie',
     tags: 'Tags',
     episodes: 'File List',
     season: 'Season',
@@ -192,124 +550,60 @@ const en = {
     original: 'Original',
     renamed: 'Renamed',
     newStructure: 'New Structure',
+    subtitleFor: 'Subtitles',
+    artworkImages: 'Images',
+    artworkNfo: 'NFO Metadata',
+    source: 'Source',
+    language: 'Language',
+    demoDataNote: 'The results below are preset demo data',
   },
   docs: {
     title: 'Documentation',
-    subtitle: 'Learn how to use Metarr quickly',
-    gettingStarted: 'Getting Started',
-    installation: 'Installation',
-    configuration: 'Configuration',
-    faq: 'FAQ',
+    subtitle: 'Get started and master Metarr',
+    onThisPage: 'On this page',
   },
   download: {
     title: 'Download',
     subtitle: 'Choose the best way to use Metarr',
     desktop: 'Desktop App',
-    desktopDesc: 'The most full-featured version with GUI for batch processing.',
+    desktopDesc: 'The most complete version: GUI batch processing with WYSIWYG preview of every step.',
+    desktopBadge: 'Recommended',
     windows: 'Windows',
     macOS: 'macOS',
     linux: 'Linux',
-    downloadFromGithub: 'Download from GitHub',
+    downloadFromGithub: 'Go to GitHub Releases',
     cli: 'CLI Tool',
-    cliDesc: 'Lightweight command-line tool for automation scripts and power users.',
-    cliInstall: 'Install Command',
+    cliDesc: 'Lightweight command line for automation scripts and power users.',
+    cliInstall: 'Install',
+    cliRun: 'Run without install',
     copy: 'Copy',
     copied: 'Copied',
     requirements: 'Requirements',
     requirementsList: 'Node.js >= 20.0.0',
     webDemo: 'Online Demo',
-    webDemoDesc: 'No installation needed. Experience core features directly in your browser.',
+    webDemoDesc: 'No installation needed. Experience the core parsing flow in your browser.',
     webDemoBtn: 'Open Online Demo',
   },
   changelog: {
     title: 'Changelog',
     subtitle: 'Metarr version history',
+    types: { feature: 'Feature', fix: 'Fix', change: 'Change' },
   },
   footer: {
-    description: 'Smart media file renamer, built for Jellyfin users.',
-    copyright: 'Metarr',
-    links: 'Links',
-  },
-  features: {
-    title: 'Features',
-    subtitle: 'Explore Metarr\'s core capabilities',
-    smartParse: {
-      title: 'Smart Name Parsing',
-      desc: 'Metarr uses regex and rule engines to extract structured information from complex media filenames:',
-      item1: 'Bilingual Chinese/English title recognition',
-      item2: 'Automatic year extraction',
-      item3: 'Resolution detection (480p / 720p / 1080p / 2160p)',
-      item4: 'Codec identification (H.264 / H.265 / AV1 / VP9)',
-      item5: 'Audio track info (DDP5.1 / DTS-HD MA / TrueHD / FLAC)',
-      item6: 'HDR / Dolby Vision detection',
-      item7: 'Source identification (WEB-DL / BluRay / REMUX / HDTV)',
-    },
-    tmdbMatch: {
-      title: 'TMDB Info Matching',
-      desc: 'Integrated with TheMovieDB for accurate media metadata:',
-      item1: 'TV shows and movies search',
-      item2: 'Precise Chinese/English title matching',
-      item3: 'Automatic episode info retrieval',
-      item4: 'Normalized media information output',
-    },
-    autoRename: {
-      title: 'Auto Rename',
-      desc: 'One-click media file organization into standard Jellyfin directory structure:',
-      item1: 'TV: Show Name (Year)/Season X/SXXEXX - Episode.ext',
-      item2: 'Movie: Movie Name (Year)/Movie Name (Year).ext',
-      item3: 'Associated subtitle files follow automatically',
-      item4: 'Conflict detection and preview',
-      item5: 'Batch processing support',
-    },
+    description: 'Smart media library organizer, built for home theater enthusiasts.',
+    tagline: 'Parse · match · subtitles · artwork · rename',
+    product: 'Product',
+    resources: 'Resources',
+    copyright: 'All rights reserved.',
   },
   theme: {
     light: 'Light',
     dark: 'Dark',
     system: 'System',
   },
-} as const;
-
-type Translations = {
-  nav: { features: string; demo: string; docs: string; download: string; changelog: string };
-  landing: {
-    heroTitle: string; heroSubtitle: string; tryDemo: string; download: string;
-    feature1Title: string; feature1Desc: string;
-    feature2Title: string; feature2Desc: string;
-    feature3Title: string; feature3Desc: string;
-    demoTeaserTitle: string; demoTeaserDesc: string; demoTeaserBtn: string;
-    downloadCtaTitle: string; downloadCtaDesc: string;
-  };
-  demo: {
-    title: string;
-    step1Title: string; step1Desc: string;
-    step2Title: string; step2Desc: string;
-    step3Title: string; step3Desc: string;
-    step4Title: string; step4Desc: string;
-    parse: string; searchTmdb: string; selectMatch: string; restart: string; next: string;
-    preset: string; presetPlaceholder: string; inputPlaceholder: string;
-    result: string; noResult: string;
-    dirName: string; titleLabel: string; year: string; tags: string; episodes: string;
-    season: string; episode: string;
-    original: string; renamed: string; newStructure: string;
-  };
-  docs: { title: string; subtitle: string; gettingStarted: string; installation: string; configuration: string; faq: string };
-  download: {
-    title: string; subtitle: string;
-    desktop: string; desktopDesc: string; windows: string; macOS: string; linux: string; downloadFromGithub: string;
-    cli: string; cliDesc: string; cliInstall: string; copy: string; copied: string;
-    requirements: string; requirementsList: string;
-    webDemo: string; webDemoDesc: string; webDemoBtn: string;
-  };
-  changelog: { title: string; subtitle: string };
-  footer: { description: string; copyright: string; links: string };
-  features: {
-    title: string; subtitle: string;
-    smartParse: { title: string; desc: string; item1: string; item2: string; item3: string; item4: string; item5: string; item6: string; item7: string };
-    tmdbMatch: { title: string; desc: string; item1: string; item2: string; item3: string; item4: string };
-    autoRename: { title: string; desc: string; item1: string; item2: string; item3: string; item4: string; item5: string };
-  };
-  theme: { light: string; dark: string; system: string };
 };
+
+export type Translations = typeof zh;
 
 const translations: Record<Locale, Translations> = { zh, en };
 

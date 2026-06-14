@@ -2,70 +2,54 @@
 
 import { useLocale } from '@/hooks/use-locale';
 import { t } from '@/lib/i18n';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, Film, FolderSync, Check } from 'lucide-react';
+import { capabilityIcons } from '@/lib/capability-icons';
+import { Reveal } from '@/components/ui/reveal';
+import { Check } from 'lucide-react';
 
 export default function FeaturesPage() {
   const { locale } = useLocale();
   const tr = t(locale);
 
-  const sections = [
-    {
-      icon: Search,
-      data: tr.features.smartParse,
-    },
-    {
-      icon: Film,
-      data: tr.features.tmdbMatch,
-    },
-    {
-      icon: FolderSync,
-      data: tr.features.autoRename,
-    },
-  ];
-
-  const items = (data: (typeof tr.features.smartParse | typeof tr.features.tmdbMatch | typeof tr.features.autoRename)) => {
-    const result: string[] = [];
-    let i = 1;
-    while (`item${i}` in data) {
-      result.push((data as Record<string, string>)[`item${i}`]);
-      i++;
-    }
-    return result;
-  };
-
   return (
-    <section className="container mx-auto max-w-5xl px-4 py-12 sm:px-6">
-      <div className="mb-12 text-center">
-        <h1 className="mb-2 text-3xl font-bold tracking-tight sm:text-4xl">
-          {tr.features.title}
-        </h1>
-        <p className="text-muted-foreground">{tr.features.subtitle}</p>
-      </div>
+    <div className="relative">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-glow" />
+      <section className="container relative mx-auto max-w-5xl px-4 py-16 sm:px-6">
+        <Reveal className="mb-14 text-center">
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{tr.features.title}</h1>
+          <p className="mt-3 text-muted-foreground">{tr.features.subtitle}</p>
+        </Reveal>
 
-      <div className="space-y-12">
-        {sections.map((section) => (
-          <Card key={section.data.title}>
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <section.icon className="h-8 w-8 text-primary" />
-                <CardTitle className="text-xl">{section.data.title}</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-muted-foreground">{section.data.desc}</p>
-              <ul className="grid gap-2 sm:grid-cols-2">
-                {items(section.data).map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-sm">
-                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </section>
+        <div className="space-y-6">
+          {tr.features.sections.map((section, i) => {
+            const Icon = capabilityIcons[section.key];
+            return (
+              <Reveal key={section.key} delay={i * 0.04}>
+                <article className="rounded-2xl border bg-card p-6 shadow-sm sm:p-8">
+                  <div className="mb-5 flex items-center gap-4">
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-gradient text-white shadow-sm">
+                      {Icon ? <Icon className="h-6 w-6" /> : null}
+                    </span>
+                    <div>
+                      <h2 className="text-xl font-semibold">{section.title}</h2>
+                    </div>
+                  </div>
+                  <p className="mb-6 text-muted-foreground">{section.desc}</p>
+                  <ul className="grid gap-3 sm:grid-cols-2">
+                    {section.points.map((point) => (
+                      <li key={point} className="flex items-start gap-2.5 text-sm">
+                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand/10 text-brand">
+                          <Check className="h-3 w-3" />
+                        </span>
+                        <span>{point}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              </Reveal>
+            );
+          })}
+        </div>
+      </section>
+    </div>
   );
 }

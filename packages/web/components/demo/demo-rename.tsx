@@ -1,6 +1,4 @@
 import type { FakeRenamePlan } from '@/lib/demo-data';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { FolderOpen, ArrowRight } from 'lucide-react';
 
 interface DemoRenameProps {
@@ -9,12 +7,10 @@ interface DemoRenameProps {
     original: string;
     renamed: string;
     newStructure: string;
-    restart: string;
   };
-  onRestart: () => void;
 }
 
-export function DemoRename({ plan, labels, onRestart }: DemoRenameProps) {
+export function DemoRename({ plan, labels }: DemoRenameProps) {
   return (
     <div className="space-y-4">
       {/* Directory rename */}
@@ -69,10 +65,6 @@ export function DemoRename({ plan, labels, onRestart }: DemoRenameProps) {
           </div>
         </div>
       </div>
-
-      <Button variant="outline" onClick={onRestart}>
-        {labels.restart}
-      </Button>
     </div>
   );
 }

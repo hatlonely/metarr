@@ -6,7 +6,9 @@ import type { ParsedEpisode } from '@/lib/parser-browser';
 import { findDemoDataKey, getSearchResults, getRenamePlan } from '@/lib/demo-data';
 import type { FakeSearchResult, FakeRenamePlan } from '@/lib/demo-data';
 
-export type DemoStep = 1 | 2 | 3 | 4;
+export type DemoStep = 1 | 2 | 3 | 4 | 5 | 6;
+
+const MAX_STEP: DemoStep = 6;
 
 interface ParsedDirResult {
   chineseTitle?: string;
@@ -96,6 +98,13 @@ export function useDemoWorkflow() {
     [state.demoDataKey],
   );
 
+  const next = useCallback(() => {
+    setState((prev) => ({
+      ...prev,
+      step: Math.min(MAX_STEP, prev.step + 1) as DemoStep,
+    }));
+  }, []);
+
   const back = useCallback(() => {
     setState((prev) => ({
       ...prev,
@@ -117,6 +126,7 @@ export function useDemoWorkflow() {
     parse,
     search,
     selectMatch,
+    next,
     back,
     goToStep,
     reset,
