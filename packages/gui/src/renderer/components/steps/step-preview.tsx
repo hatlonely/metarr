@@ -18,7 +18,6 @@ import {
   Ban,
   ShieldAlert,
   FolderOpen,
-  RefreshCw,
 } from 'lucide-react';
 import { Button } from '@/src/renderer/components/ui/button';
 import { Card, CardContent } from '@/src/renderer/components/ui/card';
@@ -266,9 +265,28 @@ export function StepPreview({
     }
   };
 
-  const handleRegenerate = () => {
-    onRegenerate(destPath, namingPreset, namingPreset === 'custom' ? customTemplate : undefined);
-  };
+  // Auto-regenerate the plan when output path or naming changes. onRegenerate
+  // is an unstable inline prop, so hold the latest via a ref to keep it out of
+  // the effect deps (otherwise every render would re-trigger). Skip the first
+  // run so entering the step doesn't immediately re-generate the existing plan.
+  const onRegenerateRef = useRef(onRegenerate);
+  onRegenerateRef.current = onRegenerate;
+  const isFirstRun = useRef(true);
+
+  useEffect(() => {
+    if (isFirstRun.current) {
+      isFirstRun.current = false;
+      return;
+    }
+    const timer = setTimeout(() => {
+      onRegenerateRef.current(
+        destPath,
+        namingPreset,
+        namingPreset === 'custom' ? customTemplate : undefined,
+      );
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [destPath, namingPreset, customTemplate]);
 
   const executeSummary = useMemo(() => {
     const renameTasks = plan.tasks.filter((t) => t.operation === 'rename');
@@ -363,37 +381,30 @@ export function StepPreview({
             </div>
           </div>
 
-          {/* Row 2: naming preset + regenerate */}
-          <div className="flex items-end gap-3">
-            <div className="flex-1 space-y-1.5">
+          {/* Row 2: naming preset */}
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2">
               <Label>{text.namingPreset}</Label>
-              <Select value={namingPreset} onValueChange={setNamingPreset}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="universal">{text.namingPresetUniversal}</SelectItem>
-                  <SelectItem value="jellyfin">{text.namingPresetJellyfin}</SelectItem>
-                  <SelectItem value="emby">{text.namingPresetEmby}</SelectItem>
-                  <SelectItem value="plex">{text.namingPresetPlex}</SelectItem>
-                  <SelectItem value="kodi">{text.namingPresetKodi}</SelectItem>
-                  <SelectItem value="custom">{text.namingPresetCustom}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRegenerate}
-              disabled={regenerating || executing}
-            >
-              {regenerating ? (
-                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
-              ) : (
-                <RefreshCw className="mr-1.5 h-4 w-4" />
+              {regenerating && (
+                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  {text.regenerating}
+                </span>
               )}
-              {text.regeneratePlan}
-            </Button>
+            </div>
+            <Select value={namingPreset} onValueChange={setNamingPreset}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="universal">{text.namingPresetUniversal}</SelectItem>
+                <SelectItem value="jellyfin">{text.namingPresetJellyfin}</SelectItem>
+                <SelectItem value="emby">{text.namingPresetEmby}</SelectItem>
+                <SelectItem value="plex">{text.namingPresetPlex}</SelectItem>
+                <SelectItem value="kodi">{text.namingPresetKodi}</SelectItem>
+                <SelectItem value="custom">{text.namingPresetCustom}</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           {namingPreset === 'custom' && (
             <div className="grid grid-cols-2 gap-2 rounded-md border p-3">
