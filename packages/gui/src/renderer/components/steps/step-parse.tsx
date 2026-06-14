@@ -87,7 +87,7 @@ export function StepParse({
             placeholder={text.searchPlaceholder}
             className="flex-1"
           />
-          <Button onClick={onSearch} disabled={loading || !searchQuery}>
+          <Button variant="brand" onClick={onSearch} disabled={loading || !searchQuery}>
             {loading ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (

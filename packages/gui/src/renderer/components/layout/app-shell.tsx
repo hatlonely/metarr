@@ -13,6 +13,7 @@ import { StepParse } from '@/src/renderer/components/steps/step-parse';
 import { StepSearch } from '@/src/renderer/components/steps/step-search';
 import { StepPreview } from '@/src/renderer/components/steps/step-preview';
 import { StepExecute } from '@/src/renderer/components/steps/step-execute';
+import { Reveal } from '@/src/renderer/components/ui/reveal';
 
 export function AppShell() {
   const {
@@ -179,10 +180,13 @@ export function AppShell() {
         currentStepIndex={currentStepIndex}
         onStepClick={handleStepClick}
         onOpenSettings={() => setSettingsOpen(true)}
+        onToggleLanguage={() =>
+          setConfig({ displayLanguage: config.displayLanguage.startsWith('zh') ? 'en-US' : 'zh-CN' })
+        }
         locale={locale}
       />
       <ContentArea error={state.error} onDismissError={() => setError(null)}>
-        {renderStep()}
+        <Reveal key={state.currentStep}>{renderStep()}</Reveal>
       </ContentArea>
       <SettingsSheet
         open={settingsOpen}

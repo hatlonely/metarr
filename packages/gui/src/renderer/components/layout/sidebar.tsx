@@ -1,10 +1,11 @@
 'use client';
 
-import { Settings, Sun, Moon, Monitor } from 'lucide-react';
+import { Settings, Sun, Moon, Monitor, Languages } from 'lucide-react';
 import { Separator } from '@/src/renderer/components/ui/separator';
 import { Button } from '@/src/renderer/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/src/renderer/components/ui/tooltip';
 import { SidebarStep } from './sidebar-step';
+import { Logo } from '@/src/renderer/components/shared/logo';
 import { t } from '@/src/renderer/lib/i18n';
 import type { StepId } from '@/src/renderer/types/workflow';
 import { useAppTheme } from '@/src/renderer/hooks/use-theme';
@@ -14,6 +15,7 @@ interface SidebarProps {
   currentStepIndex: number;
   onStepClick: (step: StepId) => void;
   onOpenSettings: () => void;
+  onToggleLanguage: () => void;
   locale: 'zh' | 'en';
 }
 
@@ -22,6 +24,7 @@ export function Sidebar({
   currentStepIndex,
   onStepClick,
   onOpenSettings,
+  onToggleLanguage,
   locale,
 }: SidebarProps) {
   const { resolvedTheme, toggleTheme, theme } = useAppTheme();
@@ -38,9 +41,8 @@ export function Sidebar({
   return (
     <div className="flex h-full w-64 flex-col border-r border-sidebar-border bg-sidebar-background">
       {/* Logo */}
-      <div className="border-l-4 border-primary px-5 py-5">
-        <h1 className="text-lg font-bold tracking-tight text-sidebar-foreground">{text.appName}</h1>
-        <p className="mt-0.5 text-[11px] text-sidebar-foreground/50">{text.appDesc}</p>
+      <div className="px-4 py-5">
+        <Logo title={text.appName} subtitle={text.appDesc} />
       </div>
 
       <Separator />
@@ -76,6 +78,15 @@ export function Sidebar({
             </Button>
           </TooltipTrigger>
           <TooltipContent>{text.settings}</TooltipContent>
+        </Tooltip>
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="icon" onClick={onToggleLanguage}>
+              <Languages className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{locale === 'zh' ? '切换语言 / Language' : 'Language / 切换语言'}</TooltipContent>
         </Tooltip>
 
         <Tooltip>

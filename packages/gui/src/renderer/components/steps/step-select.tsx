@@ -129,7 +129,7 @@ export function StepSelect({
 
           {/* 按钮 */}
           <div className="flex justify-center">
-            <Button size="lg" onClick={onSelect} disabled={loading}>
+            <Button variant="brand" size="lg" onClick={onSelect} disabled={loading}>
               {loading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (

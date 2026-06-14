@@ -850,7 +850,7 @@ export function StepPreview({
               <ArrowLeft className="mr-2 h-4 w-4" />
               {text.back}
             </Button>
-            <Button variant="default" onClick={() => setConfirmOpen(true)} disabled={executing}>
+            <Button variant="brand" onClick={() => setConfirmOpen(true)} disabled={executing}>
               {executing ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (

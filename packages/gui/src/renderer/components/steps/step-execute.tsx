@@ -233,7 +233,7 @@ export function StepExecute({ locale, step, result, artworkResult, subtitleResul
       )}
 
       <div className="flex justify-center">
-        <Button onClick={onContinue}>
+        <Button variant="brand" onClick={onContinue}>
           <RotateCcw className="mr-2 h-4 w-4" />
           {text.continueProcess}
         </Button>

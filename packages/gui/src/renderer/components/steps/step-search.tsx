@@ -1,10 +1,12 @@
 'use client';
 
+import { useEffect } from 'react';
 import { Loader2, RefreshCw, ArrowRight, Search } from 'lucide-react';
 import { Button } from '@/src/renderer/components/ui/button';
 import { Skeleton } from '@/src/renderer/components/ui/skeleton';
 import { StepHeader } from '@/src/renderer/components/shared/step-header';
 import { PosterCard } from '@/src/renderer/components/shared/poster-card';
+import { Reveal, RevealItem } from '@/src/renderer/components/ui/reveal';
 import { t, type Locale } from '@/src/renderer/lib/i18n';
 import type { TMDBMatch } from '@metarr/core';
 
@@ -32,6 +34,18 @@ export function StepSearch({
   onGeneratePlan,
 }: StepSearchProps) {
   const text = t(locale);
+
+  // Press Enter to generate the plan once a match is selected. Safe here:
+  // this step has no text inputs, so there is nothing to interfere with.
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' && selectedMatch && !loading) {
+        onGeneratePlan();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [selectedMatch, loading, onGeneratePlan]);
 
   return (
     <>
@@ -67,17 +81,18 @@ export function StepSearch({
           ))}
         </div>
       ) : results.length > 0 ? (
-        <div className="space-y-2">
+        <Reveal stagger className="space-y-2">
           {results.map((match) => (
-            <PosterCard
-              key={match.id}
-              match={match}
-              selected={selectedMatch?.id === match.id}
-              onClick={() => onSelectMatch(match)}
-              locale={locale}
-            />
+            <RevealItem key={match.id}>
+              <PosterCard
+                match={match}
+                selected={selectedMatch?.id === match.id}
+                onClick={() => onSelectMatch(match)}
+                locale={locale}
+              />
+            </RevealItem>
           ))}
-        </div>
+        </Reveal>
       ) : (
         <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
           {text.noResults}
@@ -86,7 +101,7 @@ export function StepSearch({
 
       {selectedMatch && (
         <div className="mt-6 flex justify-end">
-          <Button onClick={onGeneratePlan} disabled={loading}>
+          <Button variant="brand" onClick={onGeneratePlan} disabled={loading}>
             {loading ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
