@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { Input } from '@/src/renderer/components/ui/input';
 import { Label } from '@/src/renderer/components/ui/label';
 import { Button } from '@/src/renderer/components/ui/button';
@@ -29,6 +30,38 @@ interface SettingsSheetProps {
   config: AppConfig;
   onSave: (updates: Partial<AppConfig>) => void;
   locale: 'zh' | 'en';
+}
+
+interface SecretInputProps {
+  id: string;
+  value: string;
+  placeholder?: string;
+  onChange: (value: string) => void;
+}
+
+function SecretInput({ id, value, placeholder, onChange }: SecretInputProps) {
+  const [revealed, setRevealed] = useState(false);
+
+  return (
+    <div className="relative">
+      <Input
+        id={id}
+        type={revealed ? 'text' : 'password'}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="pr-9"
+      />
+      <button
+        type="button"
+        tabIndex={-1}
+        onClick={() => setRevealed((v) => !v)}
+        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+      >
+        {revealed ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+      </button>
+    </div>
+  );
 }
 
 export function SettingsSheet({ open, onOpenChange, config, onSave, locale }: SettingsSheetProps) {
@@ -60,11 +93,10 @@ export function SettingsSheet({ open, onOpenChange, config, onSave, locale }: Se
           {/* TMDB API Key */}
           <div className="space-y-2">
             <Label htmlFor="tmdb-key">{text.tmdbApiKey}</Label>
-            <Input
+            <SecretInput
               id="tmdb-key"
-              type="password"
               value={localConfig.tmdbKey}
-              onChange={(e) => setLocalConfig((prev) => ({ ...prev, tmdbKey: e.target.value }))}
+              onChange={(value) => setLocalConfig((prev) => ({ ...prev, tmdbKey: value }))}
               placeholder={text.tmdbApiKeyPlaceholder}
             />
           </div>
@@ -173,11 +205,10 @@ export function SettingsSheet({ open, onOpenChange, config, onSave, locale }: Se
           {/* SubDL API Key */}
           <div className="space-y-2">
             <Label htmlFor="subdl-key">{text.subdlApiKey}</Label>
-            <Input
+            <SecretInput
               id="subdl-key"
-              type="password"
               value={localConfig.subdlApiKey}
-              onChange={(e) => setLocalConfig((prev) => ({ ...prev, subdlApiKey: e.target.value }))}
+              onChange={(value) => setLocalConfig((prev) => ({ ...prev, subdlApiKey: value }))}
               placeholder={text.subdlApiKeyPlaceholder}
             />
           </div>
@@ -185,11 +216,10 @@ export function SettingsSheet({ open, onOpenChange, config, onSave, locale }: Se
           {/* Assrt Token */}
           <div className="space-y-2">
             <Label htmlFor="assrt-token">{text.assrtToken}</Label>
-            <Input
+            <SecretInput
               id="assrt-token"
-              type="password"
               value={localConfig.assrtToken}
-              onChange={(e) => setLocalConfig((prev) => ({ ...prev, assrtToken: e.target.value }))}
+              onChange={(value) => setLocalConfig((prev) => ({ ...prev, assrtToken: value }))}
               placeholder={text.assrtTokenPlaceholder}
             />
           </div>
