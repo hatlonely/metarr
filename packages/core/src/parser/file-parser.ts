@@ -6,27 +6,7 @@ import { parseTags } from './tag-parser.js';
  */
 export function parseFileName(fileName: string): ParsedEpisode {
   const extension = getExtension(fileName);
-
-  // Try to extract S##E## pattern
-  const epPattern = /[Ss](\d{1,2})[Ee](\d{1,2}(?:-\d{1,2})?)/;
-  const epMatch = fileName.match(epPattern);
-
-  let season = 0;
-  let episodes: number[] = [];
-
-  if (epMatch) {
-    season = parseInt(epMatch[1], 10);
-    const epPart = epMatch[2];
-    if (epPart.includes('-')) {
-      const [start, end] = epPart.split('-').map(Number);
-      for (let i = start; i <= end; i++) {
-        episodes.push(i);
-      }
-    } else {
-      episodes.push(parseInt(epPart, 10));
-    }
-  }
-
+  const { season, episodes } = parseSeasonEpisode(fileName);
   const tags = parseTags(fileName);
 
   return {
@@ -37,6 +17,45 @@ export function parseFileName(fileName: string): ParsedEpisode {
     tags,
     associatedFiles: [],
   };
+}
+
+/**
+ * Extract season + episode numbers. Supports:
+ *   S01E01, S1E1, S01E01-E03 / S01E01-03 (range), S01E01E02 (multi),
+ *   1x01, 第01集 / 第1话 (season unknown), E01 / EP01 (no season).
+ * Episode numbers allow up to 3 digits (long-running shows). The range end uses
+ * a negative lookahead so `S01E01-1080p` is NOT read as episodes 1..1080.
+ */
+export function parseSeasonEpisode(fileName: string): { season: number; episodes: number[] } {
+  const sxe = fileName.match(
+    /[Ss](\d{1,2})[Ee](\d{1,3})(?:-[Ee]?(\d{1,3})(?![\dpPiI]))?((?:[Ee]\d{1,3})*)/,
+  );
+  if (sxe) {
+    const season = parseInt(sxe[1], 10);
+    const start = parseInt(sxe[2], 10);
+    if (sxe[3]) {
+      const end = parseInt(sxe[3], 10);
+      const eps: number[] = [];
+      for (let i = start; i <= end; i++) eps.push(i);
+      return { season, episodes: eps };
+    }
+    const eps = [start];
+    if (sxe[4]) {
+      for (const m of sxe[4].matchAll(/[Ee](\d{1,3})/g)) eps.push(parseInt(m[1], 10));
+    }
+    return { season, episodes: eps };
+  }
+
+  const x = fileName.match(/\b(\d{1,2})x(\d{1,3})\b/i);
+  if (x) return { season: parseInt(x[1], 10), episodes: [parseInt(x[2], 10)] };
+
+  const cn = fileName.match(/第\s*(\d{1,3})\s*[集话話]/);
+  if (cn) return { season: 0, episodes: [parseInt(cn[1], 10)] };
+
+  const e = fileName.match(/\bE(?:P)?\s*(\d{1,3})\b/i);
+  if (e) return { season: 0, episodes: [parseInt(e[1], 10)] };
+
+  return { season: 0, episodes: [] };
 }
 
 function getExtension(fileName: string): string {

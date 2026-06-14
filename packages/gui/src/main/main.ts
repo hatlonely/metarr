@@ -16,6 +16,7 @@ import {
   executeSubtitlePlan,
   getAllConfig,
   setConfig as coreSetConfig,
+  locate,
 } from '@metarr/core';
 import type {
   ParsedMedia,
@@ -26,6 +27,8 @@ import type {
   ConflictResolutionMap,
   ArtworkPlan,
   SubtitleTask,
+  ExtractResult,
+  TitleCandidate,
 } from '@metarr/core';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -112,6 +115,40 @@ ipcMain.handle(
       language: language || 'zh-CN',
     });
     return client.fuzzySearch(query, type as 'tv' | 'movie', year);
+  },
+);
+
+// IPC: Locate — candidate/ID extraction → ranked TMDB matches
+ipcMain.handle(
+  'tmdb:locate',
+  async (
+    _event,
+    apiKey: string,
+    parsed: ParsedMedia,
+    options: { type?: string; language?: string; manualQuery?: string },
+  ) => {
+    const client = new TMDBClient({ apiKey, language: options.language || 'zh-CN' });
+
+    const titleCandidates: TitleCandidate[] = [...(parsed.titleCandidates ?? [])];
+    const manual = options.manualQuery?.trim();
+    if (manual) {
+      // User-edited query takes top priority as a high-weight candidate.
+      const lang = /[一-鿿]/.test(manual) ? 'zh' : 'en';
+      titleCandidates.unshift({ query: manual, lang, source: 'dir', weight: 1 });
+    }
+
+    const extract: ExtractResult = {
+      ids: parsed.ids ?? {},
+      mediaType: parsed.type,
+      episodes: parsed.episodes,
+      tags: parsed.tags,
+      titleCandidates,
+      yearCandidates: parsed.yearCandidates ?? (parsed.year ? [parsed.year] : []),
+      originalName: parsed.originalDirName,
+    };
+
+    const type = options.type === 'tv' || options.type === 'movie' ? options.type : undefined;
+    return locate(client, extract, { type, year: parsed.year });
   },
 );
 

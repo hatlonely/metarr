@@ -1,10 +1,11 @@
 // Parser
-export { parseMediaDir, parseMediaFile } from './parser/index.js';
+export { parseMediaDir, parseMediaFile, extractMedia } from './parser/index.js';
 
 // TMDB
 export { TMDBClient } from './tmdb/index.js';
 export { TMDBError } from './tmdb/index.js';
-export type { TMDBClientOptions } from './tmdb/index.js';
+export { locate, scoreMatch, titleSimilarity } from './tmdb/index.js';
+export type { TMDBClientOptions, LocateOptions } from './tmdb/index.js';
 
 // Subtitle
 export { generateSubtitlePlan, executeSubtitlePlan, LANGUAGE_CONFIG, DEFAULT_SUBTITLE_LANGUAGES } from './subtitle/index.js';
@@ -44,6 +45,9 @@ export type {
   ParsedEpisode,
   ParsedMedia,
   ParseOptions,
+  MediaIds,
+  TitleCandidate,
+  ExtractResult,
 } from './types/media.js';
 export { VIDEO_EXTENSIONS, SUBTITLE_EXTENSIONS } from './types/media.js';
 export type { TMDBMatch } from './types/tmdb.js';

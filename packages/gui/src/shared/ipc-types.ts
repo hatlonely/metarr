@@ -34,6 +34,12 @@ export interface IPCApi {
     year?: number,
     language?: string,
   ): Promise<TMDBMatch[]>;
+  /** Locate via the candidate/ID extraction in `parsed`, ranked by relevance. */
+  tmdbLocate(
+    apiKey: string,
+    parsed: ParsedMedia,
+    options: { type?: string; language?: string; manualQuery?: string },
+  ): Promise<TMDBMatch[]>;
   tmdbGetMovieDetails(apiKey: string, id: number): Promise<{ imdb_id?: string }>;
   generateRenamePlan(
     parsed: ParsedMedia,

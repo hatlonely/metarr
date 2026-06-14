@@ -168,14 +168,20 @@ export function useWorkflow() {
 
       try {
         const q = query || state.searchQuery;
-        if (!q) { dispatch({ type: 'SET_LOADING', loading: false }); return; }
+        const hasCandidates = (state.parsed.titleCandidates?.length ?? 0) > 0;
+        const hasIds = !!(state.parsed.ids?.tmdb || state.parsed.ids?.imdb);
+        if (!q && !hasCandidates && !hasIds) {
+          dispatch({ type: 'SET_LOADING', loading: false });
+          return;
+        }
 
-        const type =
-          state.mediaType === 'auto'
-            ? state.parsed.type === 'movie' ? 'movie' : 'tv'
-            : state.mediaType;
-
-        const results = await ipc.tmdbSearch(tmdbKey, q, type, state.parsed.year, language);
+        // Multi-candidate locate: extracted candidates + IDs + the (possibly
+        // edited) manual query, ranked by relevance.
+        const results = await ipc.tmdbLocate(tmdbKey, state.parsed, {
+          type: state.mediaType === 'auto' ? undefined : state.mediaType,
+          language,
+          manualQuery: q || undefined,
+        });
         dispatch({ type: 'SET_TMDB_RESULTS', results });
         dispatch({ type: 'SELECT_MATCH', match: null });
         dispatch({ type: 'SET_STEP', step: 'search' });

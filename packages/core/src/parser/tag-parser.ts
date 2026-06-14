@@ -90,3 +90,27 @@ export function parseTags(text: string): MediaTags {
 
   return tags;
 }
+
+/**
+ * Patterns for stripping known media-tag noise out of a title region.
+ * Single source of truth shared with the extractor so that what we *identify*
+ * (parseTags) and what we *remove* from titles stay consistent.
+ */
+const STRIP_PATTERNS: RegExp[] = [
+  /\b(?:4[kK]|\d{3,4}[pPiI])\b/g, // resolution: 4K / 1080p / 1080i
+  /\b(?:H\.?26[45]|HEVC|x26[45]|AVC|VP9|AV1)\b/gi, // codec
+  /\b(?:DDP?[\s.]?[57][\s.]?1|DTS(?:[\s.]?HD)?(?:[\s.]?MA)?(?:[\s.]?[57][\s.]?1)?|DTS[\s.]?X|TrueHD|Atmos|AAC|FLAC|PCM)\b/gi, // audio
+  /\b(?:WEB[-\s.]?DL|WEB[-\s.]?Rip|Blu[-\s.]?Ray|BDRip|HDTV|HDRip|DVDRip|REMUX)\b/gi, // source
+  /\b(?:HDR(?:10)?(?:Plus|\+)?|Dolby[\s.]?Vision|DV|SDR|HQ|IQ|10bit|8bit|DoVi)\b/gi, // hdr/dv/platform/misc
+  /\b\d+Audios?\b/gi, // "3Audios"
+];
+
+/**
+ * Remove media-tag noise from a string, leaving (mostly) the title region.
+ * Does NOT touch the release group or year — those are handled by the extractor.
+ */
+export function stripMediaTags(text: string): string {
+  let s = text;
+  for (const p of STRIP_PATTERNS) s = s.replace(p, ' ');
+  return s;
+}

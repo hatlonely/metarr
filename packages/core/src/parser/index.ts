@@ -1,16 +1,25 @@
 import { basename, dirname } from 'node:path';
-import type { ParsedMedia, MediaType, ParseOptions } from '../types/media.js';
-import { parseDirName, extractFromFileName } from './dir-parser.js';
+import type { ParsedMedia, MediaType, ParseOptions, TitleCandidate } from '../types/media.js';
+import { extractMedia } from './extract.js';
 import { scanDirectory } from './scanner.js';
 import { parseFileName, parseSubtitleFile } from './file-parser.js';
 
-export { parseDirName, extractFromFileName } from './dir-parser.js';
-export { parseFileName, parseSubtitleFile } from './file-parser.js';
+export { parseDirName } from './dir-parser.js';
+export { extractMedia, extractIds, extractYearCandidates } from './extract.js';
+export { parseFileName, parseSubtitleFile, parseSeasonEpisode } from './file-parser.js';
 export { scanDirectory, scanMediaDirectories } from './scanner.js';
-export { parseTags } from './tag-parser.js';
+export { parseTags, stripMediaTags } from './tag-parser.js';
+
+/** A directory/file is "clean" if it already looks like `Title (Year) [id]`. */
+const CLEAN_RE = /^.+?\s*\(\d{4}\)\s*(?:\[[^\]]*\])?\s*$/;
+
+function topTitle(candidates: TitleCandidate[], lang: 'zh' | 'en'): string | undefined {
+  return candidates.find((c) => c.lang === lang)?.query;
+}
 
 /**
- * Parse a single media file: scan its parent directory but only keep the selected file and its associated subtitles.
+ * Parse a single media file: scan its parent directory but keep only the
+ * selected file and its associated subtitles.
  */
 export async function parseMediaFile(
   filePath: string,
@@ -20,7 +29,6 @@ export async function parseMediaFile(
   const fileName = basename(filePath);
 
   const scan = await scanDirectory(dirPath);
-
   const selectedVideo = scan.videoFiles.find((f) => f.name === fileName);
   if (!selectedVideo) {
     throw new Error(`Selected file is not a video file: ${fileName}`);
@@ -39,82 +47,69 @@ export async function parseMediaFile(
     }
   }
 
-  const dirInfo = parseDirName(basename(dirPath));
-  const fileInfo = extractFromFileName(fileName);
+  // File name is the primary signal; parent directory name is a fallback.
+  const extract = extractMedia(fileName, [basename(dirPath)]);
 
-  // In single-file mode, prioritize info extracted from the file name over the parent directory
-  const chineseTitle = fileInfo.chineseTitle || dirInfo.chineseTitle;
-  const englishTitle = fileInfo.englishTitle || dirInfo.englishTitle;
-  const year = fileInfo.year || dirInfo.year;
-  const tags = fileInfo.tags.resolution ? fileInfo.tags : dirInfo.tags;
-
-  const type: MediaType | 'unknown' =
-    options?.type && options.type !== 'auto' ? options.type : 'movie';
+  let type: MediaType | 'unknown';
+  if (options?.type && options.type !== 'auto') {
+    type = options.type;
+  } else {
+    // Fix: a selected episode (S01E05 / E05 / 第5集) means TV, not movie.
+    type = selectedEpisode.season > 0 || selectedEpisode.episodes.length > 0 ? 'tv' : 'movie';
+  }
 
   return {
     type,
-    chineseTitle,
-    englishTitle,
-    year,
-    tags,
+    chineseTitle: topTitle(extract.titleCandidates, 'zh'),
+    englishTitle: topTitle(extract.titleCandidates, 'en'),
+    year: extract.yearCandidates[0],
+    tags: extract.tags,
     episodes: [selectedEpisode],
     originalDirName: fileName,
     sourcePath: dirPath,
-    isClean: dirInfo.isClean,
+    isClean: CLEAN_RE.test(basename(dirPath).trim()),
     selectedFile: filePath,
+    ids: extract.ids,
+    titleCandidates: extract.titleCandidates,
+    yearCandidates: extract.yearCandidates,
   };
 }
 
 /**
- * Parse a media directory: extract metadata from the directory name and its contents.
+ * Parse a media directory: extract metadata from the directory name + its
+ * contents, producing title candidates / IDs / years for the locate layer.
  */
 export async function parseMediaDir(dirPath: string, options?: ParseOptions): Promise<ParsedMedia> {
   const originalDirName = basename(dirPath);
-  const dirInfo = parseDirName(originalDirName);
   const scan = await scanDirectory(dirPath);
 
-  // Auto-detect media type
-  let type: MediaType | 'unknown' = dirInfo.isClean ? 'unknown' : 'unknown';
+  // Feed a few sample file names so a poor directory name can fall back to them.
+  const sampleNames = scan.videoFiles.slice(0, 3).map((f) => f.name);
+  const extract = extractMedia(originalDirName, sampleNames);
 
+  let type: MediaType | 'unknown';
   if (options?.type && options.type !== 'auto') {
     type = options.type;
   } else {
-    // Heuristic: if files have S##E## pattern, it's TV
-    const hasEpisodes = scan.episodes.some((ep) => ep.season > 0 && ep.episodes.length > 0);
-    if (hasEpisodes) {
-      type = 'tv';
-    } else if (scan.videoFiles.length === 1) {
-      // Single video file with no episode pattern -> likely a movie
-      type = 'movie';
-    } else if (scan.videoFiles.length > 1) {
-      // Multiple video files without S##E## -> still likely TV
-      type = 'tv';
-    }
-  }
-
-  // Fallback: if directory name didn't yield a title, try extracting from file names
-  let chineseTitle = dirInfo.chineseTitle;
-  let englishTitle = dirInfo.englishTitle;
-  let year = dirInfo.year;
-  let tags = dirInfo.tags;
-
-  if (!chineseTitle && !englishTitle && scan.episodes.length > 0) {
-    const fileFirst = extractFromFileName(scan.episodes[0].originalFileName);
-    chineseTitle = fileFirst.chineseTitle;
-    englishTitle = fileFirst.englishTitle;
-    if (!year) year = fileFirst.year;
-    if (!tags.resolution) tags = fileFirst.tags;
+    const hasEpisodes = scan.episodes.some((ep) => ep.episodes.length > 0);
+    if (hasEpisodes) type = 'tv';
+    else if (scan.videoFiles.length === 1) type = 'movie';
+    else if (scan.videoFiles.length > 1) type = 'tv';
+    else type = extract.mediaType;
   }
 
   return {
     type,
-    chineseTitle,
-    englishTitle,
-    year,
-    tags,
+    chineseTitle: topTitle(extract.titleCandidates, 'zh'),
+    englishTitle: topTitle(extract.titleCandidates, 'en'),
+    year: extract.yearCandidates[0],
+    tags: extract.tags,
     episodes: scan.episodes,
     originalDirName,
     sourcePath: dirPath,
-    isClean: dirInfo.isClean,
+    isClean: CLEAN_RE.test(originalDirName.trim()),
+    ids: extract.ids,
+    titleCandidates: extract.titleCandidates,
+    yearCandidates: extract.yearCandidates,
   };
 }

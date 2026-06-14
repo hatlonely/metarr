@@ -42,6 +42,12 @@ export const ipc = {
     language?: string,
   ): Promise<TMDBMatch[]> => getApi().tmdbSearch(apiKey, query, type, year, language),
 
+  tmdbLocate: (
+    apiKey: string,
+    parsed: ParsedMedia,
+    options: { type?: string; language?: string; manualQuery?: string },
+  ): Promise<TMDBMatch[]> => getApi().tmdbLocate(apiKey, parsed, options),
+
   tmdbGetMovieDetails: (apiKey: string, id: number): Promise<{ imdb_id?: string }> =>
     getApi().tmdbGetMovieDetails(apiKey, id),
 

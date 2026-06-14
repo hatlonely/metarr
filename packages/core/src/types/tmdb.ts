@@ -93,6 +93,13 @@ export interface TMDBMatch {
   overview: string;
   posterUrl?: string;
   backdropUrl?: string;
+  /** TMDB popularity, used as a tie-breaker in ranking. */
+  popularity?: number;
+  voteAverage?: number;
+  /** Relevance score assigned by the locate layer (higher = better). */
+  matchScore?: number;
+  /** Why this match ranked where it did, e.g. "ID 命中" / "标题+年份匹配". */
+  matchReason?: string;
 }
 
 export const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';

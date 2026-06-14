@@ -1,6 +1,6 @@
 'use client';
 
-import { Search, Loader2, ScanSearch } from 'lucide-react';
+import { Search, Loader2, FolderOpen, Sparkles } from 'lucide-react';
 import { Button } from '@/src/renderer/components/ui/button';
 import { Input } from '@/src/renderer/components/ui/input';
 import {
@@ -14,6 +14,7 @@ import { StepShell } from '@/src/renderer/components/layout/step-shell';
 import { StepFooter } from '@/src/renderer/components/layout/step-footer';
 import { Section } from '@/src/renderer/components/shared/section';
 import { MediaTagBadges } from '@/src/renderer/components/shared/tag-badge';
+import { cn } from '@/src/renderer/lib/utils';
 import { t, type Locale } from '@/src/renderer/lib/i18n';
 import type { ParsedMedia } from '@metarr/core';
 
@@ -43,16 +44,19 @@ export function StepParse({
   onMediaTypeChange,
 }: StepParseProps) {
   const text = t(locale);
-  const typeLabel = parsed.type === 'tv' ? text.tvShow : parsed.type === 'movie' ? text.movie : '-';
+  const L = (zh: string, en: string) => (locale === 'zh' ? zh : en);
 
-  const infoItems = [
-    { label: text.sourceDir, value: parsed.originalDirName },
-    { label: text.mediaType, value: typeLabel },
-    { label: text.chineseTitle, value: parsed.chineseTitle || '-' },
-    { label: text.englishTitle, value: parsed.englishTitle || '-' },
-    { label: text.year, value: String(parsed.year || '-') },
-    { label: text.fileCount, value: String(parsed.episodes.length) },
-  ];
+  const candidates = parsed.titleCandidates ?? [];
+  const ids = parsed.ids ?? {};
+  const idEntries: [string, string | number][] = [];
+  if (ids.tmdb) idEntries.push(['TMDB', ids.tmdb]);
+  if (ids.imdb) idEntries.push(['IMDB', ids.imdb]);
+  if (ids.tvdb) idEntries.push(['TVDB', ids.tvdb]);
+  if (ids.douban) idEntries.push([L('豆瓣', 'Douban'), ids.douban]);
+
+  const seasons = [...new Set(parsed.episodes.map((e) => e.season).filter((s) => s > 0))].sort(
+    (a, b) => a - b,
+  );
 
   return (
     <StepShell
@@ -62,51 +66,62 @@ export function StepParse({
       width="md"
       footer={
         <StepFooter onBack={onBack} backLabel={text.back}>
-          <Button variant="brand" onClick={onSearch} disabled={loading || !searchQuery}>
+          <Button variant="brand" onClick={onSearch} disabled={loading}>
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
             {text.searchTmdb}
           </Button>
         </StepFooter>
       }
     >
-      <div className="space-y-5">
-        <Section title={text.steps.parse} icon={ScanSearch} accent="brand">
-          <dl className="grid grid-cols-2 gap-x-6 gap-y-3.5">
-            {infoItems.map((item) => (
-              <div key={item.label} className="min-w-0">
-                <dt className="text-xs text-muted-foreground">{item.label}</dt>
-                <dd className="mt-0.5 truncate text-sm font-medium" title={item.value}>
-                  {item.value}
-                </dd>
-              </div>
-            ))}
-          </dl>
-          {parsed.tags && (
-            <div className="mt-4 border-t pt-4">
-              <span className="text-xs text-muted-foreground">{text.mediaTags}</span>
-              <div className="mt-2">
-                <MediaTagBadges tags={parsed.tags} />
-              </div>
+      <div className="space-y-6">
+        {/* Primary: what to search */}
+        <div className="space-y-3">
+          <div className="flex items-baseline justify-between gap-2">
+            <label className="text-sm font-medium">{L('搜索关键词', 'Search query')}</label>
+            {parsed.year ? (
+              <span className="text-xs text-muted-foreground">
+                {L('年份', 'Year')} {parsed.year}
+              </span>
+            ) : null}
+          </div>
+
+          <Input
+            value={searchQuery}
+            onChange={(e) => onSearchQueryChange(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && onSearch()}
+            placeholder={text.searchPlaceholder}
+            className="h-10"
+          />
+
+          {candidates.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs text-muted-foreground">{L('候选', 'Candidates')}</span>
+              {candidates.map((c, i) => (
+                <button
+                  key={`${c.lang}-${c.query}-${i}`}
+                  type="button"
+                  onClick={() => onSearchQueryChange(c.query)}
+                  className={cn(
+                    'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-colors',
+                    searchQuery === c.query
+                      ? 'border-brand bg-brand/10 text-brand'
+                      : 'border-border text-muted-foreground hover:border-brand/40 hover:text-foreground',
+                  )}
+                >
+                  <span className="text-[10px] opacity-70">
+                    {c.lang === 'zh' ? '中' : c.lang === 'en' ? 'EN' : '?'}
+                  </span>
+                  {c.query}
+                </button>
+              ))}
             </div>
           )}
-        </Section>
 
-        {/* Search query + type */}
-        <div className="space-y-3">
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">{text.searchTmdb}</label>
-            <Input
-              value={searchQuery}
-              onChange={(e) => onSearchQueryChange(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && onSearch()}
-              placeholder={text.searchPlaceholder}
-            />
-          </div>
           <Select
             value={mediaType}
             onValueChange={(v) => onMediaTypeChange(v as 'tv' | 'movie' | 'auto')}
           >
-            <SelectTrigger className="w-44">
+            <SelectTrigger className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -116,6 +131,61 @@ export function StepParse({
             </SelectContent>
           </Select>
         </div>
+
+        {/* ID detected → direct lookup (only when present) */}
+        {idEntries.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 rounded-lg border border-brand/30 bg-brand/5 px-3 py-2">
+            <Sparkles className="h-4 w-4 shrink-0 text-brand" />
+            <span className="text-xs font-medium text-brand">
+              {L('已识别 ID，将直接定位', 'ID detected — direct lookup')}
+            </span>
+            <span className="flex flex-wrap gap-1.5">
+              {idEntries.map(([k, v]) => (
+                <span key={k} className="rounded bg-brand/10 px-1.5 py-0.5 font-mono text-xs text-brand">
+                  {k} {v}
+                </span>
+              ))}
+            </span>
+          </div>
+        )}
+
+        {/* Secondary: parse details, collapsed by default */}
+        <Section
+          title={L('解析详情', 'Parse details')}
+          icon={FolderOpen}
+          accent="neutral"
+          collapsible
+          defaultOpen={false}
+        >
+          <div className="space-y-3">
+            <div>
+              <div className="mb-1 text-xs text-muted-foreground">{text.sourceDir}</div>
+              <code className="block break-all rounded-md bg-muted/50 px-2 py-1.5 font-mono text-xs text-foreground/80">
+                {parsed.originalDirName}
+              </code>
+            </div>
+
+            <div className="flex flex-wrap gap-x-6 gap-y-1.5 text-xs">
+              <span>
+                <span className="text-muted-foreground">{text.fileCount}: </span>
+                {parsed.episodes.length}
+              </span>
+              {seasons.length > 0 && (
+                <span>
+                  <span className="text-muted-foreground">{L('季', 'Seasons')}: </span>
+                  {seasons.join(', ')}
+                </span>
+              )}
+            </div>
+
+            {parsed.tags && (
+              <div>
+                <div className="mb-1.5 text-xs text-muted-foreground">{text.mediaTags}</div>
+                <MediaTagBadges tags={parsed.tags} />
+              </div>
+            )}
+          </div>
+        </Section>
       </div>
     </StepShell>
   );

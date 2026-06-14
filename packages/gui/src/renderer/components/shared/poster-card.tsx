@@ -37,6 +37,11 @@ export function PosterCard({ match, selected, onClick }: PosterCardProps) {
           <div className="font-medium leading-tight">
             {match.displayName}
             {match.year > 0 && <span className="ml-1 text-muted-foreground">({match.year})</span>}
+            {match.matchReason && (
+              <span className="ml-2 inline-block rounded bg-brand/10 px-1.5 py-0.5 align-middle text-[10px] font-medium text-brand">
+                {match.matchReason}
+              </span>
+            )}
           </div>
           {match.originalName && match.originalName !== match.displayName && (
             <div className="mt-0.5 truncate text-sm text-muted-foreground">

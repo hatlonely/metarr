@@ -20,8 +20,6 @@ export class TMDBClient {
   private apiKey: string;
   private language: string;
   private baseUrl: string;
-  private lastRequestTime = 0;
-  private readonly minRequestInterval = 250;
 
   constructor(options: TMDBClientOptions) {
     this.apiKey = options.apiKey;
@@ -29,13 +27,9 @@ export class TMDBClient {
     this.baseUrl = options.baseUrl || TMDB_BASE_URL;
   }
 
+  // No artificial throttle: the locate layer caps candidate queries (≤6) and
+  // fires them concurrently. TMDB tolerates well above that rate.
   private async request<T>(endpoint: string, params: Record<string, string> = {}): Promise<T> {
-    const elapsed = Date.now() - this.lastRequestTime;
-    if (elapsed < this.minRequestInterval) {
-      await new Promise((resolve) => setTimeout(resolve, this.minRequestInterval - elapsed));
-    }
-    this.lastRequestTime = Date.now();
-
     const url = new URL(`${this.baseUrl}${endpoint}`);
     url.searchParams.set('api_key', this.apiKey);
     url.searchParams.set('language', this.language);
@@ -102,6 +96,22 @@ export class TMDBClient {
     return results.map((r) => this.toMatch(r, type));
   }
 
+  /** Direct lookup by TMDB id. `typeHint` avoids an extra request when known. */
+  async getByTmdbId(id: number, typeHint?: 'tv' | 'movie'): Promise<TMDBMatch[]> {
+    const tries: ('tv' | 'movie')[] = typeHint ? [typeHint] : ['movie', 'tv'];
+    const out: TMDBMatch[] = [];
+    for (const t of tries) {
+      try {
+        const d =
+          t === 'tv' ? await this.getTvDetails(id) : await this.getMovieDetails(id);
+        out.push(this.detailsToMatch(d, t));
+      } catch {
+        // not this type / not found — try the next
+      }
+    }
+    return out;
+  }
+
   private toMatch(result: TMDBSearchResult, type: 'tv' | 'movie'): TMDBMatch {
     const displayName = result.name || result.title || '';
     const originalName = result.original_name || result.original_title || '';
@@ -118,6 +128,30 @@ export class TMDBClient {
       overview: result.overview || '',
       posterUrl: result.poster_path ? `${TMDB_IMAGE_BASE}${result.poster_path}` : undefined,
       backdropUrl: result.backdrop_path ? `${TMDB_IMAGE_BASE}${result.backdrop_path}` : undefined,
+      popularity: result.popularity,
+      voteAverage: result.vote_average,
+    };
+  }
+
+  private detailsToMatch(
+    d: TMDBTvDetails | TMDBMovieDetails,
+    type: 'tv' | 'movie',
+  ): TMDBMatch {
+    const displayName = 'name' in d ? d.name : d.title;
+    const originalName = 'original_name' in d ? d.original_name : d.original_title;
+    const dateStr = 'first_air_date' in d ? d.first_air_date : d.release_date;
+    const year = dateStr ? parseInt(dateStr.slice(0, 4), 10) : 0;
+    return {
+      id: d.id,
+      type,
+      displayName: displayName || originalName,
+      originalName,
+      year,
+      imdbId: 'imdb_id' in d ? d.imdb_id : undefined,
+      overview: d.overview || '',
+      posterUrl: d.poster_path ? `${TMDB_IMAGE_BASE}${d.poster_path}` : undefined,
+      backdropUrl: d.backdrop_path ? `${TMDB_IMAGE_BASE}${d.backdrop_path}` : undefined,
+      voteAverage: d.vote_average,
     };
   }
 }
