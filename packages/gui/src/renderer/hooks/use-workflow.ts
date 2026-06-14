@@ -389,7 +389,15 @@ export function useWorkflow() {
     } finally {
       dispatch({ type: 'SET_EXECUTING', executing: false });
     }
-  }, [state.plan, state.conflictResolutions, state.filesToRemove, state.artworkPlan, state.selectedArtworkPaths]);
+  }, [
+    state.plan,
+    state.conflictResolutions,
+    state.filesToRemove,
+    state.artworkPlan,
+    state.selectedArtworkPaths,
+    state.subtitlePlan,
+    state.selectedSubtitlePaths,
+  ]);
 
   const setConflictResolution = useCallback(
     (taskIndex: number, resolution: ConflictResolution) => {
