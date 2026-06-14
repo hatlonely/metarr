@@ -18,12 +18,16 @@ export const SUBDL_CODE_TO_LANG: Record<string, string> = Object.fromEntries(
   Object.entries(LANGUAGE_CONFIG).map(([key, { subdlCode }]) => [subdlCode, key]),
 );
 
-export const ASSRT_DESC_TO_LANG: Record<string, string> = {
-  '简体中文': 'zh',
-  '繁体中文': 'zh-TW',
-  '繁體中文': 'zh-TW',
-  'English':  'en',
-  'english':  'en',
+/**
+ * Tokens that commonly appear in subtitle filenames inside Assrt archives,
+ * used to pick the right file by language (e.g. "...chs.srt", "...eng.srt").
+ */
+export const LANG_FILENAME_TOKENS: Record<string, string[]> = {
+  'zh': ['chs', 'sc', 'gb', 'zh-cn', 'zh_cn', 'simplified', '简'],
+  'zh-TW': ['cht', 'tc', 'big5', 'zh-tw', 'zh_tw', 'traditional', '繁'],
+  'en': ['eng', 'en'],
+  'ja': ['jpn', 'jp', 'ja'],
+  'ko': ['kor', 'kr', 'ko'],
 };
 
 export const DEFAULT_SUBTITLE_LANGUAGES = ['zh', 'en'];
@@ -35,8 +39,13 @@ interface SubDLResolveInfo {
 
 interface AssrtResolveInfo {
   kind: 'assrt';
-  subId: string;
+  subId: number;
   token: string;
+  /** Hints for picking the right file out of a (possibly season-pack) archive */
+  season?: number;
+  episode?: number;
+  /** Canonical language key of the desired subtitle (zh / zh-TW / en / ...) */
+  language: string;
 }
 
 export type ResolveInfo = SubDLResolveInfo | AssrtResolveInfo;

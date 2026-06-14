@@ -1,10 +1,11 @@
 import { basename } from 'node:path';
 import type { TMDBMatch } from '../types/tmdb.js';
-import type { RenamePlan } from '../types/renamer.js';
+import type { RenamePlan, RenameTask } from '../types/renamer.js';
 import { SubDLClient } from './subdl.js';
 import type { SubDLSubtitle } from './subdl.js';
-import { AssrtClient } from './assrt.js';
-import { LANGUAGE_CONFIG, SUBDL_CODE_TO_LANG, ASSRT_DESC_TO_LANG } from './types.js';
+import { AssrtClient, assrtLangsOf } from './assrt.js';
+import type { AssrtSearchSub } from './assrt.js';
+import { LANGUAGE_CONFIG, SUBDL_CODE_TO_LANG } from './types.js';
 import type { SubtitleTask, SubtitlePlan } from './types.js';
 
 export interface SubtitleOptions {
@@ -55,6 +56,47 @@ function subdlToTask(
   };
 }
 
+/**
+ * Expand an Assrt search result into tasks — one per requested language the
+ * result provides (per its langlist flags). Archives may be season packs, so
+ * season/episode hints are carried for the executor to pick the right file.
+ */
+function assrtToTasks(
+  sub: AssrtSearchSub,
+  videoTarget: string,
+  token: string,
+  allowedLangs: string[],
+  se: { season: number; episode: number } | null,
+  prefix: string,
+): SubtitleTask[] {
+  const available = assrtLangsOf(sub.lang?.langlist);
+  const out: SubtitleTask[] = [];
+  for (const langKey of available) {
+    if (!allowedLangs.includes(langKey)) continue;
+    const langMeta = LANGUAGE_CONFIG[langKey];
+    if (!langMeta) continue;
+    out.push({
+      source: 'assrt',
+      language: langKey,
+      languageDisplay: langMeta.display,
+      format: 'srt',
+      releaseName: sub.native_name || sub.videoname,
+      downloadCount: 0,
+      resolveInfo: {
+        kind: 'assrt',
+        subId: sub.id,
+        token,
+        season: se?.season,
+        episode: se?.episode,
+        language: langKey,
+      },
+      targetPath: subtitlePath(videoTarget, langMeta.suffix, 'srt'),
+      description: `${prefix}${langMeta.display} (Assrt)`,
+    });
+  }
+  return out;
+}
+
 export async function generateSubtitlePlan(
   tmdbMatch: TMDBMatch,
   plan: RenamePlan,
@@ -66,14 +108,13 @@ export async function generateSubtitlePlan(
   const assrt = options.assrtToken ? new AssrtClient(options.assrtToken) : null;
 
   const subdlCodes = options.languages
-    .map(l => LANGUAGE_CONFIG[l]?.subdlCode)
+    .map((l) => LANGUAGE_CONFIG[l]?.subdlCode)
     .filter(Boolean)
     .join(',');
 
   const name = tmdbMatch.displayName || tmdbMatch.originalName;
-  const renameTasks = plan.tasks.filter(t => t.operation === 'rename');
+  const renameTasks = plan.tasks.filter((t) => t.operation === 'rename');
   const tasks: SubtitleTask[] = [];
-  // Track used target paths to avoid duplicate subtitle files
   const usedPaths = new Set<string>();
 
   const addTask = (task: SubtitleTask) => {
@@ -87,64 +128,68 @@ export async function generateSubtitlePlan(
     if (!videoTask) return { tasks: [] };
 
     if (subdl && subdlCodes) {
-      const results = await subdl.search({ tmdbId: tmdbMatch.id, type: 'movie', languages: subdlCodes }).catch(() => []);
+      const results = await subdl
+        .search({ tmdbId: tmdbMatch.id, type: 'movie', languages: subdlCodes })
+        .catch(() => []);
       for (const sub of results) {
         const task = subdlToTask(sub, videoTask.target, subdl, options.languages, '');
         if (task) addTask(task);
       }
     }
 
-    if (assrt && options.languages.some(l => l.startsWith('zh'))) {
+    if (assrt) {
       const results = await assrt.search(`${name} ${tmdbMatch.year}`).catch(() => []);
-      for (const sub of results.slice(0, 2)) {
-        const langKey = ASSRT_DESC_TO_LANG[sub.lang?.desc ?? ''] ?? 'zh';
-        if (!options.languages.includes(langKey)) continue;
-        const langMeta = LANGUAGE_CONFIG[langKey];
-        if (!langMeta) continue;
-        const ext = sub.subtype || 'srt';
-        addTask({
-          source: 'assrt', language: langKey, languageDisplay: sub.lang?.desc || langMeta.display,
-          format: ext, releaseName: sub.native_name || sub.videoname, downloadCount: 0,
-          resolveInfo: { kind: 'assrt', subId: sub.id, token: assrt.token },
-          targetPath: subtitlePath(videoTask.target, langMeta.suffix, ext),
-          description: `${sub.lang?.desc || langMeta.display} (Assrt)`,
-        });
+      for (const sub of results) {
+        for (const task of assrtToTasks(sub, videoTask.target, assrt.token, options.languages, null, '')) {
+          addTask(task);
+        }
       }
     }
   } else {
-    for (const task of renameTasks) {
-      const se = parseSE(basename(task.source));
-      if (!se) continue;
-      const epLabel = `S${pad2(se.season)}E${pad2(se.episode)}`;
-
-      if (subdl && subdlCodes) {
-        const results = await subdl.search({
-          tmdbId: tmdbMatch.id, type: 'tv',
-          season: se.season, episode: se.episode,
-          languages: subdlCodes,
-        }).catch(() => []);
-
+    // SubDL: per-episode search (SubDL indexes per episode).
+    if (subdl && subdlCodes) {
+      for (const task of renameTasks) {
+        const se = parseSE(basename(task.source));
+        if (!se) continue;
+        const epLabel = `S${pad2(se.season)}E${pad2(se.episode)}`;
+        const results = await subdl
+          .search({
+            tmdbId: tmdbMatch.id,
+            type: 'tv',
+            season: se.season,
+            episode: se.episode,
+            languages: subdlCodes,
+          })
+          .catch(() => []);
         for (const sub of results) {
           const subTask = subdlToTask(sub, task.target, subdl, options.languages, `${epLabel} `);
           if (subTask) addTask(subTask);
         }
       }
+    }
 
-      if (assrt && options.languages.some(l => l.startsWith('zh'))) {
-        const results = await assrt.search(`${name} ${epLabel}`).catch(() => []);
-        for (const sub of results.slice(0, 1)) {
-          const langKey = ASSRT_DESC_TO_LANG[sub.lang?.desc ?? ''] ?? 'zh';
-          if (!options.languages.includes(langKey)) continue;
-          const langMeta = LANGUAGE_CONFIG[langKey];
-          if (!langMeta) continue;
-          const ext = sub.subtype || 'srt';
-          addTask({
-            source: 'assrt', language: langKey, languageDisplay: sub.lang?.desc || langMeta.display,
-            format: ext, releaseName: sub.native_name || sub.videoname, downloadCount: 0,
-            resolveInfo: { kind: 'assrt', subId: sub.id, token: assrt.token },
-            targetPath: subtitlePath(task.target, langMeta.suffix, ext),
-            description: `${epLabel} ${sub.lang?.desc || langMeta.display} (Assrt)`,
-          });
+    // Assrt: one search per season (archives are usually season packs); reuse
+    // results across that season's episodes, letting the executor pick by episode.
+    if (assrt) {
+      const episodesBySeason = new Map<number, RenameTask[]>();
+      for (const task of renameTasks) {
+        const se = parseSE(basename(task.source));
+        if (!se) continue;
+        if (!episodesBySeason.has(se.season)) episodesBySeason.set(se.season, []);
+        episodesBySeason.get(se.season)!.push(task);
+      }
+
+      for (const [season, epTasks] of episodesBySeason) {
+        const results = await assrt.search(`${name} S${pad2(season)}`).catch(() => []);
+        if (results.length === 0) continue;
+        for (const task of epTasks) {
+          const se = parseSE(basename(task.source))!;
+          const epLabel = `S${pad2(se.season)}E${pad2(se.episode)}`;
+          for (const sub of results) {
+            for (const t of assrtToTasks(sub, task.target, assrt.token, options.languages, se, `${epLabel} `)) {
+              addTask(t);
+            }
+          }
         }
       }
     }
