@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Input } from '@/src/renderer/components/ui/input';
 import { Label } from '@/src/renderer/components/ui/label';
 import { Button } from '@/src/renderer/components/ui/button';
@@ -35,12 +35,13 @@ export function SettingsSheet({ open, onOpenChange, config, onSave, locale }: Se
   const text = t(locale);
   const [localConfig, setLocalConfig] = useState<AppConfig>(config);
 
-  const handleOpen = (isOpen: boolean) => {
-    if (isOpen) {
+  // Sync from latest config whenever the sheet opens. Opening via the controlled
+  // `open` prop does not fire onOpenChange, so syncing must not rely on it.
+  useEffect(() => {
+    if (open) {
       setLocalConfig(config);
     }
-    onOpenChange(isOpen);
-  };
+  }, [open, config]);
 
   const handleSave = () => {
     onSave(localConfig);
@@ -48,7 +49,7 @@ export function SettingsSheet({ open, onOpenChange, config, onSave, locale }: Se
   };
 
   return (
-    <Sheet open={open} onOpenChange={handleOpen}>
+    <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="sm:max-w-md overflow-y-auto">
         <SheetHeader>
           <SheetTitle>{text.settingsTitle}</SheetTitle>
