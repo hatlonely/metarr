@@ -1,9 +1,8 @@
 'use client';
 
-import { Search, Loader2 } from 'lucide-react';
+import { Search, Loader2, ScanSearch } from 'lucide-react';
 import { Button } from '@/src/renderer/components/ui/button';
 import { Input } from '@/src/renderer/components/ui/input';
-import { Card, CardContent } from '@/src/renderer/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -11,7 +10,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/src/renderer/components/ui/select';
-import { StepHeader } from '@/src/renderer/components/shared/step-header';
+import { StepShell } from '@/src/renderer/components/layout/step-shell';
+import { StepFooter } from '@/src/renderer/components/layout/step-footer';
+import { Section } from '@/src/renderer/components/shared/section';
 import { MediaTagBadges } from '@/src/renderer/components/shared/tag-badge';
 import { t, type Locale } from '@/src/renderer/lib/i18n';
 import type { ParsedMedia } from '@metarr/core';
@@ -23,6 +24,7 @@ interface StepParseProps {
   mediaType: 'tv' | 'movie' | 'auto';
   searchQuery: string;
   loading: boolean;
+  onBack: () => void;
   onSearchQueryChange: (query: string) => void;
   onSearch: () => void;
   onMediaTypeChange: (type: 'tv' | 'movie' | 'auto') => void;
@@ -35,12 +37,12 @@ export function StepParse({
   mediaType,
   searchQuery,
   loading,
+  onBack,
   onSearchQueryChange,
   onSearch,
   onMediaTypeChange,
 }: StepParseProps) {
   const text = t(locale);
-
   const typeLabel = parsed.type === 'tv' ? text.tvShow : parsed.type === 'movie' ? text.movie : '-';
 
   const infoItems = [
@@ -53,64 +55,68 @@ export function StepParse({
   ];
 
   return (
-    <>
-      <StepHeader title={text.steps.parse} description={text.stepDesc.parse} step={step} />
-
-      {/* Parsed info */}
-      <Card className="mb-6">
-        <CardContent className="pt-6">
-          <div className="grid grid-cols-3 gap-x-6 gap-y-4">
-            {infoItems.map((item) => (
-              <div key={item.label} className="space-y-0.5">
-                <span className="text-xs text-muted-foreground">{item.label}</span>
-                <p className="truncate text-sm font-medium">{item.value}</p>
-              </div>
-            ))}
-          </div>
-
-          {parsed.tags && (
-            <div className="mt-5 space-y-2">
-              <span className="text-xs text-muted-foreground">{text.mediaTags}</span>
-              <MediaTagBadges tags={parsed.tags} />
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Search */}
-      <div className="space-y-3">
-        <div className="flex gap-2">
-          <Input
-            value={searchQuery}
-            onChange={(e) => onSearchQueryChange(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && onSearch()}
-            placeholder={text.searchPlaceholder}
-            className="flex-1"
-          />
+    <StepShell
+      title={text.steps.parse}
+      description={text.stepDesc.parse}
+      step={step}
+      width="md"
+      footer={
+        <StepFooter onBack={onBack} backLabel={text.back}>
           <Button variant="brand" onClick={onSearch} disabled={loading || !searchQuery}>
-            {loading ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Search className="mr-2 h-4 w-4" />
-            )}
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
             {text.searchTmdb}
           </Button>
-        </div>
+        </StepFooter>
+      }
+    >
+      <div className="space-y-5">
+        <Section title={text.steps.parse} icon={ScanSearch} accent="brand">
+          <dl className="grid grid-cols-2 gap-x-6 gap-y-3.5">
+            {infoItems.map((item) => (
+              <div key={item.label} className="min-w-0">
+                <dt className="text-xs text-muted-foreground">{item.label}</dt>
+                <dd className="mt-0.5 truncate text-sm font-medium" title={item.value}>
+                  {item.value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+          {parsed.tags && (
+            <div className="mt-4 border-t pt-4">
+              <span className="text-xs text-muted-foreground">{text.mediaTags}</span>
+              <div className="mt-2">
+                <MediaTagBadges tags={parsed.tags} />
+              </div>
+            </div>
+          )}
+        </Section>
 
-        <Select
-          value={mediaType}
-          onValueChange={(v) => onMediaTypeChange(v as 'tv' | 'movie' | 'auto')}
-        >
-          <SelectTrigger className="w-40">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="auto">{text.autoDetect}</SelectItem>
-            <SelectItem value="tv">{text.tvShow}</SelectItem>
-            <SelectItem value="movie">{text.movie}</SelectItem>
-          </SelectContent>
-        </Select>
+        {/* Search query + type */}
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">{text.searchTmdb}</label>
+            <Input
+              value={searchQuery}
+              onChange={(e) => onSearchQueryChange(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && onSearch()}
+              placeholder={text.searchPlaceholder}
+            />
+          </div>
+          <Select
+            value={mediaType}
+            onValueChange={(v) => onMediaTypeChange(v as 'tv' | 'movie' | 'auto')}
+          >
+            <SelectTrigger className="w-44">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="auto">{text.autoDetect}</SelectItem>
+              <SelectItem value="tv">{text.tvShow}</SelectItem>
+              <SelectItem value="movie">{text.movie}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
-    </>
+    </StepShell>
   );
 }

@@ -21,7 +21,8 @@ import {
   TableRow,
 } from '@/src/renderer/components/ui/table';
 import { Card, CardContent } from '@/src/renderer/components/ui/card';
-import { StepHeader } from '@/src/renderer/components/shared/step-header';
+import { StepShell } from '@/src/renderer/components/layout/step-shell';
+import { StepFooter } from '@/src/renderer/components/layout/step-footer';
 import { t, type Locale } from '@/src/renderer/lib/i18n';
 import type { ExecutionResult, ArtworkExecutionResult, SubtitleExecutionResult } from '@metarr/core';
 
@@ -48,9 +49,20 @@ export function StepExecute({ locale, step, result, artworkResult, subtitleResul
   const hasIssues = result.failed.length > 0 || overwrittenCount > 0 || removedCount > 0 || metadataFailed > 0 || subtitleFailed > 0;
 
   return (
-    <>
-      <StepHeader title={text.executionComplete} description={text.stepDesc.execute} step={step} />
-
+    <StepShell
+      title={text.executionComplete}
+      description={text.stepDesc.execute}
+      step={step}
+      width="lg"
+      footer={
+        <StepFooter>
+          <Button variant="brand" onClick={onContinue}>
+            <RotateCcw className="h-4 w-4" />
+            {text.continueProcess}
+          </Button>
+        </StepFooter>
+      }
+    >
       {/* Main stats */}
       <div className="mb-6 flex flex-wrap gap-3">
         <Card className="flex-1 overflow-hidden">
@@ -232,12 +244,6 @@ export function StepExecute({ locale, step, result, artworkResult, subtitleResul
         </div>
       )}
 
-      <div className="flex justify-center">
-        <Button variant="brand" onClick={onContinue}>
-          <RotateCcw className="mr-2 h-4 w-4" />
-          {text.continueProcess}
-        </Button>
-      </div>
-    </>
+    </StepShell>
   );
 }

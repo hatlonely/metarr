@@ -83,6 +83,7 @@ export function AppShell() {
             mediaType={state.mediaType}
             searchQuery={state.searchQuery}
             loading={state.loading}
+            onBack={() => goToStep('select')}
             onSearchQueryChange={setSearchQuery}
             onSearch={() => searchTmdb(config.tmdbKey, undefined, config.displayLanguage)}
             onMediaTypeChange={setMediaType}
@@ -97,6 +98,7 @@ export function AppShell() {
             selectedMatch={state.selectedMatch}
             searchQuery={state.searchQuery}
             loading={state.loading}
+            onBack={() => goToStep('parse')}
             onSelectMatch={(match) => selectMatch(match, config.tmdbKey)}
             onReSearch={() => searchTmdb(config.tmdbKey)}
             onGeneratePlan={() =>
@@ -186,7 +188,9 @@ export function AppShell() {
         locale={locale}
       />
       <ContentArea error={state.error} onDismissError={() => setError(null)}>
-        <Reveal key={state.currentStep}>{renderStep()}</Reveal>
+        <Reveal key={state.currentStep} className="h-full">
+          {renderStep()}
+        </Reveal>
       </ContentArea>
       <SettingsSheet
         open={settingsOpen}
