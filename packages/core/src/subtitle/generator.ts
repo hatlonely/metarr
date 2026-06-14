@@ -2,8 +2,9 @@ import { basename } from 'node:path';
 import type { TMDBMatch } from '../types/tmdb.js';
 import type { RenamePlan } from '../types/renamer.js';
 import { SubDLClient } from './subdl.js';
+import type { SubDLSubtitle } from './subdl.js';
 import { AssrtClient } from './assrt.js';
-import { LANGUAGE_CONFIG, ASSRT_DESC_TO_LANG } from './types.js';
+import { LANGUAGE_CONFIG, SUBDL_CODE_TO_LANG, ASSRT_DESC_TO_LANG } from './types.js';
 import type { SubtitleTask, SubtitlePlan } from './types.js';
 
 export interface SubtitleOptions {
@@ -24,6 +25,34 @@ function subtitlePath(videoTarget: string, suffix: string, ext: string): string 
 
 function pad2(n: number): string {
   return String(n).padStart(2, '0');
+}
+
+/**
+ * Convert a SubDL search result into a task, mapping its uppercase language code
+ * to a canonical key. SubDL serves ZIP archives, so the real extension is only
+ * known after extraction — default to .srt; the executor rewrites it if needed.
+ */
+function subdlToTask(
+  sub: SubDLSubtitle,
+  videoTarget: string,
+  subdl: SubDLClient,
+  allowedLangs: string[],
+  prefix: string,
+): SubtitleTask | null {
+  const langKey = SUBDL_CODE_TO_LANG[sub.language];
+  if (!langKey || !allowedLangs.includes(langKey)) return null;
+  const langMeta = LANGUAGE_CONFIG[langKey];
+  return {
+    source: 'subdl',
+    language: langKey,
+    languageDisplay: langMeta.display,
+    format: 'srt',
+    releaseName: sub.release_name,
+    downloadCount: 0,
+    resolveInfo: { kind: 'subdl', downloadUrl: subdl.downloadUrl(sub.url) },
+    targetPath: subtitlePath(videoTarget, langMeta.suffix, 'srt'),
+    description: `${prefix}${langMeta.display} (SubDL)`,
+  };
 }
 
 export async function generateSubtitlePlan(
@@ -59,18 +88,9 @@ export async function generateSubtitlePlan(
 
     if (subdl && subdlCodes) {
       const results = await subdl.search({ tmdbId: tmdbMatch.id, type: 'movie', languages: subdlCodes }).catch(() => []);
-      for (const sub of results.filter(s => !s.zipDownload).slice(0, 3)) {
-        const langKey = sub.language;
-        const langMeta = LANGUAGE_CONFIG[langKey];
-        if (!langMeta || !options.languages.includes(langKey)) continue;
-        const ext = sub.url.split('.').pop() ?? 'srt';
-        addTask({
-          source: 'subdl', language: langKey, languageDisplay: langMeta.display,
-          format: ext, releaseName: sub.release_name, downloadCount: sub.download_count,
-          resolveInfo: { kind: 'subdl', downloadUrl: subdl.downloadUrl(sub.url) },
-          targetPath: subtitlePath(videoTask.target, langMeta.suffix, ext),
-          description: `${langMeta.display} (SubDL)`,
-        });
+      for (const sub of results) {
+        const task = subdlToTask(sub, videoTask.target, subdl, options.languages, '');
+        if (task) addTask(task);
       }
     }
 
@@ -104,18 +124,9 @@ export async function generateSubtitlePlan(
           languages: subdlCodes,
         }).catch(() => []);
 
-        for (const sub of results.filter(s => !s.zipDownload).slice(0, 2)) {
-          const langKey = sub.language;
-          const langMeta = LANGUAGE_CONFIG[langKey];
-          if (!langMeta || !options.languages.includes(langKey)) continue;
-          const ext = sub.url.split('.').pop() ?? 'srt';
-          addTask({
-            source: 'subdl', language: langKey, languageDisplay: langMeta.display,
-            format: ext, releaseName: sub.release_name, downloadCount: sub.download_count,
-            resolveInfo: { kind: 'subdl', downloadUrl: subdl.downloadUrl(sub.url) },
-            targetPath: subtitlePath(task.target, langMeta.suffix, ext),
-            description: `${epLabel} ${langMeta.display} (SubDL)`,
-          });
+        for (const sub of results) {
+          const subTask = subdlToTask(sub, task.target, subdl, options.languages, `${epLabel} `);
+          if (subTask) addTask(subTask);
         }
       }
 
