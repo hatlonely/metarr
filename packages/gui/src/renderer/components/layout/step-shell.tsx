@@ -46,8 +46,8 @@ export function StepShell({ title, description, step, width = 'md', footer, chil
       </ScrollArea>
 
       {footer && (
-        <footer className="shrink-0 border-t bg-card/60 px-8 py-3.5 backdrop-blur">
-          <div className={cn('mx-auto', w)}>{footer}</div>
+        <footer className="flex h-14 shrink-0 items-center border-t px-8">
+          <div className={cn('mx-auto w-full', w)}>{footer}</div>
         </footer>
       )}
     </div>

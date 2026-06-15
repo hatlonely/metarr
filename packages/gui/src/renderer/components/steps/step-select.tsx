@@ -117,7 +117,7 @@ export function StepSelect({
           onDrop={handleDrop}
           onClick={onSelect}
           className={cn(
-            'flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-16 text-center transition-all duration-200',
+            'flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-16 text-center transition-all duration-200',
             dragOver
               ? 'border-brand bg-brand/5'
               : 'border-border hover:border-brand/40 hover:bg-muted/30',
@@ -125,7 +125,7 @@ export function StepSelect({
         >
           <div
             className={cn(
-              'mb-4 flex h-14 w-14 items-center justify-center rounded-2xl transition-colors',
+              'mb-4 flex h-14 w-14 items-center justify-center rounded-xl transition-colors',
               dragOver ? 'bg-brand-gradient text-white' : 'bg-brand/10 text-brand',
             )}
           >

@@ -82,7 +82,7 @@ export function Section({
 }: SectionProps) {
   if (!collapsible) {
     return (
-      <div className={cn('rounded-xl border bg-card', className)}>
+      <div className={cn('rounded-xl border bg-card shadow-sm', className)}>
         <div className="px-4 py-3">
           <Heading title={title} icon={icon} count={count} accent={accent} />
         </div>
@@ -92,7 +92,7 @@ export function Section({
   }
 
   return (
-    <Collapsible defaultOpen={defaultOpen} className={cn('rounded-xl border bg-card', className)}>
+    <Collapsible defaultOpen={defaultOpen} className={cn('rounded-xl border bg-card shadow-sm', className)}>
       <CollapsibleTrigger className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left transition-colors hover:bg-muted/40 [&[data-state=open]>svg]:rotate-180">
         <Heading title={title} icon={icon} count={count} accent={accent} />
         <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200" />

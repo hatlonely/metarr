@@ -67,10 +67,8 @@ export function Sidebar({
         ))}
       </nav>
 
-      <Separator />
-
-      {/* Footer */}
-      <div className="flex items-center justify-between p-3">
+      {/* Footer — same height + top border as the content footer so the two line up */}
+      <div className="flex h-14 items-center justify-between border-t px-3">
         <Tooltip>
           <TooltipTrigger asChild>
             <Button variant="ghost" size="icon" onClick={onOpenSettings}>
