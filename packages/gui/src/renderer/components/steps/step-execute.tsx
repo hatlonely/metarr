@@ -226,7 +226,7 @@ export function StepExecute({ locale, step, result, artworkResult, subtitleResul
                 <TableRow>
                   <TableHead>{text.path}</TableHead>
                   <TableHead className="w-48">{text.operationType}</TableHead>
-                  <TableHead className="w-64">Error</TableHead>
+                  <TableHead className="w-64">{text.errorLabel}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

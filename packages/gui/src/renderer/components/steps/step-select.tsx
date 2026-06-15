@@ -132,7 +132,9 @@ export function StepSelect({
             <Upload className="h-6 w-6" />
           </div>
           <p className="text-sm font-medium">{text.dragDropHint}</p>
-          <p className="mt-1 text-xs text-muted-foreground">{text.dragDropFormats}</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {text.orClickSelect} · {text.dragDropFormats}
+          </p>
         </div>
       </div>
     </StepShell>

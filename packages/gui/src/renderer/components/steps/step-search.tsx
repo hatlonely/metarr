@@ -38,6 +38,14 @@ export function StepSearch({
 }: StepSearchProps) {
   const text = t(locale);
 
+  // Results are ranked by relevance — default-select the top match so the user
+  // can hit "generate" immediately (still free to pick another).
+  useEffect(() => {
+    if (!loading && results.length > 0 && !selectedMatch) {
+      onSelectMatch(results[0]);
+    }
+  }, [loading, results, selectedMatch, onSelectMatch]);
+
   // Press Enter to generate the plan once a match is selected (no text inputs here).
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -72,8 +80,7 @@ export function StepSearch({
         <div className="flex items-center justify-between">
           <span className="flex items-center gap-2 text-sm text-muted-foreground">
             <Search className="h-3.5 w-3.5" />
-            &ldquo;{searchQuery}&rdquo; &middot; {results.length}{' '}
-            {results.length === 1 ? 'result' : 'results'}
+            &ldquo;{searchQuery}&rdquo; &middot; {results.length} {text.resultsLabel}
           </span>
           <Button variant="outline" size="sm" onClick={onReSearch} disabled={loading}>
             {loading ? (

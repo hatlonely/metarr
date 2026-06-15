@@ -158,6 +158,10 @@ const zh = {
   assrtToken: '射手网 Token',
   assrtTokenPlaceholder: '从 assrt.net 获取',
   subtitleLanguages: '字幕语言',
+  resultsLabel: '个结果',
+  noPoster: '暂无海报',
+  errorLabel: '错误',
+  orClickSelect: '或点击选择',
 } as const;
 
 const en = {
@@ -320,6 +324,10 @@ const en = {
   assrtToken: 'Assrt Token',
   assrtTokenPlaceholder: 'Get from assrt.net',
   subtitleLanguages: 'Subtitle Languages',
+  resultsLabel: 'results',
+  noPoster: 'No poster',
+  errorLabel: 'Error',
+  orClickSelect: 'or click to select',
 } as const;
 
 export type Locale = 'zh' | 'en';

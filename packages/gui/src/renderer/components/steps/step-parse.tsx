@@ -66,7 +66,14 @@ export function StepParse({
       width="md"
       footer={
         <StepFooter onBack={onBack} backLabel={text.back}>
-          <Button variant="brand" onClick={onSearch} disabled={loading}>
+          <Button
+            variant="brand"
+            onClick={onSearch}
+            disabled={
+              loading ||
+              (!searchQuery.trim() && candidates.length === 0 && idEntries.length === 0)
+            }
+          >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
             {text.searchTmdb}
           </Button>
@@ -86,6 +93,7 @@ export function StepParse({
           </div>
 
           <Input
+            autoFocus
             value={searchQuery}
             onChange={(e) => onSearchQueryChange(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && onSearch()}

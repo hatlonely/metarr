@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from '@/src/renderer/lib/utils';
+import { t } from '@/src/renderer/lib/i18n';
 import type { TMDBMatch } from '@metarr/core';
 
 interface PosterCardProps {
@@ -10,7 +11,8 @@ interface PosterCardProps {
   locale: 'zh' | 'en';
 }
 
-export function PosterCard({ match, selected, onClick }: PosterCardProps) {
+export function PosterCard({ match, selected, onClick, locale }: PosterCardProps) {
+  const text = t(locale);
   return (
     <button
       onClick={onClick}
@@ -29,8 +31,8 @@ export function PosterCard({ match, selected, onClick }: PosterCardProps) {
             className="h-28 w-20 shrink-0 rounded-lg object-cover ring-1 ring-black/5 dark:ring-white/10"
           />
         ) : (
-          <div className="flex h-28 w-20 shrink-0 items-center justify-center rounded-lg bg-muted text-xs text-muted-foreground">
-            No Poster
+          <div className="flex h-28 w-20 shrink-0 items-center justify-center rounded-lg bg-muted text-center text-xs text-muted-foreground">
+            {text.noPoster}
           </div>
         )}
         <div className="min-w-0 flex-1">
