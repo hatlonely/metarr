@@ -371,7 +371,7 @@ export function StepPreview({
                 <Label>{text.namingPreset}</Label>
                 {regenerating && (
                   <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
                     {text.regenerating}
                   </span>
                 )}
@@ -528,7 +528,7 @@ export function StepPreview({
                   <span className="flex-1 truncate font-mono">{file.name}</span>
                   <span className="shrink-0 text-muted-foreground">{formatFileSize(file.size)}</span>
                   {filesToRemove.includes(file.path) && (
-                    <Trash2 className="h-3 w-3 text-destructive" />
+                    <Trash2 className="h-3.5 w-3.5 text-destructive" />
                   )}
                 </div>
               ))}
@@ -596,7 +596,7 @@ export function StepPreview({
                           onClick={() => onToggleArtwork(task.targetPath)}
                           className={`flex cursor-pointer items-center gap-2 rounded-md border px-2 py-1 text-xs transition-all ${selected ? 'border-brand bg-brand/5' : 'border-transparent opacity-50'}`}
                         >
-                          <File className="h-3 w-3 shrink-0 text-blue-500" />
+                          <File className="h-3.5 w-3.5 shrink-0 text-blue-500" />
                           <span className="font-mono text-muted-foreground">{task.description}</span>
                         </div>
                       );
@@ -696,7 +696,7 @@ export function StepPreview({
                         }`}
                         style={indent(row.depth + 1)}
                       >
-                        <File className="h-3 w-3 shrink-0" />
+                        <File className="h-3.5 w-3.5 shrink-0" />
                         <span className="font-mono">{row.source}</span>
                       </div>
                     )
@@ -736,7 +736,7 @@ export function StepPreview({
                       className="flex items-center gap-1.5 whitespace-nowrap py-0.5 text-xs text-blue-500 dark:text-blue-400"
                       style={indent(row.depth + 1)}
                     >
-                      <Image className="h-3 w-3 shrink-0" />
+                      <Image className="h-3.5 w-3.5 shrink-0" />
                       <span className="font-mono">{row.target}</span>
                     </div>
                   ) : row.kind === 'subtitle' ? (
@@ -745,7 +745,7 @@ export function StepPreview({
                       className="flex items-center gap-1.5 whitespace-nowrap py-0.5 text-xs text-green-600 dark:text-green-400"
                       style={indent(row.depth + 1)}
                     >
-                      <Captions className="h-3 w-3 shrink-0" />
+                      <Captions className="h-3.5 w-3.5 shrink-0" />
                       <span className="font-mono">{row.target}</span>
                     </div>
                   ) : (
@@ -758,7 +758,7 @@ export function StepPreview({
                       }`}
                       style={indent(row.depth + 1)}
                     >
-                      <File className="h-3 w-3 shrink-0" />
+                      <File className="h-3.5 w-3.5 shrink-0" />
                       <span className="font-mono">{row.target}</span>
                     </div>
                   ),

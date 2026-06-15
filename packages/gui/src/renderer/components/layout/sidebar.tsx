@@ -1,7 +1,6 @@
 'use client';
 
 import { Settings, Sun, Moon, Monitor, Languages } from 'lucide-react';
-import { Separator } from '@/src/renderer/components/ui/separator';
 import { Button } from '@/src/renderer/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/src/renderer/components/ui/tooltip';
 import { SidebarStep } from './sidebar-step';
@@ -44,8 +43,6 @@ export function Sidebar({
       <div className="px-4 py-5">
         <Logo title={text.appName} subtitle={text.appDesc} />
       </div>
-
-      <Separator />
 
       {/* Steps */}
       <nav className="flex-1 space-y-1 p-3">

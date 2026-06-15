@@ -17,10 +17,10 @@ export function PosterCard({ match, selected, onClick, locale }: PosterCardProps
     <button
       onClick={onClick}
       className={cn(
-        'w-full rounded-xl border-l-4 p-3 text-left transition-all duration-200',
+        'w-full rounded-xl border p-3 text-left transition-all duration-200',
         selected
-          ? 'border-l-primary border-y border-r border-primary/30 bg-primary/5 shadow-sm'
-          : 'border-l-muted-foreground/20 border-y border-r border-border bg-card hover:border-l-primary/50 hover:shadow-sm',
+          ? 'border-brand bg-brand/5 shadow-sm'
+          : 'border-border bg-card hover:border-brand/40 hover:shadow-sm',
       )}
     >
       <div className="flex gap-3">
