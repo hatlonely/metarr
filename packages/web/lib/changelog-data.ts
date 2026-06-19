@@ -6,6 +6,15 @@ export interface ChangelogEntry {
 
 export const changelogData: ChangelogEntry[] = [
   {
+    version: '0.11.0',
+    date: '2026-06-19',
+    changes: [
+      { type: 'feature', zh: '剧集识别改用跨文件模式分析：对比整组文件名，自动找出递增的集号字段，恒定的标签（分辨率、年份、网址数字）自动忽略', en: 'Detect episodes via cross-file pattern analysis: compare the whole file set to find the incrementing episode field; constant tags (resolution, year, URL digits) are ignored' },
+      { type: 'fix', zh: '修复纯数字命名（如 01.mkv … 37.mkv）的剧集无法识别集数的问题', en: 'Fix series with bare-number filenames (e.g. 01.mkv … 37.mkv) detecting no episodes' },
+      { type: 'fix', zh: '无季号时重命名使用「Season 01」而非「S00」', en: 'Use "Season 01" instead of "S00" when the source has no season number' },
+    ],
+  },
+  {
     version: '0.10.0',
     date: '2026-06-15',
     changes: [
