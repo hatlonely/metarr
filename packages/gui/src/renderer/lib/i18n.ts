@@ -162,6 +162,8 @@ const zh = {
   noPoster: '暂无海报',
   errorLabel: '错误',
   orClickSelect: '或点击选择',
+  openSourceDir: '打开原始目录',
+  openTargetDir: '打开目标目录',
 } as const;
 
 const en = {
@@ -328,6 +330,8 @@ const en = {
   noPoster: 'No poster',
   errorLabel: 'Error',
   orClickSelect: 'or click to select',
+  openSourceDir: 'Open source folder',
+  openTargetDir: 'Open target folder',
 } as const;
 
 export type Locale = 'zh' | 'en';

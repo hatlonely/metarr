@@ -21,6 +21,7 @@ contextBridge.exposeInMainWorld('metarrAPI', {
   executeRename: (plan: unknown, resolutions?: unknown, filesToRemove?: unknown) =>
     ipcRenderer.invoke('rename:execute', plan, resolutions, filesToRemove),
   resolveMediaPath: (path: string) => ipcRenderer.invoke('fs:resolveMediaPath', path),
+  openPath: (path: string) => ipcRenderer.invoke('shell:openPath', path),
   getConfig: () => ipcRenderer.invoke('config:get'),
   setConfig: (key: string, value: unknown) => ipcRenderer.invoke('config:set', key, value),
   generateArtworkPlan: (apiKey: string, match: unknown, options: unknown, plan: unknown) =>

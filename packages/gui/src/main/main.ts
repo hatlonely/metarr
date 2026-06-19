@@ -1,7 +1,7 @@
-import { app, BrowserWindow, ipcMain, dialog } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, shell } from 'electron';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { statSync } from 'node:fs';
+import { statSync, existsSync } from 'node:fs';
 import {
   parseMediaDir,
   parseMediaFile,
@@ -191,6 +191,16 @@ ipcMain.handle(
     return findUnmatchedFiles(plan, selectedFile);
   },
 );
+
+// IPC: Reveal a path in the OS file manager (Finder / Explorer). Falls back to
+// the nearest existing ancestor so a not-yet-created target directory still
+// opens the output library location.
+ipcMain.handle('shell:openPath', async (_event, targetPath: string) => {
+  let p = targetPath;
+  while (p && p !== dirname(p) && !existsSync(p)) p = dirname(p);
+  if (!existsSync(p)) return `path not found: ${targetPath}`;
+  return shell.openPath(p); // '' on success, error string otherwise
+});
 
 // IPC: Resolve media path (for drag & drop)
 ipcMain.handle('fs:resolveMediaPath', async (_event, filePath: string) => {

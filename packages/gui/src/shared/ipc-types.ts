@@ -54,6 +54,8 @@ export interface IPCApi {
     filesToRemove?: string[],
   ): Promise<ExecutionResult>;
   resolveMediaPath(path: string): Promise<OpenMediaResult>;
+  /** Reveal a path in the OS file manager. Resolves to '' on success. */
+  openPath(path: string): Promise<string>;
   getConfig(): Promise<Record<string, unknown>>;
   setConfig(key: string, value: unknown): Promise<void>;
   generateArtworkPlan(apiKey: string, match: TMDBMatch, options: RenameOptions, plan: RenamePlan): Promise<ArtworkPlan>;

@@ -672,9 +672,19 @@ export function StepPreview({
         <div className="grid grid-cols-2 gap-4">
           <Card>
             <CardContent className="pt-6">
-              <div className="mb-2 flex items-center gap-2 rounded-md bg-muted/40 px-3 py-1.5 text-sm font-semibold">
-                <ArrowLeft className="h-4 w-4" />
-                {text.originalStructure}
+              <div className="mb-2 flex items-center justify-between gap-2 rounded-md bg-muted/40 px-3 py-1.5 text-sm font-semibold">
+                <span className="flex items-center gap-2">
+                  <ArrowLeft className="h-4 w-4" />
+                  {text.originalStructure}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => ipc.openPath(plan.sourcePath)}
+                  title={text.openSourceDir}
+                  className="text-muted-foreground transition-colors hover:text-brand"
+                >
+                  <FolderOpen className="h-4 w-4" />
+                </button>
               </div>
               <PathDisplay path={plan.sourcePath} />
               <div
@@ -710,9 +720,19 @@ export function StepPreview({
 
           <Card>
             <CardContent className="pt-6">
-              <div className="mb-2 flex items-center gap-2 rounded-md bg-muted/40 px-3 py-1.5 text-sm font-semibold">
-                <ArrowRight className="h-4 w-4" />
-                {text.newStructure}
+              <div className="mb-2 flex items-center justify-between gap-2 rounded-md bg-muted/40 px-3 py-1.5 text-sm font-semibold">
+                <span className="flex items-center gap-2">
+                  <ArrowRight className="h-4 w-4" />
+                  {text.newStructure}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => ipc.openPath(plan.destPath)}
+                  title={text.openTargetDir}
+                  className="text-muted-foreground transition-colors hover:text-brand"
+                >
+                  <FolderOpen className="h-4 w-4" />
+                </button>
               </div>
               <PathDisplay path={plan.destPath} />
               <div

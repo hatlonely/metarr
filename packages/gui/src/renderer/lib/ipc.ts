@@ -70,6 +70,8 @@ export const ipc = {
 
   resolveMediaPath: (path: string): Promise<OpenMediaResult> => getApi().resolveMediaPath(path),
 
+  openPath: (path: string): Promise<string> => getApi().openPath(path),
+
   getConfig: (): Promise<Record<string, unknown>> => getApi().getConfig(),
 
   setConfig: (key: string, value: unknown): Promise<void> => getApi().setConfig(key, value),
