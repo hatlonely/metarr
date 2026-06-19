@@ -3,8 +3,10 @@ import type { ParsedMedia, MediaType, ParseOptions, TitleCandidate } from '../ty
 import { extractMedia } from './extract.js';
 import { scanDirectory } from './scanner.js';
 import { parseFileName, parseSubtitleFile } from './file-parser.js';
+import { detectSeriesEpisodes } from './series.js';
 
 export { parseDirName } from './dir-parser.js';
+export { detectSeriesEpisodes } from './series.js';
 export { extractMedia, extractIds, extractYearCandidates } from './extract.js';
 export { parseFileName, parseSubtitleFile, parseSeasonEpisode } from './file-parser.js';
 export { scanDirectory, scanMediaDirectories } from './scanner.js';
@@ -87,11 +89,21 @@ export async function parseMediaDir(dirPath: string, options?: ParseOptions): Pr
   const sampleNames = scan.videoFiles.slice(0, 3).map((f) => f.name);
   const extract = extractMedia(originalDirName, sampleNames);
 
+  // Episode numbers via cross-file pattern analysis (handles bare "01.xxx.mkv"
+  // and ignores constant tags); fall back to each file's own parse otherwise.
+  const epMap = detectSeriesEpisodes(scan.videoFiles.map((f) => f.name));
+  const episodes = epMap
+    ? scan.episodes.map((ep) => {
+        const a = epMap.get(ep.originalFileName);
+        return a ? { ...ep, season: a.season, episodes: [a.episode] } : ep;
+      })
+    : scan.episodes;
+
   let type: MediaType | 'unknown';
   if (options?.type && options.type !== 'auto') {
     type = options.type;
   } else {
-    const hasEpisodes = scan.episodes.some((ep) => ep.episodes.length > 0);
+    const hasEpisodes = episodes.some((ep) => ep.episodes.length > 0);
     if (hasEpisodes) type = 'tv';
     else if (scan.videoFiles.length === 1) type = 'movie';
     else if (scan.videoFiles.length > 1) type = 'tv';
@@ -104,7 +116,7 @@ export async function parseMediaDir(dirPath: string, options?: ParseOptions): Pr
     englishTitle: topTitle(extract.titleCandidates, 'en'),
     year: extract.yearCandidates[0],
     tags: extract.tags,
-    episodes: scan.episodes,
+    episodes,
     originalDirName,
     sourcePath: dirPath,
     isClean: CLEAN_RE.test(originalDirName.trim()),

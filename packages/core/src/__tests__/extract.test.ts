@@ -107,4 +107,17 @@ describe('parseSeasonEpisode', () => {
   it('returns empty for a movie file', () => {
     expect(parseSeasonEpisode('Dune.Part.Two.2024.2160p.mkv')).toEqual({ season: 0, episodes: [] });
   });
+
+  it('parses a bare leading episode number (CN releases)', () => {
+    expect(parseSeasonEpisode('01.2160p.HD国语中字[www.x.com].mkv')).toEqual({
+      season: 0,
+      episodes: [1],
+    });
+    expect(parseSeasonEpisode('24.mkv')).toEqual({ season: 0, episodes: [24] });
+  });
+
+  it('does not treat a 4-digit year / 1080p prefix as an episode', () => {
+    expect(parseSeasonEpisode('2024.某电影.2160p.mkv')).toEqual({ season: 0, episodes: [] });
+    expect(parseSeasonEpisode('1080p.sample.mkv')).toEqual({ season: 0, episodes: [] });
+  });
 });

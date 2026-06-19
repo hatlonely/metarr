@@ -48,7 +48,9 @@ export function generateTvRenamePlan(
     for (const ep of episodes) {
       const newFileName = renderTemplate(template.episodeFile, {
         ...baseVars,
-        season: ep.season,
+        // Use the grouped season (defaults to 1) so the file name matches the
+        // season directory even when the source had no season number (S00 → S01).
+        season: seasonNum,
         episode: ep.episodes[0],
         ext: ep.extension,
       });

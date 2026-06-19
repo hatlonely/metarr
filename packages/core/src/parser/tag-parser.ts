@@ -102,6 +102,7 @@ const STRIP_PATTERNS: RegExp[] = [
   /\b(?:DDP?[\s.]?[57][\s.]?1|DTS(?:[\s.]?HD)?(?:[\s.]?MA)?(?:[\s.]?[57][\s.]?1)?|DTS[\s.]?X|TrueHD|Atmos|AAC|FLAC|PCM)\b/gi, // audio
   /\b(?:WEB[-\s.]?DL|WEB[-\s.]?Rip|Blu[-\s.]?Ray|BDRip|HDTV|HDRip|DVDRip|REMUX)\b/gi, // source
   /\b(?:HDR(?:10)?(?:Plus|\+)?|Dolby[\s.]?Vision|DV|SDR|HQ|IQ|10bit|8bit|DoVi)\b/gi, // hdr/dv/platform/misc
+  /\b(?:UHD|HD|SD|BD|WEB)\b/gi, // quality/source shorthands (\bHD\b won't touch HDR/HDTV)
   /\b\d+Audios?\b/gi, // "3Audios"
 ];
 

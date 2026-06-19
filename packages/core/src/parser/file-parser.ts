@@ -55,6 +55,11 @@ export function parseSeasonEpisode(fileName: string): { season: number; episodes
   const e = fileName.match(/\bE(?:P)?\s*(\d{1,3})\b/i);
   if (e) return { season: 0, episodes: [parseInt(e[1], 10)] };
 
+  // Bare leading episode number — common for CN releases: "01.xxx.mkv", "1 - xxx.mkv".
+  // Limited to 1-3 digits followed by a separator so 4-digit years / "1080p" don't match.
+  const bare = fileName.match(/^(\d{1,3})(?=[.\s_-]|$)/);
+  if (bare) return { season: 0, episodes: [parseInt(bare[1], 10)] };
+
   return { season: 0, episodes: [] };
 }
 
