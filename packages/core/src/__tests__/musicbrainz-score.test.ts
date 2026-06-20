@@ -49,6 +49,20 @@ describe('scoreRelease', () => {
     expect(scoreRelease(right, album)).toBeGreaterThan(scoreRelease(off, album));
   });
 
+  it('is order-agnostic — scores a reversed artist/album guess just as high', () => {
+    const reversed: ParsedAlbum = { ...album, albumArtist: 'Heroes', album: 'David Bowie' };
+    expect(scoreRelease(rel({}), reversed)).toBe(scoreRelease(rel({}), album));
+  });
+
+  it('matches an alternative name guess (e.g. Chinese vs romanized tags)', () => {
+    const romanized: ParsedAlbum = { ...album, albumArtist: 'Zhou Shen', album: 'Nian Nian You Ci' };
+    const chinese = rel({ artist: '周深', title: '念念有詞' });
+    const withAlt = scoreRelease(chinese, romanized, [{ artist: '周深', album: '念念有詞' }]);
+    const without = scoreRelease(chinese, romanized);
+    expect(withAlt).toBeGreaterThan(without);
+    expect(withAlt).toBeGreaterThan(60);
+  });
+
   it('sorts a candidate list by score, best first', () => {
     const candidates = [rel({ artist: 'Queen' }), rel({ year: 1990 }), rel({})];
     const ranked = [...candidates].sort((a, b) => scoreRelease(b, album) - scoreRelease(a, album));

@@ -104,6 +104,14 @@ export const AUDIO_EXTENSIONS = new Set([
   '.wma',
   '.aac',
   '.alac',
+  '.dsf', // DSD
+  '.dff', // DSD
+  '.wv', // WavPack
+  '.tak',
+  '.tta',
+  '.mka',
+  '.aiff',
+  '.aif',
 ]);
 
 /** One audio track in an album, from embedded tags (filename as fallback). */

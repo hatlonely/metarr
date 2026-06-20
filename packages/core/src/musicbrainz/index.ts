@@ -3,4 +3,8 @@ export type { MusicBrainzClientOptions } from './client.js';
 export { locateReleases } from './locate.js';
 export type { LocateReleaseOptions } from './locate.js';
 export { scoreRelease } from './score.js';
+export type { PreferLang } from './score.js';
+export { fetchAlbumCover } from './cover-art.js';
+export { convertText, localizeRelease, localizeAlbum, hasHan } from './localize.js';
+export type { TitleScript } from './localize.js';
 export type { MusicBrainzRelease, MusicBrainzTrack } from './types.js';

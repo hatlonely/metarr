@@ -4,12 +4,22 @@ export { parseAlbumDir, aggregateAlbum, isAlbumComplete } from './parser/audio-p
 export type { TrackTags, TrackInput } from './parser/audio-parser.js';
 
 // MusicBrainz
-export { MusicBrainzClient, locateReleases, scoreRelease } from './musicbrainz/index.js';
+export {
+  MusicBrainzClient,
+  locateReleases,
+  scoreRelease,
+  fetchAlbumCover,
+  convertText,
+  localizeRelease,
+  localizeAlbum,
+} from './musicbrainz/index.js';
 export type {
   MusicBrainzClientOptions,
   LocateReleaseOptions,
   MusicBrainzRelease,
   MusicBrainzTrack,
+  TitleScript,
+  PreferLang,
 } from './musicbrainz/index.js';
 
 // TMDB

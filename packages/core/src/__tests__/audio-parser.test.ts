@@ -4,6 +4,7 @@ import {
   fallbackFromName,
   isAlbumComplete,
   parseDiscNo,
+  parseAlbumDirName,
   type TrackInput,
 } from '../parser/audio-parser.js';
 
@@ -84,6 +85,48 @@ describe('aggregateAlbum — multi-disc subdirs', () => {
       [1, 1, 'Disc 01/01 - A.flac'],
       [2, 1, 'Disc 02/01 - B.flac'],
     ]);
+  });
+});
+
+describe('parseAlbumDirName', () => {
+  it('strips bracket prefix + quality junk and splits Artist - Album', () => {
+    expect(parseAlbumDirName('[191215] 周杰伦 - 我是如此相信 24bit')).toEqual({
+      artist: '周杰伦',
+      album: '我是如此相信',
+      year: undefined,
+    });
+  });
+
+  it('extracts a standalone year and drops format tokens', () => {
+    expect(parseAlbumDirName('赵雷 - 吉姆餐厅 (2014) [FLAC]')).toEqual({
+      artist: '赵雷',
+      album: '吉姆餐厅',
+      year: 2014,
+    });
+  });
+
+  it('falls back to album-only when there is no Artist - Album split', () => {
+    expect(parseAlbumDirName('SomeAlbum')).toEqual({ album: 'SomeAlbum', year: undefined });
+  });
+
+  it('handles scene-style dot/underscore separators and a leading year', () => {
+    expect(parseAlbumDirName('2019.-.林俊杰.-.Wonderland[FLAC]')).toEqual({
+      artist: '林俊杰',
+      album: 'Wonderland',
+      year: 2019,
+    });
+  });
+});
+
+describe('aggregateAlbum — dirname fallback (untagged files)', () => {
+  it('fills artist/album from the folder name and strips the artist from the title', () => {
+    const album = aggregateAlbum('/m/[191215] 周杰伦 - 我是如此相信 24bit', [
+      { name: '周杰伦 - 我是如此相信.flac', extension: '.flac', tags: { year: 2019 } },
+    ]);
+    expect(album.albumArtist).toBe('周杰伦');
+    expect(album.album).toBe('我是如此相信');
+    expect(album.year).toBe(2019);
+    expect(album.tracks[0].title).toBe('我是如此相信');
   });
 });
 
