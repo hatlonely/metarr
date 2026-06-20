@@ -55,6 +55,11 @@ const zh = {
         title: '多平台命名',
         desc: '内置 Jellyfin / Emby / Plex / Kodi / 通用预设，也支持完全自定义命名模板。',
       },
+      {
+        key: 'safety',
+        title: '安全可回溯',
+        desc: '永不删除或覆盖，冲突与未匹配文件移入回收站；完整历史记录，支持一键撤销还原。',
+      },
     ],
   },
   workflow: {
@@ -138,7 +143,7 @@ const zh = {
   },
   features: {
     title: '功能详情',
-    subtitle: 'Metarr 的六大核心能力',
+    subtitle: 'Metarr 的七大核心能力',
     sections: [
       {
         key: 'parse',
@@ -171,9 +176,10 @@ const zh = {
         desc: '把媒体文件整理为媒体服务器认得的标准目录结构：',
         points: [
           '电视剧 / 电影两种媒体类型',
-          '冲突检测（跳过 / 覆盖）',
-          '未匹配文件检测与清理',
+          '冲突处理（跳过 / 替换，旧文件移入回收站）',
+          '未匹配文件移入回收站，绝不直接删除',
           '关联字幕文件自动跟随',
+          '输出路径留空时默认放回原目录',
           '执行前完整预览，支持批量处理',
         ],
       },
@@ -209,6 +215,18 @@ const zh = {
           '自定义命名模板',
           '占位符：{name} {year} {season} {episode} {tmdbId}',
           '支持零填充（如 {season:02}）',
+        ],
+      },
+      {
+        key: 'safety',
+        title: '安全可回溯',
+        desc: '绝不在你看不见的地方破坏文件，每一步都能反悔：',
+        points: [
+          '永不主动删除或覆盖，冲突与未匹配文件统一移入回收站',
+          '默认使用同卷智能回收目录，绝不跨卷复制',
+          '历史记录：每次重命名都被记录，可按名称搜索、按类型/状态筛选',
+          '一键撤销：文件移回原位、回收文件取回、下载的封面 / 字幕一并清理',
+          '历史自动清理，保留条数与天数可配置',
         ],
       },
     ],
@@ -352,6 +370,11 @@ const en: typeof zh = {
         title: 'Multi-Platform Naming',
         desc: 'Built-in Jellyfin / Emby / Plex / Kodi / universal presets, plus fully customizable naming templates.',
       },
+      {
+        key: 'safety',
+        title: 'Safe & Reversible',
+        desc: 'Never deletes or overwrites — conflicting and unmatched files go to the trash; full history with one-click undo.',
+      },
     ],
   },
   workflow: {
@@ -435,7 +458,7 @@ const en: typeof zh = {
   },
   features: {
     title: 'Features',
-    subtitle: "Metarr's six core capabilities",
+    subtitle: "Metarr's seven core capabilities",
     sections: [
       {
         key: 'parse',
@@ -468,9 +491,10 @@ const en: typeof zh = {
         desc: 'Organize files into the structure your media server understands:',
         points: [
           'TV and movie media types',
-          'Conflict detection (skip / overwrite)',
-          'Unmatched file detection and cleanup',
+          'Conflict handling (skip / replace, old file moved to trash)',
+          'Unmatched files moved to trash — never deleted outright',
           'Associated subtitles follow automatically',
+          'Output path defaults to the original location when empty',
           'Full preview before running, batch supported',
         ],
       },
@@ -506,6 +530,18 @@ const en: typeof zh = {
           'Custom naming templates',
           'Placeholders: {name} {year} {season} {episode} {tmdbId}',
           'Zero-padding supported (e.g. {season:02})',
+        ],
+      },
+      {
+        key: 'safety',
+        title: 'Safe & Reversible',
+        desc: 'Never breaks files behind your back — every step can be undone:',
+        points: [
+          'Never deletes or overwrites; conflicts and unmatched files go to the trash',
+          'Smart same-volume trash by default, never copies across volumes',
+          'History: every run recorded, searchable by name, filterable by type/status',
+          'One-click undo: files moved back, trashed files restored, downloads cleaned up',
+          'Auto-cleanup with configurable max entries and age',
         ],
       },
     ],

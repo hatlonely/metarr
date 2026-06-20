@@ -6,6 +6,16 @@ export interface ChangelogEntry {
 
 export const changelogData: ChangelogEntry[] = [
   {
+    version: '0.12.0',
+    date: '2026-06-20',
+    changes: [
+      { type: 'feature', zh: '回收站：永不主动删除或覆盖文件——冲突的旧文件与未匹配文件改为移入回收站，默认放到同卷的智能回收目录（绝不跨卷复制）', en: 'Trash instead of deleting: conflicting old files and unmatched files are moved to the trash rather than deleted/overwritten, defaulting to a smart same-volume trash (never copies across volumes)' },
+      { type: 'feature', zh: '历史记录与一键撤销：每次重命名都被记录，可按名称搜索、按类型/状态筛选，并一键还原（文件移回原位、回收文件取回、下载的封面/字幕一并清理）', en: 'History with one-click undo: every run is recorded, searchable by name and filterable by type/status, and fully reversible (files moved back, trashed files restored, downloaded artwork/subtitles cleaned up)' },
+      { type: 'change', zh: '桌面应用信息架构重构：左侧图标导航栏 + 重命名 / 历史 / 设置 独立页面；历史页带海报、来源/输出路径与可展开的文件级明细', en: 'Desktop app restructured: an icon nav rail with dedicated Rename / History / Settings pages; the history page shows posters, source/output paths and an expandable per-file detail list' },
+      { type: 'feature', zh: '输出路径留空时默认使用原目录（文件放回所在目录，目录放到其父目录旁）', en: 'Default the output path to the original location when left empty (a file goes back to its folder, a directory next to its parent)' },
+    ],
+  },
+  {
     version: '0.11.0',
     date: '2026-06-19',
     changes: [

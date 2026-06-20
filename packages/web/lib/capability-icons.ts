@@ -5,6 +5,7 @@ import {
   Captions,
   Images,
   Settings2,
+  ShieldCheck,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -16,4 +17,5 @@ export const capabilityIcons: Record<string, LucideIcon> = {
   subtitle: Captions,
   artwork: Images,
   presets: Settings2,
+  safety: ShieldCheck,
 };

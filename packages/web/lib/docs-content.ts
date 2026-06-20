@@ -542,7 +542,7 @@ Metarr 按照以下规则组织文件：
 
 ## 重命名会删除原文件吗？
 
-不会。Metarr 执行的是重命名操作（移动文件），不会删除任何文件。如果目标路径已存在同名文件，Metarr 会提示冲突。
+不会。Metarr 执行的是重命名操作（移动文件），永不主动删除或覆盖任何文件。遇到冲突的旧文件或未匹配文件时，会将其移入回收站（默认同卷智能回收目录，绝不跨卷复制），而不是删除。每次重命名都会记录在历史中，可随时一键撤销、把文件还原回原位。
 
 ## TMDB API Key 安全吗？
 
@@ -585,7 +585,7 @@ Yes. Metarr can recognize both Chinese and English titles simultaneously.
 
 ## Will renaming delete original files?
 
-No. Metarr performs rename (move) operations only. It never deletes files. If a file with the same name exists at the destination, Metarr will alert you about the conflict.
+No. Metarr performs rename (move) operations only and never deletes or overwrites a file. Conflicting old files and unmatched files are moved to the trash (a smart same-volume trash by default, never copied across volumes) instead of being deleted. Every run is recorded in history and can be undone in one click, restoring files to their original location.
 
 ## Is my TMDB API Key secure?
 
