@@ -13,7 +13,9 @@ const widthMap = {
 interface StepShellProps {
   title: string;
   description: string;
-  step: number;
+  /** Retained for call-site compatibility; the position is shown by the
+   *  horizontal <StepProgress> at the top of the rename page. */
+  step?: number;
   width?: keyof typeof widthMap;
   /** Fixed bottom action bar (use <StepFooter>). */
   footer?: React.ReactNode;
@@ -25,19 +27,14 @@ interface StepShellProps {
  * + fixed bottom action bar. Gives every step the same rhythm and a consistent
  * primary-action position.
  */
-export function StepShell({ title, description, step, width = 'md', footer, children }: StepShellProps) {
+export function StepShell({ title, description, width = 'md', footer, children }: StepShellProps) {
   const w = widthMap[width];
   return (
     <div className="flex h-full flex-col">
       <header className="shrink-0 px-8 pb-5 pt-7">
         <div className={cn('mx-auto', w)}>
-          <div className="flex items-center gap-3">
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-gradient text-xs font-semibold text-white shadow-sm shadow-brand/30">
-              {step}
-            </span>
-            <h2 className="text-xl font-bold tracking-tight">{title}</h2>
-          </div>
-          <p className="mt-1.5 pl-10 text-sm text-muted-foreground">{description}</p>
+          <h2 className="text-xl font-bold tracking-tight">{title}</h2>
+          <p className="mt-1.5 text-sm text-muted-foreground">{description}</p>
         </div>
       </header>
 

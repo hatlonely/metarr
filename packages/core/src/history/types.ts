@@ -13,6 +13,12 @@ export interface HistoryEntry {
   timestamp: string;
   mediaName: string;
   mediaType: MediaType;
+  /** Secondary/original title, when it differs from mediaName. */
+  originalName?: string;
+  /** Release year. */
+  year?: number;
+  /** TMDB poster URL for a richer history view (absent on older entries). */
+  poster?: string;
   sourcePath: string;
   destPath: string;
   /** Successful rename moves (undo = move `to` back to `from`). */

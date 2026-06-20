@@ -46,6 +46,7 @@ export function buildHistoryEntry(input: {
   subtitleResult?: SubtitleExecutionResult | null;
 }): HistoryEntry {
   const { plan, result, artworkResult, subtitleResult } = input;
+  const match = plan.tmdbMatch;
   const renamed = result.succeeded
     .filter((t) => t.operation === 'rename')
     .map((t) => ({ from: t.source, to: t.target }));
@@ -60,8 +61,14 @@ export function buildHistoryEntry(input: {
   return {
     id: genId(),
     timestamp: new Date().toISOString(),
-    mediaName: plan.tmdbMatch.displayName || plan.tmdbMatch.originalName,
+    mediaName: match.displayName || match.originalName,
     mediaType: plan.mediaType,
+    originalName:
+      match.originalName && match.originalName !== match.displayName
+        ? match.originalName
+        : undefined,
+    year: match.year || undefined,
+    poster: match.posterUrl,
     sourcePath: plan.sourcePath,
     destPath: plan.destPath,
     renamed,

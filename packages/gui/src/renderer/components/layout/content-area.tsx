@@ -15,7 +15,7 @@ interface ContentAreaProps {
  */
 export function ContentArea({ children, error, onDismissError }: ContentAreaProps) {
   return (
-    <div className="relative flex h-full min-w-0 flex-1 flex-col">
+    <div className="relative flex min-h-0 min-w-0 flex-1 flex-col">
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-40 bg-glow" />
       {error && (
         <div className="shrink-0 px-8 pt-4">
