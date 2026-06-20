@@ -14,6 +14,7 @@ import {
   TMDBClient,
   generateRenamePlan,
   executeRenamePlan,
+  createTrashFn,
   checkConflicts,
   findUnmatchedFiles,
   getTmdbKey,
@@ -22,6 +23,7 @@ import {
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import ora from 'ora';
+import trash from 'trash';
 
 interface RenameCommandOptions {
   dest: string;
@@ -245,7 +247,7 @@ export async function renameAction(source: string, options: RenameCommandOptions
       {
         type: 'confirm',
         name: 'removeUnmatched',
-        message: `是否删除这 ${unmatchedFiles.length} 个未匹配文件？`,
+        message: `是否将这 ${unmatchedFiles.length} 个未匹配文件移入回收站？`,
         default: false,
       },
     ]);
@@ -289,7 +291,7 @@ export async function renameAction(source: string, options: RenameCommandOptions
         name: 'resolution',
         message: '检测到文件冲突，如何处理？',
         choices: [
-          { name: '全部覆盖 (所有冲突文件将被覆盖)', value: 'overwrite' },
+          { name: '全部替换 (旧目标文件移入回收站，再放入新文件)', value: 'overwrite' },
           { name: '跳过所有 (跳过所有冲突文件，保留目标文件)', value: 'skip' },
           { name: '中止操作 (不执行任何操作)', value: 'abort' },
         ],
@@ -324,11 +326,17 @@ export async function renameAction(source: string, options: RenameCommandOptions
   }
 
   const execSpinner = ora('执行重命名...').start();
-  const result = await executeRenamePlan(
-    plan,
+  // Never delete: replaced targets / unmatched files go to a same-volume trash
+  // dir if configured, otherwise the system trash.
+  const trashItem = createTrashFn({
+    trashDir: getConfig('trashDir'),
+    systemTrash: (p) => trash([p]),
+  });
+  const result = await executeRenamePlan(plan, {
     resolutions,
-    filesToRemove.length > 0 ? filesToRemove : undefined,
-  );
+    filesToRemove: filesToRemove.length > 0 ? filesToRemove : undefined,
+    trashItem,
+  });
   execSpinner.succeed(`完成: ${result.succeeded.length} 个操作成功`);
 
   if (result.failed.length > 0) {
@@ -346,7 +354,7 @@ export async function renameAction(source: string, options: RenameCommandOptions
 
   if (result.removedUnmatched && result.removedUnmatched.length > 0) {
     console.log();
-    console.log(chalk.gray(`  已删除 ${result.removedUnmatched.length} 个未匹配文件`));
+    console.log(chalk.gray(`  已将 ${result.removedUnmatched.length} 个未匹配文件移入回收站`));
   }
 }
 

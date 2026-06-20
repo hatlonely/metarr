@@ -294,6 +294,16 @@ export function SettingsSheet({ open, onOpenChange, config, onSave, locale }: Se
                 setLocalConfig((prev) => ({ ...prev, preferImdbId: checked }))
               }
             />
+
+            <Field label={text.trashDir} htmlFor="trash-dir" hint={text.trashDirHint}>
+              <Input
+                id="trash-dir"
+                type="text"
+                value={localConfig.trashDir}
+                onChange={(e) => setLocalConfig((prev) => ({ ...prev, trashDir: e.target.value }))}
+                placeholder={text.trashDirPlaceholder}
+              />
+            </Field>
           </Section>
 
           {/* Subtitles */}

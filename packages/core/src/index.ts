@@ -27,12 +27,16 @@ export type {
 export {
   generateRenamePlan,
   executeRenamePlan,
+  createTrashFn,
+  moveToTrashDir,
+  sameVolume,
   checkConflicts,
   findUnmatchedFiles,
   NAMING_PRESETS,
   DEFAULT_NAMING_PRESET,
   resolveNamingTemplate,
 } from './renamer/index.js';
+export type { ExecuteOptions, CreateTrashOptions } from './renamer/index.js';
 
 // Config
 export { getTmdbKey, getConfig, setConfig, getAllConfig, CONFIG_FILE } from './config.js';

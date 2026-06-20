@@ -16,6 +16,8 @@ export interface MetarrConfig {
   subdlApiKey?: string;
   assrtToken?: string;
   subtitleLanguages?: string[];
+  /** Optional same-volume trash directory; empty = system trash. */
+  trashDir?: string;
 }
 
 function readConfigFile(): MetarrConfig {

@@ -37,9 +37,13 @@ export interface ExecutionResult {
   succeeded: RenameTask[];
   failed: { task: RenameTask; error: Error }[];
   skippedCount: number;
+  /** Replaced targets — the old file was moved to the trash, not deleted. */
   overwrittenCount: number;
   cleanedSourcePath?: string;
+  /** Unmatched files that were moved to the trash (kept name for compat). */
   removedUnmatched?: string[];
+  /** Every path moved to the trash this run (replaced targets + unmatched). */
+  trashedFiles?: string[];
 }
 
 export interface UnmatchedFileInfo {

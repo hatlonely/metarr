@@ -14,6 +14,7 @@ export interface AppConfig {
   subdlApiKey: string;
   assrtToken: string;
   subtitleLanguages: string[];
+  trashDir: string;
 }
 
 export const DEFAULT_CUSTOM_NAMING_TEMPLATE: NamingTemplate = {
@@ -34,6 +35,7 @@ const defaultConfig: AppConfig = {
   subdlApiKey: '',
   assrtToken: '',
   subtitleLanguages: ['zh', 'en'],
+  trashDir: '',
 };
 
 function parseNamingTemplate(raw: unknown): NamingTemplate | null {
@@ -71,6 +73,7 @@ export function useConfig() {
         subtitleLanguages: Array.isArray(raw.subtitleLanguages)
           ? (raw.subtitleLanguages as string[])
           : ['zh', 'en'],
+        trashDir: (raw.trashDir as string) || '',
       });
     } catch {
       // Use defaults if IPC not available (dev mode)

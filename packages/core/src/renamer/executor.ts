@@ -1,4 +1,4 @@
-import { rename, mkdir, rm, readdir, unlink } from 'node:fs/promises';
+import { rename, mkdir, rm, readdir, unlink, stat } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import type {
   RenamePlan,
@@ -16,18 +16,42 @@ async function isDirEmpty(dirPath: string): Promise<boolean> {
   }
 }
 
+async function exists(p: string): Promise<boolean> {
+  try {
+    await stat(p);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export interface ExecuteOptions {
+  resolutions?: ConflictResolutionMap;
+  filesToRemove?: string[];
+  /**
+   * When provided, a conflicting target being replaced and any unmatched files
+   * are moved here (the trash) instead of being deleted. If it throws, the
+   * operation is recorded as failed — we never fall back to deleting.
+   */
+  trashItem?: (path: string) => Promise<void>;
+}
+
 /**
- * Execute a rename plan: create directories and move/rename files.
+ * Execute a rename plan: create directories and move/rename files. Replaced
+ * targets and unmatched files go to the trash (via `trashItem`) rather than
+ * being deleted; only the emptied source directory is removed outright.
  */
 export async function executeRenamePlan(
   plan: RenamePlan,
-  resolutions?: ConflictResolutionMap,
-  filesToRemove?: string[],
+  options?: ExecuteOptions,
 ): Promise<ExecutionResult> {
+  const { resolutions, filesToRemove, trashItem } = options ?? {};
+
   const succeeded: RenameTask[] = [];
   const failed: { task: RenameTask; error: Error }[] = [];
   let skippedCount = 0;
   let overwrittenCount = 0;
+  const trashedFiles: string[] = [];
 
   for (let i = 0; i < plan.tasks.length; i++) {
     const task = plan.tasks[i];
@@ -43,12 +67,16 @@ export async function executeRenamePlan(
             skippedCount++;
             continue;
           }
-          // 'overwrite' or no resolution: remove target if exists, then rename
-          try {
-            await unlink(task.target);
+          // 'overwrite'/replace: move the existing target to the trash first
+          // (or delete only when no trashItem is injected).
+          if (await exists(task.target)) {
+            if (trashItem) {
+              await trashItem(task.target);
+              trashedFiles.push(task.target);
+            } else {
+              await unlink(task.target);
+            }
             overwrittenCount++;
-          } catch {
-            // Target doesn't exist, that's fine
           }
           await mkdir(dirname(task.target), { recursive: true });
           await rename(task.source, task.target);
@@ -60,12 +88,17 @@ export async function executeRenamePlan(
     }
   }
 
-  // Remove unmatched files
+  // Unmatched files → trash (or delete when no trashItem)
   const removedUnmatched: string[] = [];
   if (filesToRemove && filesToRemove.length > 0) {
     for (const filePath of filesToRemove) {
       try {
-        await rm(filePath, { force: true });
+        if (trashItem) {
+          await trashItem(filePath);
+          trashedFiles.push(filePath);
+        } else {
+          await rm(filePath, { force: true });
+        }
         removedUnmatched.push(filePath);
       } catch (error) {
         failed.push({
@@ -73,7 +106,7 @@ export async function executeRenamePlan(
             source: filePath,
             target: '',
             operation: 'create-dir',
-            description: `删除未匹配文件 ${filePath}`,
+            description: `移至回收站 ${filePath}`,
           },
           error: error as Error,
         });
@@ -81,7 +114,7 @@ export async function executeRenamePlan(
     }
   }
 
-  // Clean up empty source directory
+  // Clean up the emptied source directory (no data → removed outright)
   let cleanedSourcePath: string | undefined;
   if (succeeded.length > 0 && plan.sourcePath && (await isDirEmpty(plan.sourcePath))) {
     try {
@@ -92,5 +125,13 @@ export async function executeRenamePlan(
     }
   }
 
-  return { succeeded, failed, skippedCount, overwrittenCount, cleanedSourcePath, removedUnmatched };
+  return {
+    succeeded,
+    failed,
+    skippedCount,
+    overwrittenCount,
+    cleanedSourcePath,
+    removedUnmatched,
+    trashedFiles,
+  };
 }

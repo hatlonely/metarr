@@ -17,6 +17,7 @@ import {
   getAllConfig,
   setConfig as coreSetConfig,
   locate,
+  createTrashFn,
 } from '@metarr/core';
 import type {
   ParsedMedia,
@@ -175,7 +176,15 @@ ipcMain.handle(
     resolutions?: ConflictResolutionMap,
     filesToRemove?: string[],
   ) => {
-    return executeRenamePlan(plan, resolutions, filesToRemove);
+    // Never delete: replaced targets / unmatched files go to a same-volume
+    // trash dir if configured, otherwise the system trash. Built here in main
+    // (callbacks can't cross IPC).
+    const trashDir = (getAllConfig().trashDir as string) || undefined;
+    const trashItem = createTrashFn({
+      trashDir,
+      systemTrash: (p) => shell.trashItem(p),
+    });
+    return executeRenamePlan(plan, { resolutions, filesToRemove, trashItem });
   },
 );
 

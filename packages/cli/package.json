@@ -12,15 +12,16 @@
   },
   "dependencies": {
     "@metarr/core": "*",
+    "chalk": "^5.4.0",
     "commander": "^13.0.0",
     "inquirer": "^12.0.0",
-    "chalk": "^5.4.0",
-    "ora": "^8.2.0"
+    "ora": "^8.2.0",
+    "trash": "^9.0.0"
   },
   "devDependencies": {
+    "@types/node": "^22.0.0",
     "tsup": "^8.4.0",
-    "typescript": "^5.7.0",
     "tsx": "^4.19.0",
-    "@types/node": "^22.0.0"
+    "typescript": "^5.7.0"
   }
 }
