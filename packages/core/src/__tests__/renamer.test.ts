@@ -76,6 +76,45 @@ describe('generateRenamePlan (tv) - universal preset', () => {
   });
 });
 
+describe('generateRenamePlan - empty destPath defaults to the original location', () => {
+  it('dir source → parent of the source folder', () => {
+    const parsed = { ...baseParsedMedia, sourcePath: '/tmp/媒体/雨霖铃.2160p' };
+    const plan = generateRenamePlan(parsed, baseTmdbMatch, { ...universalOptions, destPath: '' });
+    expect(plan.destPath).toBe('/tmp/媒体');
+    expect(plan.tasks[0].target).toBe('/tmp/媒体/低智商犯罪 (2026)');
+  });
+
+  it('file source → the file’s containing directory', () => {
+    const parsed = {
+      ...baseParsedMedia,
+      type: 'movie' as const,
+      sourcePath: '/tmp/电影',
+      selectedFile: '/tmp/电影/沙丘.mkv',
+      episodes: [
+        {
+          originalFileName: '沙丘.mkv',
+          extension: '.mkv',
+          season: 0,
+          episodes: [],
+          tags: {},
+          associatedFiles: [],
+        },
+      ],
+    };
+    const plan = generateRenamePlan(parsed, { ...baseTmdbMatch, type: 'movie' }, {
+      ...universalOptions,
+      destPath: '   ',
+    });
+    expect(plan.destPath).toBe('/tmp/电影');
+    expect(plan.tasks[0].target).toBe('/tmp/电影/低智商犯罪 (2026)');
+  });
+
+  it('explicit destPath is respected', () => {
+    const plan = generateRenamePlan(baseParsedMedia, baseTmdbMatch, universalOptions);
+    expect(plan.destPath).toBe('/tmp/test-dest');
+  });
+});
+
 describe('generateRenamePlan (tv) - jellyfin preset', () => {
   it('should include tmdbid tag in directory and year in episode file', () => {
     const plan = generateRenamePlan(baseParsedMedia, baseTmdbMatch, jellyfinOptions);
