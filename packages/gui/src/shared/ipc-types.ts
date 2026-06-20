@@ -15,6 +15,8 @@ import type {
   SubtitleTask,
   HistoryEntry,
   UndoResult,
+  ParsedAlbum,
+  MusicBrainzRelease,
 } from '@metarr/core';
 
 export interface OpenMediaResult {
@@ -78,4 +80,10 @@ export interface IPCApi {
   executeSubtitlePlan(tasks: SubtitleTask[]): Promise<SubtitleExecutionResult>;
   executeArtworkPlan(tasks: MetadataTask[]): Promise<ArtworkExecutionResult>;
   getPathForFile(file: File): string;
+  // Music
+  detectMediaKind(dirPath: string): Promise<'music' | 'video'>;
+  parseAlbum(dirPath: string): Promise<ParsedAlbum>;
+  musicLocate(album: ParsedAlbum): Promise<MusicBrainzRelease[]>;
+  musicGetRelease(mbid: string): Promise<MusicBrainzRelease>;
+  musicGeneratePlan(album: ParsedAlbum, release: MusicBrainzRelease | null): Promise<RenamePlan>;
 }

@@ -69,33 +69,36 @@ function formatFileSize(bytes: number): string {
 
 interface StepPreviewProps {
   locale: Locale;
-  step: number;
+  step?: number;
   plan: RenamePlan;
   executing: boolean;
-  regenerating: boolean;
   conflictResult: ConflictCheckResult | null;
   conflictResolutions: ConflictResolutionMap;
   unmatchedFiles: UnmatchedFileInfo[];
   filesToRemove: string[];
-  artworkPlan: ArtworkPlan | null;
-  artworkLoading: boolean;
-  selectedArtworkPaths: string[];
-  initialNamingPreset: string;
-  initialCustomNamingTemplate: NamingTemplate;
   onBack: () => void;
   onExecute: () => void;
-  onRegenerate: (destPath: string, namingPreset: string, customTemplate?: NamingTemplate) => void;
   onSetConflictResolution: (taskIndex: number, resolution: ConflictResolution) => void;
   onSetAllConflictResolutions: (resolution: ConflictResolution) => void;
   onToggleFileRemoval: (filePath: string) => void;
   onSetAllFilesToRemove: (remove: boolean) => void;
-  onToggleArtwork: (targetPath: string) => void;
-  onSetAllArtwork: (select: boolean) => void;
-  subtitlePlan: SubtitlePlan | null;
-  subtitleLoading: boolean;
-  selectedSubtitlePaths: string[];
-  onToggleSubtitle: (targetPath: string) => void;
-  onSetAllSubtitles: (select: boolean) => void;
+  // Output settings (video only). The output card renders only when onRegenerate is given.
+  regenerating?: boolean;
+  initialNamingPreset?: string;
+  initialCustomNamingTemplate?: NamingTemplate;
+  onRegenerate?: (destPath: string, namingPreset: string, customTemplate?: NamingTemplate) => void;
+  // Artwork (video only) — section renders only when artworkPlan is provided.
+  artworkPlan?: ArtworkPlan | null;
+  artworkLoading?: boolean;
+  selectedArtworkPaths?: string[];
+  onToggleArtwork?: (targetPath: string) => void;
+  onSetAllArtwork?: (select: boolean) => void;
+  // Subtitles (video only) — section renders only when subtitlePlan is provided.
+  subtitlePlan?: SubtitlePlan | null;
+  subtitleLoading?: boolean;
+  selectedSubtitlePaths?: string[];
+  onToggleSubtitle?: (targetPath: string) => void;
+  onSetAllSubtitles?: (select: boolean) => void;
 }
 
 /** Extra (download-only) entries injected into the tree alongside renames. */
@@ -201,9 +204,9 @@ export function StepPreview({
   conflictResolutions,
   unmatchedFiles,
   filesToRemove,
-  artworkPlan,
-  artworkLoading,
-  selectedArtworkPaths,
+  artworkPlan = null,
+  artworkLoading = false,
+  selectedArtworkPaths = [],
   initialNamingPreset,
   initialCustomNamingTemplate,
   onBack,
@@ -215,9 +218,9 @@ export function StepPreview({
   onSetAllFilesToRemove,
   onToggleArtwork,
   onSetAllArtwork,
-  subtitlePlan,
-  subtitleLoading,
-  selectedSubtitlePaths,
+  subtitlePlan = null,
+  subtitleLoading = false,
+  selectedSubtitlePaths = [],
   onToggleSubtitle,
   onSetAllSubtitles,
 }: StepPreviewProps) {
@@ -228,8 +231,10 @@ export function StepPreview({
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const [destPath, setDestPath] = useState(plan.destPath);
-  const [namingPreset, setNamingPreset] = useState(initialNamingPreset);
-  const [customTemplate, setCustomTemplate] = useState<NamingTemplate>(initialCustomNamingTemplate);
+  const [namingPreset, setNamingPreset] = useState(initialNamingPreset ?? 'universal');
+  const [customTemplate, setCustomTemplate] = useState<NamingTemplate>(
+    initialCustomNamingTemplate ?? { tvDir: '', seasonDir: '', episodeFile: '', movieDir: '', movieFile: '' },
+  );
 
   useEffect(() => {
     setDestPath(plan.destPath);
@@ -251,12 +256,13 @@ export function StepPreview({
   const isFirstRun = useRef(true);
 
   useEffect(() => {
+    if (!onRegenerateRef.current) return; // no output controls (e.g. music)
     if (isFirstRun.current) {
       isFirstRun.current = false;
       return;
     }
     const timer = setTimeout(() => {
-      onRegenerateRef.current(
+      onRegenerateRef.current?.(
         destPath,
         namingPreset,
         namingPreset === 'custom' ? customTemplate : undefined,
@@ -347,7 +353,8 @@ export function StepPreview({
       }
     >
       <div className="space-y-4">
-        {/* Output settings */}
+        {/* Output settings (video only — shown when output controls are wired) */}
+        {onRegenerate && (
         <Card>
           <CardContent className="space-y-4 pt-4">
             <div className="space-y-1.5">
@@ -417,6 +424,7 @@ export function StepPreview({
             )}
           </CardContent>
         </Card>
+        )}
 
         {/* Summary + stats */}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
@@ -425,7 +433,11 @@ export function StepPreview({
               ? text.planSummaryTv
                   .replace('{name}', plan.summary.name)
                   .replace('{count}', String(plan.summary.fileCount))
-              : text.planSummaryMovie.replace('{name}', plan.summary.name)}
+              : plan.summary.mediaType === 'music'
+                ? text.planSummaryMusic
+                    .replace('{name}', plan.summary.name)
+                    .replace('{count}', String(plan.summary.fileCount))
+                : text.planSummaryMovie.replace('{name}', plan.summary.name)}
           </span>
           <span className="text-muted-foreground/40">·</span>
           <span>
@@ -552,10 +564,10 @@ export function StepPreview({
               <div className="space-y-3">
                 {artworkPlan && artworkPlan.tasks.length > 0 && (
                   <div className="flex justify-end gap-2">
-                    <Button variant="outline" size="sm" onClick={() => onSetAllArtwork(true)}>
+                    <Button variant="outline" size="sm" onClick={() => onSetAllArtwork?.(true)}>
                       {text.artworkSelectAll}
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => onSetAllArtwork(false)}>
+                    <Button variant="outline" size="sm" onClick={() => onSetAllArtwork?.(false)}>
                       {text.artworkDeselectAll}
                     </Button>
                   </div>
@@ -567,7 +579,7 @@ export function StepPreview({
                       return (
                         <div
                           key={task.targetPath}
-                          onClick={() => onToggleArtwork(task.targetPath)}
+                          onClick={() => onToggleArtwork?.(task.targetPath)}
                           className={`relative cursor-pointer overflow-hidden rounded-lg border-2 transition-all ${selected ? 'border-brand' : 'border-transparent opacity-50'}`}
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -593,7 +605,7 @@ export function StepPreview({
                       return (
                         <div
                           key={task.targetPath}
-                          onClick={() => onToggleArtwork(task.targetPath)}
+                          onClick={() => onToggleArtwork?.(task.targetPath)}
                           className={`flex cursor-pointer items-center gap-2 rounded-md border px-2 py-1 text-xs transition-all ${selected ? 'border-brand bg-brand/5' : 'border-transparent opacity-50'}`}
                         >
                           <File className="h-3.5 w-3.5 shrink-0 text-blue-500" />
@@ -623,10 +635,10 @@ export function StepPreview({
             ) : subtitlePlan && subtitlePlan.tasks.length > 0 ? (
               <>
                 <div className="mb-2 flex justify-end gap-2">
-                  <Button variant="outline" size="sm" onClick={() => onSetAllSubtitles(true)}>
+                  <Button variant="outline" size="sm" onClick={() => onSetAllSubtitles?.(true)}>
                     {text.subtitleSelectAll}
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => onSetAllSubtitles(false)}>
+                  <Button variant="outline" size="sm" onClick={() => onSetAllSubtitles?.(false)}>
                     {text.subtitleDeselectAll}
                   </Button>
                 </div>
@@ -636,7 +648,7 @@ export function StepPreview({
                     return (
                       <div
                         key={task.targetPath}
-                        onClick={() => onToggleSubtitle(task.targetPath)}
+                        onClick={() => onToggleSubtitle?.(task.targetPath)}
                         className={`flex cursor-pointer items-center gap-2 rounded-md border px-2 py-1.5 text-xs transition-all ${
                           selected ? 'border-brand bg-brand/5' : 'border-transparent opacity-50'
                         }`}

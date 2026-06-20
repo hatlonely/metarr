@@ -10,15 +10,25 @@ import type {
   ArtworkExecutionResult,
   SubtitlePlan,
   SubtitleExecutionResult,
+  ParsedAlbum,
+  MusicBrainzRelease,
 } from '@metarr/core';
 
 export type StepId = 'select' | 'parse' | 'search' | 'preview' | 'execute';
 
 export interface WorkflowState {
   currentStep: StepId;
+  /** Which pipeline the selected source routes to. */
+  kind: 'video' | 'music';
   sourcePath: string | null;
   parsed: ParsedMedia | null;
   mediaType: 'tv' | 'movie' | 'auto';
+  // Music
+  album: ParsedAlbum | null;
+  releases: MusicBrainzRelease[];
+  selectedRelease: MusicBrainzRelease | null;
+  /** Pending search selection: a release MBID, or '__local__' for local tags. */
+  selectedReleaseId: string | null;
   searchQuery: string;
   tmdbResults: TMDBMatch[];
   selectedMatch: TMDBMatch | null;
@@ -66,4 +76,9 @@ export type WorkflowAction =
   | { type: 'SET_EXECUTING'; executing: boolean }
   | { type: 'SET_ERROR'; error: string | null }
   | { type: 'SET_LOADING'; loading: boolean }
+  | { type: 'SET_KIND'; kind: 'video' | 'music' }
+  | { type: 'SET_ALBUM'; album: ParsedAlbum | null }
+  | { type: 'SET_RELEASES'; releases: MusicBrainzRelease[] }
+  | { type: 'SELECT_RELEASE'; release: MusicBrainzRelease | null }
+  | { type: 'SET_SELECTED_RELEASE_ID'; id: string | null }
   | { type: 'RESET' };

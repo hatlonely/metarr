@@ -7,6 +7,8 @@ import type {
   RenamePlan,
   ConflictResolution,
   NamingTemplate,
+  MusicBrainzRelease,
+  ArtworkTask,
 } from '@metarr/core';
 import type { OpenMediaResult } from '@/src/shared/ipc-types';
 import { ipc } from '@/src/renderer/lib/ipc';
@@ -15,9 +17,14 @@ const steps: StepId[] = ['select', 'parse', 'search', 'preview', 'execute'];
 
 const initialState: WorkflowState = {
   currentStep: 'select',
+  kind: 'video',
   sourcePath: null,
   parsed: null,
   mediaType: 'auto',
+  album: null,
+  releases: [],
+  selectedRelease: null,
+  selectedReleaseId: null,
   searchQuery: '',
   tmdbResults: [],
   selectedMatch: null,
@@ -90,6 +97,16 @@ function workflowReducer(state: WorkflowState, action: WorkflowAction): Workflow
       return { ...state, error: action.error };
     case 'SET_LOADING':
       return { ...state, loading: action.loading };
+    case 'SET_KIND':
+      return { ...state, kind: action.kind };
+    case 'SET_ALBUM':
+      return { ...state, album: action.album };
+    case 'SET_RELEASES':
+      return { ...state, releases: action.releases };
+    case 'SELECT_RELEASE':
+      return { ...state, selectedRelease: action.release };
+    case 'SET_SELECTED_RELEASE_ID':
+      return { ...state, selectedReleaseId: action.id };
     case 'RESET':
       return { ...initialState, currentStep: 'select' };
     default:
@@ -121,6 +138,17 @@ export function useWorkflow() {
     dispatch({ type: 'SET_ERROR', error: null });
     try {
       dispatch({ type: 'SET_SOURCE_PATH', path: result.sourcePath });
+
+      // Auto-route: an audio-dominant directory goes to the music flow.
+      const kind = result.type === 'dir' ? await ipc.detectMediaKind(result.path) : 'video';
+      dispatch({ type: 'SET_KIND', kind });
+
+      if (kind === 'music') {
+        const album = await ipc.parseAlbum(result.path);
+        dispatch({ type: 'SET_ALBUM', album });
+        dispatch({ type: 'SET_STEP', step: 'parse' });
+        return;
+      }
 
       const parsed =
         result.type === 'file'
@@ -311,6 +339,95 @@ export function useWorkflow() {
     [state.parsed, state.selectedMatch, loadArtwork],
   );
 
+  // --- Music flow ---
+
+  const musicSearch = useCallback(async () => {
+    if (!state.album) return;
+    dispatch({ type: 'SET_LOADING', loading: true });
+    dispatch({ type: 'SET_ERROR', error: null });
+    try {
+      const releases = await ipc.musicLocate(state.album);
+      dispatch({ type: 'SET_RELEASES', releases });
+      dispatch({ type: 'SELECT_RELEASE', release: null });
+      dispatch({ type: 'SET_SELECTED_RELEASE_ID', id: null }); // step-search default-selects top
+      dispatch({ type: 'SET_STEP', step: 'search' });
+    } catch (err) {
+      dispatch({ type: 'SET_ERROR', error: `搜索失败: ${(err as Error).message}` });
+    } finally {
+      dispatch({ type: 'SET_LOADING', loading: false });
+    }
+  }, [state.album]);
+
+  // Build the music plan from local tags (release = null) or a chosen release.
+  const musicGeneratePlan = useCallback(
+    async (release: MusicBrainzRelease | null) => {
+      if (!state.album) return;
+      dispatch({ type: 'SET_LOADING', loading: true });
+      dispatch({ type: 'SET_ERROR', error: null });
+      try {
+        // Search results are summaries; fetch the full track list when chosen.
+        const full =
+          release && release.tracks.length === 0
+            ? await ipc.musicGetRelease(release.mbid)
+            : release;
+        dispatch({ type: 'SELECT_RELEASE', release: full });
+
+        const newPlan = await ipc.musicGeneratePlan(state.album, full);
+        dispatch({ type: 'SET_PLAN', plan: newPlan });
+
+        // Save the cover into the album folder (cover.jpg) so media servers like
+        // Jellyfin can show it — reuses the artwork download/execute pipeline.
+        const albumDir = newPlan.tasks.find((t) => t.operation === 'create-dir')?.target;
+        if (full?.coverUrl && albumDir) {
+          const coverPath = `${albumDir}/cover.jpg`;
+          const coverTask: ArtworkTask = {
+            kind: 'image',
+            type: 'poster',
+            downloadUrl: full.coverUrl,
+            previewUrl: full.coverUrl,
+            targetPath: coverPath,
+            description: 'cover.jpg',
+          };
+          dispatch({ type: 'SET_ARTWORK_PLAN', plan: { tasks: [coverTask] } });
+          dispatch({ type: 'SET_SELECTED_ARTWORK', paths: [coverPath] });
+        } else {
+          dispatch({ type: 'SET_ARTWORK_PLAN', plan: null });
+          dispatch({ type: 'SET_SELECTED_ARTWORK', paths: [] });
+        }
+
+        const conflictResult = await ipc.checkConflicts(newPlan);
+        dispatch({ type: 'SET_CONFLICT_RESULT', result: conflictResult });
+        if (conflictResult.hasConflicts) {
+          const defaults: Record<number, ConflictResolution> = {};
+          for (const c of conflictResult.conflicts) defaults[c.taskIndex] = 'skip';
+          dispatch({ type: 'SET_CONFLICT_RESOLUTIONS', resolutions: defaults });
+        }
+        const unmatchedFiles = await ipc.findUnmatchedFiles(newPlan);
+        dispatch({ type: 'SET_UNMATCHED_FILES', files: unmatchedFiles });
+        dispatch({ type: 'SET_FILES_TO_REMOVE', paths: [] });
+
+        dispatch({ type: 'SET_STEP', step: 'preview' });
+      } catch (err) {
+        dispatch({ type: 'SET_ERROR', error: `生成计划失败: ${(err as Error).message}` });
+      } finally {
+        dispatch({ type: 'SET_LOADING', loading: false });
+      }
+    },
+    [state.album],
+  );
+
+  const musicSelect = useCallback((id: string | number) => {
+    dispatch({ type: 'SET_SELECTED_RELEASE_ID', id: String(id) });
+  }, []);
+
+  // Confirm the search selection → build the plan (local tags or chosen release).
+  const MUSIC_LOCAL_ID = '__local__';
+  const musicConfirm = useCallback(() => {
+    const id = state.selectedReleaseId;
+    const release = id && id !== MUSIC_LOCAL_ID ? state.releases.find((r) => r.mbid === id) : null;
+    musicGeneratePlan(release ?? null);
+  }, [state.selectedReleaseId, state.releases, musicGeneratePlan]);
+
   const toggleSubtitleTask = useCallback(
     (targetPath: string) => {
       const current = new Set(state.selectedSubtitlePaths);
@@ -479,6 +596,9 @@ export function useWorkflow() {
     setAllConflictResolutions,
     toggleFileRemoval,
     setAllFilesToRemove,
+    musicSearch,
+    musicSelect,
+    musicConfirm,
     reset,
   };
 }

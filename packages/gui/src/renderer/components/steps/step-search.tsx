@@ -6,69 +6,76 @@ import { Button } from '@/src/renderer/components/ui/button';
 import { Skeleton } from '@/src/renderer/components/ui/skeleton';
 import { StepShell } from '@/src/renderer/components/layout/step-shell';
 import { StepFooter } from '@/src/renderer/components/layout/step-footer';
-import { PosterCard } from '@/src/renderer/components/shared/poster-card';
+import { ResultCard, type SearchCandidate } from '@/src/renderer/components/shared/result-card';
 import { Reveal, RevealItem } from '@/src/renderer/components/ui/reveal';
 import { t, type Locale } from '@/src/renderer/lib/i18n';
-import type { TMDBMatch } from '@metarr/core';
 
 interface StepSearchProps {
   locale: Locale;
-  step: number;
-  results: TMDBMatch[];
-  selectedMatch: TMDBMatch | null;
-  searchQuery: string;
+  step?: number;
+  title?: string;
+  description?: string;
+  results: SearchCandidate[];
+  selectedId: string | number | null;
   loading: boolean;
+  /** Note shown above the list, e.g. `"query" · 5 results`. */
+  resultsNote?: string;
+  /** Provided by the video flow → shows a re-search button. */
+  onReSearch?: () => void;
+  confirmLabel?: string;
   onBack: () => void;
-  onSelectMatch: (match: TMDBMatch) => void;
-  onReSearch: () => void;
-  onGeneratePlan: () => void;
+  onSelect: (id: string | number) => void;
+  onConfirm: () => void;
 }
 
 export function StepSearch({
   locale,
   step,
+  title,
+  description,
   results,
-  selectedMatch,
-  searchQuery,
+  selectedId,
   loading,
-  onBack,
-  onSelectMatch,
+  resultsNote,
   onReSearch,
-  onGeneratePlan,
+  confirmLabel,
+  onBack,
+  onSelect,
+  onConfirm,
 }: StepSearchProps) {
   const text = t(locale);
 
-  // Results are ranked by relevance — default-select the top match so the user
-  // can hit "generate" immediately (still free to pick another).
+  // Results are ranked — default-select the top one so the user can confirm
+  // immediately (still free to pick another).
   useEffect(() => {
-    if (!loading && results.length > 0 && !selectedMatch) {
-      onSelectMatch(results[0]);
+    if (!loading && results.length > 0 && selectedId == null) {
+      onSelect(results[0].id);
     }
-  }, [loading, results, selectedMatch, onSelectMatch]);
+  }, [loading, results, selectedId, onSelect]);
 
-  // Press Enter to generate the plan once a match is selected (no text inputs here).
+  // Press Enter to confirm once something is selected (no text inputs here).
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' && selectedMatch && !loading) onGeneratePlan();
+      if (e.key === 'Enter' && selectedId != null && !loading) onConfirm();
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [selectedMatch, loading, onGeneratePlan]);
+  }, [selectedId, loading, onConfirm]);
 
   return (
     <StepShell
-      title={text.selectMatch}
-      description={text.stepDesc.search}
+      title={title ?? text.selectMatch}
+      description={description ?? text.stepDesc.search}
       step={step}
       width="lg"
       footer={
         <StepFooter onBack={onBack} backLabel={text.back}>
-          <Button variant="brand" onClick={onGeneratePlan} disabled={loading || !selectedMatch}>
+          <Button variant="brand" onClick={onConfirm} disabled={loading || selectedId == null}>
             {loading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <>
-                {text.generatePlan}
+                {confirmLabel ?? text.generatePlan}
                 <ArrowRight className="h-4 w-4" />
               </>
             )}
@@ -77,20 +84,24 @@ export function StepSearch({
       }
     >
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <span className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Search className="h-3.5 w-3.5" />
-            &ldquo;{searchQuery}&rdquo; &middot; {results.length} {text.resultsLabel}
-          </span>
-          <Button variant="outline" size="sm" onClick={onReSearch} disabled={loading}>
-            {loading ? (
-              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
+        {(resultsNote || onReSearch) && (
+          <div className="flex items-center justify-between">
+            <span className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Search className="h-3.5 w-3.5" />
+              {resultsNote ?? `${results.length} ${text.resultsLabel}`}
+            </span>
+            {onReSearch && (
+              <Button variant="outline" size="sm" onClick={onReSearch} disabled={loading}>
+                {loading ? (
+                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
+                )}
+                {text.reSearch}
+              </Button>
             )}
-            {text.reSearch}
-          </Button>
-        </div>
+          </div>
+        )}
 
         {loading ? (
           <div className="space-y-2">
@@ -107,13 +118,12 @@ export function StepSearch({
           </div>
         ) : results.length > 0 ? (
           <Reveal stagger className="space-y-2">
-            {results.map((match) => (
-              <RevealItem key={match.id}>
-                <PosterCard
-                  match={match}
-                  selected={selectedMatch?.id === match.id}
-                  onClick={() => onSelectMatch(match)}
-                  locale={locale}
+            {results.map((candidate) => (
+              <RevealItem key={candidate.id}>
+                <ResultCard
+                  candidate={candidate}
+                  selected={selectedId === candidate.id}
+                  onClick={() => onSelect(candidate.id)}
                 />
               </RevealItem>
             ))}

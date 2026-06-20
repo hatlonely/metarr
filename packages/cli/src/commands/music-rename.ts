@@ -5,6 +5,9 @@ import {
   MusicBrainzClient,
   locateReleases,
   generateMusicRenamePlan,
+  fetchAlbumCover,
+  localizeAlbum,
+  localizeRelease,
   checkConflicts,
   findUnmatchedFiles,
   executeRenamePlan,
@@ -22,6 +25,14 @@ import trash from 'trash';
 export interface MusicRenameOptions {
   dest: string;
   dryRun: boolean;
+}
+
+/** Title language/script preference from the display-language setting. */
+function musicPref(): { preferLang?: 'zh' | 'en'; titleScript?: 'zh-Hans' | 'zh-Hant' } {
+  const lang = getConfig('displayLanguage') || 'zh-CN';
+  if (lang === 'zh-TW') return { preferLang: 'zh', titleScript: 'zh-Hant' };
+  if (lang.startsWith('zh')) return { preferLang: 'zh', titleScript: 'zh-Hans' };
+  return { preferLang: 'en' };
 }
 
 export async function musicRenameAction(
@@ -65,7 +76,7 @@ export async function musicRenameAction(
     const searchSpinner = ora('搜索 MusicBrainz...').start();
     const client = new MusicBrainzClient();
     try {
-      const candidates = await locateReleases(client, album);
+      const candidates = await locateReleases(client, album, musicPref());
       searchSpinner.succeed(`找到 ${candidates.length} 个候选`);
       if (candidates.length > 0) {
         const { mbid } = await inquirer.prompt([
@@ -85,7 +96,7 @@ export async function musicRenameAction(
         if (mbid) {
           const detailSpinner = ora('获取音轨列表...').start();
           release = await client.getRelease(mbid);
-          release.coverUrl = client.coverArtUrl(mbid);
+          release.coverUrl = await fetchAlbumCover(release.artist, release.title);
           detailSpinner.succeed(`${release.artist} - ${release.title} · ${release.tracks.length} 轨`);
         }
       }
@@ -96,7 +107,10 @@ export async function musicRenameAction(
 
   // Step 3: build plan
   const destPath = resolve(options.dest);
-  const plan = generateMusicRenamePlan(album, release, { destPath });
+  const { titleScript } = musicPref();
+  const a = titleScript ? await localizeAlbum(album, titleScript) : album;
+  const r = titleScript && release ? await localizeRelease(release, titleScript) : release;
+  const plan = generateMusicRenamePlan(a, r, { destPath });
 
   console.log();
   console.log(chalk.bold('整理计划:'));

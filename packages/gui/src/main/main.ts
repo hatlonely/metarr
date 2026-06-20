@@ -24,6 +24,14 @@ import {
   getHistory,
   deleteHistory,
   undoHistory,
+  detectMediaKind,
+  parseAlbumDir,
+  MusicBrainzClient,
+  locateReleases,
+  generateMusicRenamePlan,
+  fetchAlbumCover,
+  localizeAlbum,
+  localizeRelease,
 } from '@metarr/core';
 import type {
   ParsedMedia,
@@ -39,6 +47,8 @@ import type {
   ExecutionResult,
   ArtworkExecutionResult,
   SubtitleExecutionResult,
+  ParsedAlbum,
+  MusicBrainzRelease,
 } from '@metarr/core';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -300,6 +310,64 @@ ipcMain.handle(
 ipcMain.handle('subtitle:execute', async (_event, tasks: SubtitleTask[]) => {
   return executeSubtitlePlan(tasks);
 });
+
+// IPC: Detect whether a directory is music or video (auto-route the flow)
+ipcMain.handle('media:detectKind', async (_event, dirPath: string) => {
+  return detectMediaKind(dirPath);
+});
+
+// IPC: Parse an album directory (embedded tags + filename fallback)
+ipcMain.handle('music:parseAlbum', async (_event, dirPath: string) => {
+  return parseAlbumDir(dirPath);
+});
+
+// Language/script preference for music titles, from the display-language
+// setting (same preference video uses): zh-CN → Simplified, zh-TW → Traditional.
+function musicLangPref(): {
+  preferLang?: 'zh' | 'en';
+  titleScript?: 'zh-Hans' | 'zh-Hant';
+} {
+  const lang = (getAllConfig().displayLanguage as string) || 'zh-CN';
+  if (lang === 'zh-TW') return { preferLang: 'zh', titleScript: 'zh-Hant' };
+  if (lang.startsWith('zh')) return { preferLang: 'zh', titleScript: 'zh-Hans' };
+  return { preferLang: 'en' };
+}
+
+// IPC: Search MusicBrainz for matching releases (ranked by language preference),
+// enriched with cover art from iTunes/Deezer (Cover Art Archive is too sparse).
+ipcMain.handle('music:locate', async (_event, album: ParsedAlbum) => {
+  const client = new MusicBrainzClient();
+  const { preferLang, titleScript } = musicLangPref();
+  const releases = await locateReleases(client, album, { limit: 8, preferLang, titleScript });
+  await Promise.all(
+    releases.map(async (r) => {
+      r.coverUrl = await fetchAlbumCover(r.artist, r.title);
+    }),
+  );
+  return releases;
+});
+
+// IPC: Fetch a release's canonical track list + cover art
+ipcMain.handle('music:getRelease', async (_event, mbid: string) => {
+  const client = new MusicBrainzClient();
+  const release = await client.getRelease(mbid);
+  release.coverUrl = await fetchAlbumCover(release.artist, release.title);
+  return release;
+});
+
+// IPC: Generate a music rename plan (release optional → pure local organize).
+// Titles are normalized to the preferred Chinese script (e.g. Traditional →
+// Simplified for zh-CN) so the output library is consistent.
+ipcMain.handle(
+  'music:generatePlan',
+  async (_event, album: ParsedAlbum, release: MusicBrainzRelease | null) => {
+    const destPath = (getAllConfig().destPath as string) || '';
+    const { titleScript } = musicLangPref();
+    const a = titleScript ? await localizeAlbum(album, titleScript) : album;
+    const r = titleScript && release ? await localizeRelease(release, titleScript) : release;
+    return generateMusicRenamePlan(a, r, { destPath });
+  },
+);
 
 app.whenReady().then(createWindow);
 

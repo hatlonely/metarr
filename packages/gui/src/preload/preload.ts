@@ -36,4 +36,10 @@ contextBridge.exposeInMainWorld('metarrAPI', {
   executeSubtitlePlan: (tasks: unknown) => ipcRenderer.invoke('subtitle:execute', tasks),
   executeArtworkPlan: (tasks: unknown) => ipcRenderer.invoke('artwork:execute', tasks),
   getPathForFile: (file: File) => webUtils.getPathForFile(file),
+  detectMediaKind: (dirPath: string) => ipcRenderer.invoke('media:detectKind', dirPath),
+  parseAlbum: (dirPath: string) => ipcRenderer.invoke('music:parseAlbum', dirPath),
+  musicLocate: (album: unknown) => ipcRenderer.invoke('music:locate', album),
+  musicGetRelease: (mbid: string) => ipcRenderer.invoke('music:getRelease', mbid),
+  musicGeneratePlan: (album: unknown, release: unknown) =>
+    ipcRenderer.invoke('music:generatePlan', album, release),
 } satisfies Record<string, (...args: unknown[]) => unknown>);

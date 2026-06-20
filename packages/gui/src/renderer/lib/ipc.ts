@@ -15,6 +15,8 @@ import type {
   SubtitleTask,
   HistoryEntry,
   UndoResult,
+  ParsedAlbum,
+  MusicBrainzRelease,
 } from '@metarr/core';
 import type { OpenMediaResult } from '@/src/shared/ipc-types';
 
@@ -111,4 +113,18 @@ export const ipc = {
     getApi().executeSubtitlePlan(tasks),
 
   getPathForFile: (file: File): string => getApi().getPathForFile(file),
+
+  detectMediaKind: (dirPath: string): Promise<'music' | 'video'> =>
+    getApi().detectMediaKind(dirPath),
+
+  parseAlbum: (dirPath: string): Promise<ParsedAlbum> => getApi().parseAlbum(dirPath),
+
+  musicLocate: (album: ParsedAlbum): Promise<MusicBrainzRelease[]> => getApi().musicLocate(album),
+
+  musicGetRelease: (mbid: string): Promise<MusicBrainzRelease> => getApi().musicGetRelease(mbid),
+
+  musicGeneratePlan: (
+    album: ParsedAlbum,
+    release: MusicBrainzRelease | null,
+  ): Promise<RenamePlan> => getApi().musicGeneratePlan(album, release),
 };
