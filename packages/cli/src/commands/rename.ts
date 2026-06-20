@@ -22,7 +22,9 @@ import {
   getConfig,
   buildHistoryEntry,
   recordHistory,
+  detectMediaKind,
 } from '@metarr/core';
+import { musicRenameAction } from './music-rename.js';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import ora from 'ora';
@@ -46,6 +48,12 @@ export async function renameAction(source: string, options: RenameCommandOptions
   }
 
   const isFile = statSync(sourcePath).isFile();
+
+  // Auto-route music albums (audio-dominant directories) to the music flow,
+  // which uses embedded tags + MusicBrainz instead of TMDB.
+  if (!isFile && (await detectMediaKind(sourcePath)) === 'music') {
+    return musicRenameAction(sourcePath, { dest: options.dest, dryRun: options.dryRun });
+  }
 
   const apiKey = getTmdbKey(options.tmdbKey);
   if (!apiKey) {
@@ -94,7 +102,7 @@ export async function renameAction(source: string, options: RenameCommandOptions
   if (parsed.tags.isDV) console.log(`  杜比视界: 是`);
 
   // Step 2: Confirm or override media type
-  let mediaType: MediaType;
+  let mediaType: 'tv' | 'movie';
   if (parsed.type !== 'unknown') {
     const { confirmed } = await inquirer.prompt([
       {
@@ -104,7 +112,7 @@ export async function renameAction(source: string, options: RenameCommandOptions
         default: true,
       },
     ]);
-    mediaType = confirmed ? (parsed.type as MediaType) : await askMediaType();
+    mediaType = confirmed ? (parsed.type as 'tv' | 'movie') : await askMediaType();
   } else {
     mediaType = await askMediaType();
   }
@@ -364,7 +372,7 @@ export async function renameAction(source: string, options: RenameCommandOptions
   }
 }
 
-async function askMediaType(): Promise<MediaType> {
+async function askMediaType(): Promise<'tv' | 'movie'> {
   const { type } = await inquirer.prompt([
     {
       type: 'list',
@@ -376,7 +384,7 @@ async function askMediaType(): Promise<MediaType> {
       ],
     },
   ]);
-  return type as MediaType;
+  return type as 'tv' | 'movie';
 }
 
 function formatFileSize(bytes: number): string {

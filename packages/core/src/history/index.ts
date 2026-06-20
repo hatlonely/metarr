@@ -46,7 +46,10 @@ export function buildHistoryEntry(input: {
   subtitleResult?: SubtitleExecutionResult | null;
 }): HistoryEntry {
   const { plan, result, artworkResult, subtitleResult } = input;
+  // Prefer the generalized media summary (set by all media types); fall back to
+  // the video-only TMDB match for plans that predate it.
   const match = plan.tmdbMatch;
+  const summary = plan.mediaSummary;
   const renamed = result.succeeded
     .filter((t) => t.operation === 'rename')
     .map((t) => ({ from: t.source, to: t.target }));
@@ -61,14 +64,13 @@ export function buildHistoryEntry(input: {
   return {
     id: genId(),
     timestamp: new Date().toISOString(),
-    mediaName: match.displayName || match.originalName,
+    mediaName: summary?.name ?? match?.displayName ?? match?.originalName ?? '',
     mediaType: plan.mediaType,
     originalName:
-      match.originalName && match.originalName !== match.displayName
-        ? match.originalName
-        : undefined,
-    year: match.year || undefined,
-    poster: match.posterUrl,
+      summary?.originalName ??
+      (match && match.originalName !== match.displayName ? match.originalName : undefined),
+    year: summary?.year ?? match?.year ?? undefined,
+    poster: summary?.poster ?? match?.posterUrl,
     sourcePath: plan.sourcePath,
     destPath: plan.destPath,
     renamed,

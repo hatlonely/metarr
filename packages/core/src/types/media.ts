@@ -1,4 +1,4 @@
-export type MediaType = 'tv' | 'movie';
+export type MediaType = 'tv' | 'movie' | 'music';
 
 /** External IDs that can locate a title on TMDB (or be displayed). */
 export interface MediaIds {
@@ -92,3 +92,45 @@ export const VIDEO_EXTENSIONS = new Set([
 ]);
 
 export const SUBTITLE_EXTENSIONS = new Set(['.srt', '.ass', '.ssa', '.sub', '.idx', '.sup']);
+
+export const AUDIO_EXTENSIONS = new Set([
+  '.mp3',
+  '.flac',
+  '.m4a',
+  '.ogg',
+  '.opus',
+  '.wav',
+  '.ape',
+  '.wma',
+  '.aac',
+  '.alac',
+]);
+
+/** One audio track in an album, from embedded tags (filename as fallback). */
+export interface AudioTrack {
+  /** Original file name (basename). */
+  originalFileName: string;
+  /** Path relative to the album root (e.g. "Disc 01/01 - x.flac"); for a flat
+   *  album this equals originalFileName. */
+  relPath?: string;
+  extension: string;
+  /** Disc number (1 when single-disc / unknown). */
+  disc: number;
+  /** Track number within the disc, or undefined when unknown. */
+  track?: number;
+  title?: string;
+  /** Track artist (may differ from album artist on compilations). */
+  artist?: string;
+}
+
+/** An album parsed from a directory of audio files (embedded tags first). */
+export interface ParsedAlbum {
+  albumArtist?: string;
+  album?: string;
+  year?: number;
+  /** Number of discs (1 unless multi-disc tags seen). */
+  discCount: number;
+  tracks: AudioTrack[];
+  originalDirName: string;
+  sourcePath: string;
+}

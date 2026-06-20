@@ -64,6 +64,31 @@ export function resolveNamingTemplate(preset?: string): NamingTemplate {
   return (preset ? NAMING_PRESETS[preset] : undefined) ?? NAMING_PRESETS[DEFAULT_NAMING_PRESET];
 }
 
+/** Naming template for music: album directory + per-track file name. */
+export interface MusicNamingTemplate {
+  /** May contain '/' to nest artist/album, e.g. '{albumArtist}/{album} ({year})'. */
+  albumDir: string;
+  trackFile: string;
+  /** Used instead of trackFile for multi-disc releases. */
+  multiDiscTrackFile?: string;
+}
+
+export const MUSIC_NAMING_PRESETS: Record<string, MusicNamingTemplate> = {
+  universal: {
+    albumDir: '{albumArtist}/{album} ({year})',
+    trackFile: '{track:02} - {title}{ext}',
+    multiDiscTrackFile: '{disc}-{track:02} - {title}{ext}',
+  },
+};
+
+export const DEFAULT_MUSIC_PRESET = 'universal';
+
+export function resolveMusicNamingTemplate(preset?: string): MusicNamingTemplate {
+  return (
+    (preset ? MUSIC_NAMING_PRESETS[preset] : undefined) ?? MUSIC_NAMING_PRESETS[DEFAULT_MUSIC_PRESET]
+  );
+}
+
 /**
  * Render a naming template string with the given variables.
  * Supports zero-padding: {season:02} pads season to 2 digits.

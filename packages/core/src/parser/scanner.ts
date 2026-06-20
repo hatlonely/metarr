@@ -1,6 +1,11 @@
 import { readdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
-import { VIDEO_EXTENSIONS, SUBTITLE_EXTENSIONS, type ParsedEpisode } from '../types/media.js';
+import {
+  VIDEO_EXTENSIONS,
+  SUBTITLE_EXTENSIONS,
+  AUDIO_EXTENSIONS,
+  type ParsedEpisode,
+} from '../types/media.js';
 import { parseFileName, parseSubtitleFile } from './file-parser.js';
 
 export interface FileInfo {
@@ -10,12 +15,14 @@ export interface FileInfo {
   size: number;
   isVideo: boolean;
   isSubtitle: boolean;
+  isAudio: boolean;
 }
 
 export interface ScanResult {
   files: FileInfo[];
   videoFiles: FileInfo[];
   subtitleFiles: FileInfo[];
+  audioFiles: FileInfo[];
   episodes: ParsedEpisode[];
 }
 
@@ -24,6 +31,7 @@ export async function scanDirectory(dirPath: string): Promise<ScanResult> {
   const files: FileInfo[] = [];
   const videoFiles: FileInfo[] = [];
   const subtitleFiles: FileInfo[] = [];
+  const audioFiles: FileInfo[] = [];
 
   for (const entry of entries) {
     const fullPath = join(dirPath, entry);
@@ -33,6 +41,7 @@ export async function scanDirectory(dirPath: string): Promise<ScanResult> {
     const ext = getExt(entry);
     const isVideo = VIDEO_EXTENSIONS.has(ext);
     const isSubtitle = SUBTITLE_EXTENSIONS.has(ext);
+    const isAudio = AUDIO_EXTENSIONS.has(ext);
 
     const info: FileInfo = {
       name: entry,
@@ -41,11 +50,13 @@ export async function scanDirectory(dirPath: string): Promise<ScanResult> {
       size: s.size,
       isVideo,
       isSubtitle,
+      isAudio,
     };
 
     files.push(info);
     if (isVideo) videoFiles.push(info);
     if (isSubtitle) subtitleFiles.push(info);
+    if (isAudio) audioFiles.push(info);
   }
 
   // Parse each video file into an episode
@@ -67,7 +78,7 @@ export async function scanDirectory(dirPath: string): Promise<ScanResult> {
     return episode;
   });
 
-  return { files, videoFiles, subtitleFiles, episodes };
+  return { files, videoFiles, subtitleFiles, audioFiles, episodes };
 }
 
 export async function scanMediaDirectories(parentPath: string): Promise<string[]> {

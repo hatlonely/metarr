@@ -1,7 +1,7 @@
 import { basename, dirname } from 'node:path';
 import type { ParsedMedia, MediaType, ParseOptions, TitleCandidate } from '../types/media.js';
 import { extractMedia } from './extract.js';
-import { scanDirectory } from './scanner.js';
+import { scanDirectory, scanMediaDirectories } from './scanner.js';
 import { parseFileName, parseSubtitleFile } from './file-parser.js';
 import { detectSeriesEpisodes } from './series.js';
 
@@ -11,6 +11,25 @@ export { extractMedia, extractIds, extractYearCandidates } from './extract.js';
 export { parseFileName, parseSubtitleFile, parseSeasonEpisode } from './file-parser.js';
 export { scanDirectory, scanMediaDirectories } from './scanner.js';
 export { parseTags, stripMediaTags } from './tag-parser.js';
+
+/**
+ * Decide whether a directory is a music album or a video title, by which media
+ * type dominates its files. Used to auto-route to the music vs video flow.
+ */
+export async function detectMediaKind(dirPath: string): Promise<'music' | 'video'> {
+  const scan = await scanDirectory(dirPath);
+  if (scan.audioFiles.length > 0) {
+    return scan.audioFiles.length >= scan.videoFiles.length ? 'music' : 'video';
+  }
+  if (scan.videoFiles.length > 0) return 'video';
+  // No top-level media: peek one level deep (multi-disc albums / season folders).
+  for (const sub of await scanMediaDirectories(dirPath)) {
+    const s = await scanDirectory(sub);
+    if (s.audioFiles.length > 0) return 'music';
+    if (s.videoFiles.length > 0) return 'video';
+  }
+  return 'video';
+}
 
 /** A directory/file is "clean" if it already looks like `Title (Year) [id]`. */
 const CLEAN_RE = /^.+?\s*\(\d{4}\)\s*(?:\[[^\]]*\])?\s*$/;

@@ -1,5 +1,16 @@
 // Parser
-export { parseMediaDir, parseMediaFile, extractMedia } from './parser/index.js';
+export { parseMediaDir, parseMediaFile, extractMedia, detectMediaKind } from './parser/index.js';
+export { parseAlbumDir, aggregateAlbum, isAlbumComplete } from './parser/audio-parser.js';
+export type { TrackTags, TrackInput } from './parser/audio-parser.js';
+
+// MusicBrainz
+export { MusicBrainzClient, locateReleases, scoreRelease } from './musicbrainz/index.js';
+export type {
+  MusicBrainzClientOptions,
+  LocateReleaseOptions,
+  MusicBrainzRelease,
+  MusicBrainzTrack,
+} from './musicbrainz/index.js';
 
 // TMDB
 export { TMDBClient } from './tmdb/index.js';
@@ -37,8 +48,17 @@ export {
   NAMING_PRESETS,
   DEFAULT_NAMING_PRESET,
   resolveNamingTemplate,
+  MUSIC_NAMING_PRESETS,
+  DEFAULT_MUSIC_PRESET,
+  resolveMusicNamingTemplate,
+  generateMusicRenamePlan,
 } from './renamer/index.js';
-export type { ExecuteOptions, CreateTrashOptions } from './renamer/index.js';
+export type {
+  ExecuteOptions,
+  CreateTrashOptions,
+  MusicNamingTemplate,
+  MusicRenameOptions,
+} from './renamer/index.js';
 
 // Config
 export { getTmdbKey, getConfig, setConfig, getAllConfig, CONFIG_FILE } from './config.js';
@@ -66,8 +86,10 @@ export type {
   MediaIds,
   TitleCandidate,
   ExtractResult,
+  ParsedAlbum,
+  AudioTrack,
 } from './types/media.js';
-export { VIDEO_EXTENSIONS, SUBTITLE_EXTENSIONS } from './types/media.js';
+export { VIDEO_EXTENSIONS, SUBTITLE_EXTENSIONS, AUDIO_EXTENSIONS } from './types/media.js';
 export type { TMDBMatch } from './types/tmdb.js';
 export type { NamingTemplate } from './renamer/naming.js';
 export type {

@@ -17,9 +17,22 @@ export interface RenamePlanSummary {
   fileCount: number;
 }
 
+/** Generalized display info for a plan, used by history/preview across media
+ *  types (video fills it from a TMDBMatch, music from a MusicBrainz release). */
+export interface MediaSummary {
+  name: string;
+  originalName?: string;
+  year?: number;
+  poster?: string;
+  type: MediaType;
+}
+
 export interface RenamePlan {
   mediaType: MediaType;
-  tmdbMatch: TMDBMatch;
+  /** Video-only TMDB match (drives artwork/subtitles). */
+  tmdbMatch?: TMDBMatch;
+  /** Generalized display info (preferred by history). */
+  mediaSummary?: MediaSummary;
   sourcePath: string;
   destPath: string;
   tasks: RenameTask[];

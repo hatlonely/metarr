@@ -10,6 +10,14 @@ export type { CreateTrashOptions } from './trash.js';
 export { checkConflicts } from './conflict-checker.js';
 export { findUnmatchedFiles } from './unmatched-finder.js';
 export { NAMING_PRESETS, DEFAULT_NAMING_PRESET, resolveNamingTemplate } from './naming.js';
+export {
+  MUSIC_NAMING_PRESETS,
+  DEFAULT_MUSIC_PRESET,
+  resolveMusicNamingTemplate,
+} from './naming.js';
+export type { MusicNamingTemplate } from './naming.js';
+export { generateMusicRenamePlan } from './music-renamer.js';
+export type { MusicRenameOptions } from './music-renamer.js';
 
 /**
  * Default output location when none is configured: put the renamed result next

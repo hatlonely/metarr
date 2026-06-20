@@ -95,7 +95,9 @@ export async function locate(
 ): Promise<TMDBMatch[]> {
   const limit = opts.limit ?? 6;
   const year = opts.year ?? extract.yearCandidates[0];
-  const typeHint = opts.type ?? (extract.mediaType !== 'unknown' ? extract.mediaType : undefined);
+  const typeHint =
+    opts.type ??
+    (extract.mediaType === 'tv' || extract.mediaType === 'movie' ? extract.mediaType : undefined);
   const types = resolveTypes(extract, opts.type);
 
   // 1) Direct ID lookup — highest confidence.
