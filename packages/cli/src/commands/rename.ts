@@ -4,6 +4,7 @@ import type {
   MediaType,
   ParsedMedia,
   RenameOptions,
+  RenamePlan,
   TMDBMatch,
   ConflictResolution,
   ConflictResolutionMap,
