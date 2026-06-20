@@ -1,7 +1,7 @@
-#!/usr/bin/env node
 import { Command } from 'commander';
 import { renameAction } from './commands/rename.js';
 import { configAction, configSetAction } from './commands/config.js';
+import { historyListAction, historyUndoAction } from './commands/history.js';
 
 const program = new Command();
 
@@ -20,6 +20,16 @@ program
   .option('--lang <lang>', 'Override display language: zh or en')
   .option('--no-imdb', 'Do not prefer IMDB ID for movies')
   .action(renameAction);
+
+const historyCmd = program
+  .command('history')
+  .description('List past rename runs')
+  .action(historyListAction);
+
+historyCmd
+  .command('undo <id>')
+  .description('Undo a past rename run (restore files to their original location)')
+  .action(historyUndoAction);
 
 const configCmd = program.command('config').description('Manage configuration');
 

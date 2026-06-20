@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Eye, EyeOff, Database, FolderTree, Captions, SlidersHorizontal } from 'lucide-react';
+import { Eye, EyeOff, Database, FolderTree, Captions, SlidersHorizontal, History } from 'lucide-react';
 import { Input } from '@/src/renderer/components/ui/input';
 import { Label } from '@/src/renderer/components/ui/label';
 import { Button } from '@/src/renderer/components/ui/button';
@@ -355,6 +355,42 @@ export function SettingsSheet({ open, onOpenChange, config, onSave, locale }: Se
                   );
                 })}
               </div>
+            </Field>
+          </Section>
+
+          {/* History */}
+          <Section
+            icon={History}
+            title={text.settingsSectionHistory}
+            description={text.settingsSectionHistoryDesc}
+          >
+            <Field label={text.historyMaxEntries} htmlFor="history-max-entries" hint={text.historyMaxEntriesHint}>
+              <Input
+                id="history-max-entries"
+                type="number"
+                min={0}
+                value={localConfig.historyMaxEntries}
+                onChange={(e) =>
+                  setLocalConfig((prev) => ({
+                    ...prev,
+                    historyMaxEntries: Number(e.target.value) || 0,
+                  }))
+                }
+              />
+            </Field>
+            <Field label={text.historyMaxAgeDays} htmlFor="history-max-age" hint={text.historyMaxAgeDaysHint}>
+              <Input
+                id="history-max-age"
+                type="number"
+                min={0}
+                value={localConfig.historyMaxAgeDays}
+                onChange={(e) =>
+                  setLocalConfig((prev) => ({
+                    ...prev,
+                    historyMaxAgeDays: Number(e.target.value) || 0,
+                  }))
+                }
+              />
             </Field>
           </Section>
 

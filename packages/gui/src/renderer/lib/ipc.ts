@@ -13,6 +13,8 @@ import type {
   SubtitlePlan,
   SubtitleExecutionResult,
   SubtitleTask,
+  HistoryEntry,
+  UndoResult,
 } from '@metarr/core';
 import type { OpenMediaResult } from '@/src/shared/ipc-types';
 
@@ -67,6 +69,19 @@ export const ipc = {
     resolutions?: ConflictResolutionMap,
     filesToRemove?: string[],
   ): Promise<ExecutionResult> => getApi().executeRename(plan, resolutions, filesToRemove),
+
+  historyRecord: (
+    plan: RenamePlan,
+    result: ExecutionResult,
+    artworkResult?: ArtworkExecutionResult | null,
+    subtitleResult?: SubtitleExecutionResult | null,
+  ): Promise<void> => getApi().historyRecord(plan, result, artworkResult, subtitleResult),
+
+  historyList: (): Promise<HistoryEntry[]> => getApi().historyList(),
+
+  historyUndo: (id: string): Promise<UndoResult | null> => getApi().historyUndo(id),
+
+  historyDelete: (id: string): Promise<void> => getApi().historyDelete(id),
 
   resolveMediaPath: (path: string): Promise<OpenMediaResult> => getApi().resolveMediaPath(path),
 

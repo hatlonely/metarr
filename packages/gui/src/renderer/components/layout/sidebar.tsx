@@ -1,6 +1,6 @@
 'use client';
 
-import { Settings, Sun, Moon, Monitor, Languages } from 'lucide-react';
+import { Settings, Sun, Moon, Monitor, Languages, History } from 'lucide-react';
 import { Button } from '@/src/renderer/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/src/renderer/components/ui/tooltip';
 import { SidebarStep } from './sidebar-step';
@@ -14,6 +14,7 @@ interface SidebarProps {
   currentStepIndex: number;
   onStepClick: (step: StepId) => void;
   onOpenSettings: () => void;
+  onOpenHistory: () => void;
   onToggleLanguage: () => void;
   locale: 'zh' | 'en';
 }
@@ -23,6 +24,7 @@ export function Sidebar({
   currentStepIndex,
   onStepClick,
   onOpenSettings,
+  onOpenHistory,
   onToggleLanguage,
   locale,
 }: SidebarProps) {
@@ -73,6 +75,15 @@ export function Sidebar({
             </Button>
           </TooltipTrigger>
           <TooltipContent>{text.settings}</TooltipContent>
+        </Tooltip>
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="icon" onClick={onOpenHistory}>
+              <History className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{text.history}</TooltipContent>
         </Tooltip>
 
         <Tooltip>

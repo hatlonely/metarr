@@ -30,6 +30,8 @@ export {
   createTrashFn,
   moveToTrashDir,
   sameVolume,
+  volumeRoot,
+  defaultTrashDir,
   checkConflicts,
   findUnmatchedFiles,
   NAMING_PRESETS,
@@ -41,6 +43,18 @@ export type { ExecuteOptions, CreateTrashOptions } from './renamer/index.js';
 // Config
 export { getTmdbKey, getConfig, setConfig, getAllConfig, CONFIG_FILE } from './config.js';
 export type { MetarrConfig } from './config.js';
+
+// History
+export {
+  buildHistoryEntry,
+  recordHistory,
+  listHistory,
+  getHistory,
+  deleteHistory,
+  pruneHistory,
+  undoHistory,
+} from './history/index.js';
+export type { HistoryEntry, UndoResult, TrashedItem } from './history/index.js';
 
 // Types
 export type {

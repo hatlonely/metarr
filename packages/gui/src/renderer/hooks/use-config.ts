@@ -15,6 +15,8 @@ export interface AppConfig {
   assrtToken: string;
   subtitleLanguages: string[];
   trashDir: string;
+  historyMaxEntries: number;
+  historyMaxAgeDays: number;
 }
 
 export const DEFAULT_CUSTOM_NAMING_TEMPLATE: NamingTemplate = {
@@ -36,6 +38,8 @@ const defaultConfig: AppConfig = {
   assrtToken: '',
   subtitleLanguages: ['zh', 'en'],
   trashDir: '',
+  historyMaxEntries: 1000,
+  historyMaxAgeDays: 365,
 };
 
 function parseNamingTemplate(raw: unknown): NamingTemplate | null {
@@ -74,6 +78,10 @@ export function useConfig() {
           ? (raw.subtitleLanguages as string[])
           : ['zh', 'en'],
         trashDir: (raw.trashDir as string) || '',
+        historyMaxEntries:
+          typeof raw.historyMaxEntries === 'number' ? raw.historyMaxEntries : 1000,
+        historyMaxAgeDays:
+          typeof raw.historyMaxAgeDays === 'number' ? raw.historyMaxAgeDays : 365,
       });
     } catch {
       // Use defaults if IPC not available (dev mode)

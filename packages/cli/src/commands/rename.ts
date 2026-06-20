@@ -20,6 +20,8 @@ import {
   findUnmatchedFiles,
   getTmdbKey,
   getConfig,
+  buildHistoryEntry,
+  recordHistory,
 } from '@metarr/core';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
@@ -339,6 +341,9 @@ export async function renameAction(source: string, options: RenameCommandOptions
     trashItem,
   });
   execSpinner.succeed(`完成: ${result.succeeded.length} 个操作成功`);
+
+  // Record this run so it can be reviewed / undone via `metarr history`.
+  recordHistory(buildHistoryEntry({ plan, result }));
 
   if (result.failed.length > 0) {
     console.log();

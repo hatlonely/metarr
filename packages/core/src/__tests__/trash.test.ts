@@ -1,8 +1,14 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdtempSync, writeFileSync, existsSync, readdirSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { tmpdir, homedir } from 'node:os';
 import { join } from 'node:path';
-import { createTrashFn, moveToTrashDir, sameVolume } from '../renamer/trash.js';
+import {
+  createTrashFn,
+  moveToTrashDir,
+  sameVolume,
+  volumeRoot,
+  defaultTrashDir,
+} from '../renamer/trash.js';
 
 let root: string;
 
@@ -43,32 +49,45 @@ describe('moveToTrashDir', () => {
   });
 });
 
+describe('volumeRoot / defaultTrashDir', () => {
+  it('volumeRoot resolves to a real ancestor directory', () => {
+    const vr = volumeRoot(join(root, 'a', 'b', 'c.mkv'));
+    expect(existsSync(vr)).toBe(true);
+    expect(root.startsWith(vr)).toBe(true);
+  });
+
+  it('defaultTrashDir uses ~/.metarr/trash for files on the home volume', () => {
+    expect(defaultTrashDir(join(homedir(), 'Movies', 'x.mkv'))).toBe(
+      join(homedir(), '.metarr', 'trash'),
+    );
+  });
+});
+
 describe('createTrashFn', () => {
-  it('uses the same-volume trash dir when configured', async () => {
+  it('moves to the configured same-volume dir and returns the trash path', async () => {
     const trash = join(root, 'trash');
     const calls: string[] = [];
     const trashItem = createTrashFn({ trashDir: trash, systemTrash: async (p) => void calls.push(p) });
     const f = file('ep.mkv');
-    await trashItem(f);
+    const dest = await trashItem(f);
     expect(existsSync(f)).toBe(false);
-    expect(readdirSync(trash)).toHaveLength(1);
+    expect(dest).not.toBeNull();
+    expect(existsSync(dest!)).toBe(true);
+    expect(dest!.startsWith(trash)).toBe(true);
     expect(calls).toHaveLength(0); // did not fall back to system trash
   });
 
-  it('falls back to systemTrash when no trash dir is set', async () => {
+  it('returns null and uses systemTrash when the managed move fails', async () => {
+    // A file blocks the trash dir path, so mkdir/rename inside it throws.
+    const blocker = file('blocker', 'x');
     const calls: string[] = [];
-    const trashItem = createTrashFn({ systemTrash: async (p) => void calls.push(p) });
+    const trashItem = createTrashFn({
+      trashDir: join(blocker, 'sub'),
+      systemTrash: async (p) => void calls.push(p),
+    });
     const f = file('ep.mkv');
-    await trashItem(f);
-    expect(calls).toEqual([f]);
-  });
-
-  it('falls back to systemTrash when the trash dir is on another volume', async () => {
-    const calls: string[] = [];
-    // /dev is a different device than the temp dir on macOS/Linux
-    const trashItem = createTrashFn({ trashDir: '/dev/metarr-x', systemTrash: async (p) => void calls.push(p) });
-    const f = file('ep.mkv');
-    await trashItem(f);
+    const dest = await trashItem(f);
+    expect(dest).toBeNull();
     expect(calls).toEqual([f]);
     expect(existsSync(f)).toBe(true); // not moved by us
   });

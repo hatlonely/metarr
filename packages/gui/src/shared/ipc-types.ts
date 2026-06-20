@@ -13,6 +13,8 @@ import type {
   SubtitlePlan,
   SubtitleExecutionResult,
   SubtitleTask,
+  HistoryEntry,
+  UndoResult,
 } from '@metarr/core';
 
 export interface OpenMediaResult {
@@ -53,6 +55,15 @@ export interface IPCApi {
     resolutions?: ConflictResolutionMap,
     filesToRemove?: string[],
   ): Promise<ExecutionResult>;
+  historyRecord(
+    plan: RenamePlan,
+    result: ExecutionResult,
+    artworkResult?: ArtworkExecutionResult | null,
+    subtitleResult?: SubtitleExecutionResult | null,
+  ): Promise<void>;
+  historyList(): Promise<HistoryEntry[]>;
+  historyUndo(id: string): Promise<UndoResult | null>;
+  historyDelete(id: string): Promise<void>;
   resolveMediaPath(path: string): Promise<OpenMediaResult>;
   /** Reveal a path in the OS file manager. Resolves to '' on success. */
   openPath(path: string): Promise<string>;

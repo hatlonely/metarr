@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Sidebar } from './sidebar';
 import { ContentArea } from './content-area';
 import { SettingsSheet } from './settings-sheet';
+import { HistorySheet } from './history-sheet';
 import { useWorkflow } from '@/src/renderer/hooks/use-workflow';
 import { useConfig } from '@/src/renderer/hooks/use-config';
 import type { StepId } from '@/src/renderer/types/workflow';
@@ -43,6 +44,7 @@ export function AppShell() {
 
   const { config, setConfig, showSettings } = useConfig();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   useEffect(() => {
     if (showSettings) {
@@ -182,6 +184,7 @@ export function AppShell() {
         currentStepIndex={currentStepIndex}
         onStepClick={handleStepClick}
         onOpenSettings={() => setSettingsOpen(true)}
+        onOpenHistory={() => setHistoryOpen(true)}
         onToggleLanguage={() =>
           setConfig({ displayLanguage: config.displayLanguage.startsWith('zh') ? 'en-US' : 'zh-CN' })
         }
@@ -199,6 +202,7 @@ export function AppShell() {
         onSave={handleSaveConfig}
         locale={locale}
       />
+      <HistorySheet open={historyOpen} onOpenChange={setHistoryOpen} locale={locale} />
     </div>
   );
 }

@@ -4,7 +4,7 @@ import type { ParsedMedia, RenameOptions, RenamePlan, TMDBMatch } from '../types
 
 export { executeRenamePlan } from './executor.js';
 export type { ExecuteOptions } from './executor.js';
-export { createTrashFn, moveToTrashDir, sameVolume } from './trash.js';
+export { createTrashFn, moveToTrashDir, sameVolume, volumeRoot, defaultTrashDir } from './trash.js';
 export type { CreateTrashOptions } from './trash.js';
 export { checkConflicts } from './conflict-checker.js';
 export { findUnmatchedFiles } from './unmatched-finder.js';

@@ -30,10 +30,11 @@ export interface ExecuteOptions {
   filesToRemove?: string[];
   /**
    * When provided, a conflicting target being replaced and any unmatched files
-   * are moved here (the trash) instead of being deleted. If it throws, the
-   * operation is recorded as failed — we never fall back to deleting.
+   * are moved here (the trash) instead of being deleted, returning the trash
+   * path (or `null` when the system trash was used). If it throws, the operation
+   * is recorded as failed — we never fall back to deleting.
    */
-  trashItem?: (path: string) => Promise<void>;
+  trashItem?: (path: string) => Promise<string | null>;
 }
 
 /**
@@ -52,6 +53,7 @@ export async function executeRenamePlan(
   let skippedCount = 0;
   let overwrittenCount = 0;
   const trashedFiles: string[] = [];
+  const trashedItems: { original: string; trashPath: string | null }[] = [];
 
   for (let i = 0; i < plan.tasks.length; i++) {
     const task = plan.tasks[i];
@@ -71,8 +73,9 @@ export async function executeRenamePlan(
           // (or delete only when no trashItem is injected).
           if (await exists(task.target)) {
             if (trashItem) {
-              await trashItem(task.target);
+              const trashPath = await trashItem(task.target);
               trashedFiles.push(task.target);
+              trashedItems.push({ original: task.target, trashPath });
             } else {
               await unlink(task.target);
             }
@@ -94,8 +97,9 @@ export async function executeRenamePlan(
     for (const filePath of filesToRemove) {
       try {
         if (trashItem) {
-          await trashItem(filePath);
+          const trashPath = await trashItem(filePath);
           trashedFiles.push(filePath);
+          trashedItems.push({ original: filePath, trashPath });
         } else {
           await rm(filePath, { force: true });
         }
@@ -133,5 +137,6 @@ export async function executeRenamePlan(
     cleanedSourcePath,
     removedUnmatched,
     trashedFiles,
+    trashedItems,
   };
 }

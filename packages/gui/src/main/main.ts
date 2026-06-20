@@ -18,6 +18,12 @@ import {
   setConfig as coreSetConfig,
   locate,
   createTrashFn,
+  buildHistoryEntry,
+  recordHistory,
+  listHistory,
+  getHistory,
+  deleteHistory,
+  undoHistory,
 } from '@metarr/core';
 import type {
   ParsedMedia,
@@ -30,6 +36,9 @@ import type {
   SubtitleTask,
   ExtractResult,
   TitleCandidate,
+  ExecutionResult,
+  ArtworkExecutionResult,
+  SubtitleExecutionResult,
 } from '@metarr/core';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -167,6 +176,14 @@ ipcMain.handle(
   },
 );
 
+// Never delete: replaced targets / unmatched files go to a managed same-volume
+// trash dir (so they can be restored later), falling back to the system trash.
+// Built here in main (callbacks can't cross IPC).
+function makeTrashItem(): (path: string) => Promise<string | null> {
+  const trashDir = (getAllConfig().trashDir as string) || undefined;
+  return createTrashFn({ trashDir, systemTrash: (p) => shell.trashItem(p) });
+}
+
 // IPC: Execute rename plan
 ipcMain.handle(
   'rename:execute',
@@ -176,17 +193,38 @@ ipcMain.handle(
     resolutions?: ConflictResolutionMap,
     filesToRemove?: string[],
   ) => {
-    // Never delete: replaced targets / unmatched files go to a same-volume
-    // trash dir if configured, otherwise the system trash. Built here in main
-    // (callbacks can't cross IPC).
-    const trashDir = (getAllConfig().trashDir as string) || undefined;
-    const trashItem = createTrashFn({
-      trashDir,
-      systemTrash: (p) => shell.trashItem(p),
-    });
-    return executeRenamePlan(plan, { resolutions, filesToRemove, trashItem });
+    return executeRenamePlan(plan, { resolutions, filesToRemove, trashItem: makeTrashItem() });
   },
 );
+
+// IPC: Record a rename run into history (after rename + artwork + subtitles)
+ipcMain.handle(
+  'history:record',
+  async (
+    _event,
+    plan: RenamePlan,
+    result: ExecutionResult,
+    artworkResult?: ArtworkExecutionResult | null,
+    subtitleResult?: SubtitleExecutionResult | null,
+  ) => {
+    recordHistory(buildHistoryEntry({ plan, result, artworkResult, subtitleResult }));
+  },
+);
+
+// IPC: List history entries (newest first)
+ipcMain.handle('history:list', async () => listHistory());
+
+// IPC: Undo a whole run by id
+ipcMain.handle('history:undo', async (_event, id: string) => {
+  const entry = getHistory(id);
+  if (!entry) return null;
+  return undoHistory(entry, { trashItem: makeTrashItem() });
+});
+
+// IPC: Delete a history record (does not touch files)
+ipcMain.handle('history:delete', async (_event, id: string) => {
+  deleteHistory(id);
+});
 
 // IPC: Check conflicts
 ipcMain.handle('rename:checkConflicts', async (_event, plan: RenamePlan) => {

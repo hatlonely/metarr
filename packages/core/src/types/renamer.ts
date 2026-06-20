@@ -44,6 +44,9 @@ export interface ExecutionResult {
   removedUnmatched?: string[];
   /** Every path moved to the trash this run (replaced targets + unmatched). */
   trashedFiles?: string[];
+  /** Each trashed file with where it landed (null = system trash, not
+   *  restorable programmatically). Used to build undoable history. */
+  trashedItems?: { original: string; trashPath: string | null }[];
 }
 
 export interface UnmatchedFileInfo {

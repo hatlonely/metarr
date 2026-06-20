@@ -35,12 +35,16 @@ describe('executeRenamePlan – trash (never delete)', () => {
       resolutions: { 0: 'overwrite' },
       trashItem: async (p) => {
         trashed.push(p);
-        rmSync(p); // mock: moved away
+        const dest = `${p}.trashed`;
+        writeFileSync(dest, readFileSync(p));
+        rmSync(p); // mock: moved away to dest
+        return dest;
       },
     });
 
     expect(trashed).toEqual([tgt]); // old target was trashed, not silently deleted
     expect(r.trashedFiles).toEqual([tgt]);
+    expect(r.trashedItems).toEqual([{ original: tgt, trashPath: `${tgt}.trashed` }]);
     expect(r.overwrittenCount).toBe(1);
     expect(readFileSync(tgt, 'utf8')).toBe('new'); // new file moved into place
   });
@@ -54,11 +58,13 @@ describe('executeRenamePlan – trash (never delete)', () => {
       trashItem: async (p) => {
         trashed.push(p);
         rmSync(p);
+        return null; // mock: went to system trash (no restorable path)
       },
     });
     expect(trashed).toEqual([f]);
     expect(r.removedUnmatched).toEqual([f]);
     expect(r.trashedFiles).toEqual([f]);
+    expect(r.trashedItems).toEqual([{ original: f, trashPath: null }]);
   });
 
   it('records a failed trashItem and does NOT fall back to deleting', async () => {

@@ -20,6 +20,11 @@ contextBridge.exposeInMainWorld('metarrAPI', {
     ipcRenderer.invoke('unmatched:find', plan, selectedFile),
   executeRename: (plan: unknown, resolutions?: unknown, filesToRemove?: unknown) =>
     ipcRenderer.invoke('rename:execute', plan, resolutions, filesToRemove),
+  historyRecord: (plan: unknown, result: unknown, artworkResult?: unknown, subtitleResult?: unknown) =>
+    ipcRenderer.invoke('history:record', plan, result, artworkResult, subtitleResult),
+  historyList: () => ipcRenderer.invoke('history:list'),
+  historyUndo: (id: string) => ipcRenderer.invoke('history:undo', id),
+  historyDelete: (id: string) => ipcRenderer.invoke('history:delete', id),
   resolveMediaPath: (path: string) => ipcRenderer.invoke('fs:resolveMediaPath', path),
   openPath: (path: string) => ipcRenderer.invoke('shell:openPath', path),
   getConfig: () => ipcRenderer.invoke('config:get'),

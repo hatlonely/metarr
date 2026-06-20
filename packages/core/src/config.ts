@@ -16,8 +16,12 @@ export interface MetarrConfig {
   subdlApiKey?: string;
   assrtToken?: string;
   subtitleLanguages?: string[];
-  /** Optional same-volume trash directory; empty = system trash. */
+  /** Optional same-volume trash directory; empty = smart per-volume default. */
   trashDir?: string;
+  /** Keep at most this many history entries (default 1000). */
+  historyMaxEntries?: number;
+  /** Drop history entries older than this many days (default 365). */
+  historyMaxAgeDays?: number;
 }
 
 function readConfigFile(): MetarrConfig {

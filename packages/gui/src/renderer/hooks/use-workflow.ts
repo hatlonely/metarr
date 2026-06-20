@@ -368,21 +368,30 @@ export function useWorkflow() {
       dispatch({ type: 'SET_EXECUTION_RESULT', result });
 
       // Execute selected artwork downloads
+      let artworkResult = null;
       const selectedArtworkTasks = (state.artworkPlan?.tasks ?? []).filter((t) =>
         state.selectedArtworkPaths.includes(t.targetPath),
       );
       if (selectedArtworkTasks.length > 0) {
-        const artworkResult = await ipc.executeArtworkPlan(selectedArtworkTasks);
+        artworkResult = await ipc.executeArtworkPlan(selectedArtworkTasks);
         dispatch({ type: 'SET_ARTWORK_RESULT', result: artworkResult });
       }
 
       // Execute selected subtitle downloads
+      let subtitleResult = null;
       const selectedSubtitleTasks = (state.subtitlePlan?.tasks ?? []).filter((t) =>
         state.selectedSubtitlePaths.includes(t.targetPath),
       );
       if (selectedSubtitleTasks.length > 0) {
-        const subtitleResult = await ipc.executeSubtitlePlan(selectedSubtitleTasks);
+        subtitleResult = await ipc.executeSubtitlePlan(selectedSubtitleTasks);
         dispatch({ type: 'SET_SUBTITLE_RESULT', result: subtitleResult });
+      }
+
+      // Record this run so it can be reviewed and undone from the history panel.
+      try {
+        await ipc.historyRecord(state.plan, result, artworkResult, subtitleResult);
+      } catch {
+        // History is best-effort; never block the workflow on it.
       }
 
       dispatch({ type: 'SET_STEP', step: 'execute' });
