@@ -17,7 +17,23 @@ import type {
   UndoResult,
   ParsedAlbum,
   MusicBrainzRelease,
+  BatchItem,
+  BatchOptions,
+  BatchCacheInfo,
 } from '@metarr/core';
+
+export interface BatchState {
+  parentPath: string;
+  phase: 'scanning' | 'analyzing' | 'done' | 'executing';
+  running: boolean;
+  /** A cancel was requested and the loop is winding down (stops at the next checkpoint). */
+  cancelling: boolean;
+  scanned: number;
+  total: number;
+  executeTotal: number;
+  executeDone: number;
+  items: BatchItem[];
+}
 
 export interface OpenMediaResult {
   type: 'file' | 'dir';
@@ -86,4 +102,16 @@ export interface IPCApi {
   musicLocate(album: ParsedAlbum): Promise<MusicBrainzRelease[]>;
   musicGetRelease(mbid: string): Promise<MusicBrainzRelease>;
   musicGeneratePlan(album: ParsedAlbum, release: MusicBrainzRelease | null): Promise<RenamePlan>;
+  // Batch
+  batchScan(parentPath: string): Promise<void>;
+  batchState(): Promise<BatchState | null>;
+  batchCancel(): Promise<void>;
+  batchClear(): Promise<void>;
+  batchSetChoice(id: string, candidateId: string | null): Promise<BatchItem | null>;
+  batchSetSkip(id: string, skipped: boolean): Promise<BatchItem | null>;
+  batchSetItemOptions(id: string, options: Partial<BatchOptions> | null): Promise<BatchItem | null>;
+  batchExecute(ids: string[]): Promise<void>;
+  batchListCaches(): Promise<BatchCacheInfo[]>;
+  batchDeleteCache(id: string): Promise<void>;
+  batchClearCaches(): Promise<void>;
 }

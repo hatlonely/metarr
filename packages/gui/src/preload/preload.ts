@@ -42,4 +42,17 @@ contextBridge.exposeInMainWorld('metarrAPI', {
   musicGetRelease: (mbid: string) => ipcRenderer.invoke('music:getRelease', mbid),
   musicGeneratePlan: (album: unknown, release: unknown) =>
     ipcRenderer.invoke('music:generatePlan', album, release),
+  batchScan: (parentPath: string) => ipcRenderer.invoke('batch:scan', parentPath),
+  batchState: () => ipcRenderer.invoke('batch:state'),
+  batchCancel: () => ipcRenderer.invoke('batch:cancel'),
+  batchClear: () => ipcRenderer.invoke('batch:clear'),
+  batchSetChoice: (id: string, candidateId: string | null) =>
+    ipcRenderer.invoke('batch:setChoice', id, candidateId),
+  batchSetSkip: (id: string, skipped: boolean) => ipcRenderer.invoke('batch:setSkip', id, skipped),
+  batchSetItemOptions: (id: string, options: unknown) =>
+    ipcRenderer.invoke('batch:setItemOptions', id, options),
+  batchExecute: (ids: string[]) => ipcRenderer.invoke('batch:execute', ids),
+  batchListCaches: () => ipcRenderer.invoke('batch:listCaches'),
+  batchDeleteCache: (id: string) => ipcRenderer.invoke('batch:deleteCache', id),
+  batchClearCaches: () => ipcRenderer.invoke('batch:clearCaches'),
 } satisfies Record<string, (...args: unknown[]) => unknown>);

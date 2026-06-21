@@ -17,7 +17,11 @@ import type {
   UndoResult,
   ParsedAlbum,
   MusicBrainzRelease,
+  BatchItem,
+  BatchOptions,
+  BatchCacheInfo,
 } from '@metarr/core';
+import type { BatchState } from '@/src/shared/ipc-types';
 import type { OpenMediaResult } from '@/src/shared/ipc-types';
 
 function getApi() {
@@ -127,4 +131,19 @@ export const ipc = {
     album: ParsedAlbum,
     release: MusicBrainzRelease | null,
   ): Promise<RenamePlan> => getApi().musicGeneratePlan(album, release),
+
+  batchScan: (parentPath: string): Promise<void> => getApi().batchScan(parentPath),
+  batchState: (): Promise<BatchState | null> => getApi().batchState(),
+  batchCancel: (): Promise<void> => getApi().batchCancel(),
+  batchClear: (): Promise<void> => getApi().batchClear(),
+  batchSetChoice: (id: string, candidateId: string | null): Promise<BatchItem | null> =>
+    getApi().batchSetChoice(id, candidateId),
+  batchSetSkip: (id: string, skipped: boolean): Promise<BatchItem | null> =>
+    getApi().batchSetSkip(id, skipped),
+  batchSetItemOptions: (id: string, options: Partial<BatchOptions> | null): Promise<BatchItem | null> =>
+    getApi().batchSetItemOptions(id, options),
+  batchExecute: (ids: string[]): Promise<void> => getApi().batchExecute(ids),
+  batchListCaches: (): Promise<BatchCacheInfo[]> => getApi().batchListCaches(),
+  batchDeleteCache: (id: string): Promise<void> => getApi().batchDeleteCache(id),
+  batchClearCaches: (): Promise<void> => getApi().batchClearCaches(),
 };

@@ -1,12 +1,12 @@
 'use client';
 
-import { Clapperboard, Wand2, History, Settings, Sun, Moon, Monitor, Languages } from 'lucide-react';
+import { Clapperboard, Wand2, Layers, History, Settings, Sun, Moon, Monitor, Languages } from 'lucide-react';
 import { cn } from '@/src/renderer/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/src/renderer/components/ui/tooltip';
 import { useAppTheme } from '@/src/renderer/hooks/use-theme';
 import { t } from '@/src/renderer/lib/i18n';
 
-export type AppView = 'rename' | 'history' | 'settings';
+export type AppView = 'rename' | 'batch' | 'history' | 'settings';
 
 interface NavRailProps {
   activeView: AppView;
@@ -54,6 +54,7 @@ export function NavRail({ activeView, onNavigate, onToggleLanguage, locale }: Na
 
   const features: { id: AppView; icon: typeof Wand2; label: string }[] = [
     { id: 'rename', icon: Wand2, label: text.navRename },
+    { id: 'batch', icon: Layers, label: text.batch },
     { id: 'history', icon: History, label: text.history },
   ];
 

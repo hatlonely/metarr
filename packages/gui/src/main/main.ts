@@ -32,6 +32,17 @@ import {
   fetchAlbumCover,
   localizeAlbum,
   localizeRelease,
+  findMediaItems,
+  analyzeDir,
+  isAlreadyOrganized,
+  DEFAULT_BATCH_OPTIONS,
+  dirSignature,
+  loadBatchCache,
+  saveBatchCache,
+  listBatchCaches,
+  deleteBatchCache,
+  clearBatchCaches,
+  pruneBatchCaches,
 } from '@metarr/core';
 import type {
   ParsedMedia,
@@ -49,6 +60,9 @@ import type {
   SubtitleExecutionResult,
   ParsedAlbum,
   MusicBrainzRelease,
+  BatchItem,
+  BatchOptions,
+  AnalyzeContext,
 } from '@metarr/core';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -368,6 +382,290 @@ ipcMain.handle(
     return generateMusicRenamePlan(a, r, { destPath });
   },
 );
+
+// ---- Batch orchestration ----
+// One in-memory session per scanned parent directory. The scan/execute loops run
+// async; the renderer polls batch:state. Analysis is cached on disk so a scan can
+// be interrupted and resumed.
+interface BatchSession {
+  parentPath: string;
+  ctx: AnalyzeContext;
+  items: Map<string, BatchItem>; // by item id (refs shared with cache arrays)
+  cache: Record<string, BatchItem[]>; // by leaf directory, persisted for resume
+  order: string[];
+  total: number;
+  scanned: number;
+  phase: 'scanning' | 'analyzing' | 'done' | 'executing';
+  running: boolean;
+  cancel: boolean;
+  executeTotal: number;
+  executeDone: number;
+}
+let batch: BatchSession | null = null;
+
+/** Strip heavy raw fields before sending an item to the renderer. */
+function lightItem(it: BatchItem) {
+  const { parsedVideo: _v, parsedAlbum: _a, videoMatches: _m, musicReleases: _r, plan: _p, ...rest } = it;
+  return rest;
+}
+
+function buildAnalyzeCtx(): AnalyzeContext {
+  const cfg = getAllConfig();
+  const { preferLang, titleScript } = musicLangPref();
+  return {
+    tmdbClient: new TMDBClient({ apiKey: (cfg.tmdbKey as string) || '', language: (cfg.displayLanguage as string) || 'zh-CN' }),
+    mbClient: new MusicBrainzClient(),
+    language: cfg.displayLanguage as string,
+    preferLang,
+    titleScript,
+    destPath: (cfg.destPath as string) || '',
+    preferImdbId: cfg.preferImdbId !== undefined ? (cfg.preferImdbId as boolean) : true,
+    namingPreset: cfg.namingPreset as string,
+  };
+}
+
+// IPC: start (or resume) a batch scan of a parent directory
+ipcMain.handle('batch:scan', async (_event, parentPath: string) => {
+  if (batch?.running) return;
+  const ctx = buildAnalyzeCtx();
+  const session: BatchSession = {
+    parentPath, ctx, items: new Map(), cache: loadBatchCache(parentPath), order: [],
+    total: 0, scanned: 0, phase: 'scanning', running: true, cancel: false,
+    executeTotal: 0, executeDone: 0,
+  };
+  batch = session;
+  (async () => {
+    try {
+      const dirs = await findMediaItems(parentPath);
+      session.total = dirs.length;
+      session.phase = 'analyzing';
+      let sinceSave = 0;
+      for (const dir of dirs) {
+        if (session.cancel) break;
+        const sig = dirSignature(dir);
+        const cached = session.cache[dir];
+        let dirItems: BatchItem[];
+        if (cached && cached[0]?.signature === sig && !cached.some((i) => i.status === 'error')) {
+          dirItems = cached;
+        } else {
+          try {
+            dirItems = await analyzeDir(dir, session.ctx, sig);
+          } catch (e) {
+            dirItems = [{ id: dir, sourcePath: dir, kind: 'video', status: 'error', level: 'none', candidates: [], signature: sig, error: (e as Error).message }];
+          }
+          session.cache[dir] = dirItems;
+          if (++sinceSave >= 10) { saveBatchCache(parentPath, session.cache); sinceSave = 0; }
+        }
+        for (const it of dirItems) {
+          session.items.set(it.id, it);
+          session.order.push(it.id);
+        }
+        session.scanned++;
+      }
+    } finally {
+      saveBatchCache(session.parentPath, session.cache);
+      session.running = false;
+      session.phase = 'done';
+    }
+  })();
+});
+
+// IPC: poll the current batch session (light items, no raw payloads)
+ipcMain.handle('batch:state', async () => {
+  if (!batch) return null;
+  return {
+    parentPath: batch.parentPath,
+    phase: batch.phase,
+    running: batch.running,
+    cancelling: batch.cancel && batch.running,
+    scanned: batch.scanned,
+    total: batch.total,
+    executeTotal: batch.executeTotal,
+    executeDone: batch.executeDone,
+    items: batch.order.map((id) => lightItem(batch!.items.get(id)!)),
+  };
+});
+
+// IPC: request cancellation of the running scan/execute (stops after current item)
+ipcMain.handle('batch:cancel', async () => {
+  if (batch) batch.cancel = true;
+});
+
+// IPC: clear the session (stop any running loop, reset to idle). Already-applied
+// items remain on disk + in history; the cache persists for a later resume.
+ipcMain.handle('batch:clear', async () => {
+  if (batch) {
+    batch.cancel = true;
+    saveBatchCache(batch.parentPath, batch.cache);
+  }
+  batch = null;
+});
+
+// IPC: list cached scans (prunes stale/empty ones first) for the resume/cleanup UI.
+ipcMain.handle('batch:listCaches', async () => {
+  pruneBatchCaches();
+  return listBatchCaches();
+});
+
+// IPC: delete one cached scan by id.
+ipcMain.handle('batch:deleteCache', async (_event, id: string) => {
+  deleteBatchCache(id);
+});
+
+// IPC: delete every cached scan.
+ipcMain.handle('batch:clearCaches', async () => {
+  clearBatchCaches();
+});
+
+// IPC: re-pick a candidate for one item (or null = local tags / fallback)
+ipcMain.handle('batch:setChoice', async (_event, id: string, candidateId: string | null) => {
+  const it = batch?.items.get(id);
+  if (!it || !batch) return null;
+  const { ctx } = batch;
+  if (it.kind === 'music' && it.parsedAlbum) {
+    let release: MusicBrainzRelease | null = null;
+    if (candidateId) {
+      release = await ctx.mbClient.getRelease(candidateId);
+      release.coverUrl = await fetchAlbumCover(release.artist, release.title);
+    }
+    const a = ctx.titleScript ? await localizeAlbum(it.parsedAlbum, ctx.titleScript) : it.parsedAlbum;
+    const r = release && ctx.titleScript ? await localizeRelease(release, ctx.titleScript) : release;
+    it.plan = generateMusicRenamePlan(a, r, { destPath: ctx.destPath, namingPreset: ctx.namingPreset });
+    it.poster = release?.coverUrl;
+    it.title = it.plan.mediaSummary?.name;
+    it.year = it.plan.mediaSummary?.year;
+  } else if (it.kind === 'video' && it.parsedVideo) {
+    const match = candidateId ? it.videoMatches?.find((m) => String(m.id) === candidateId) : undefined;
+    if (match) {
+      it.plan = generateRenamePlan(it.parsedVideo, match, { destPath: ctx.destPath, preferImdbId: ctx.preferImdbId ?? true, namingPreset: ctx.namingPreset });
+      it.poster = match.posterUrl;
+      it.title = match.displayName;
+      it.year = match.year;
+    }
+  }
+  it.chosenId = candidateId;
+  it.targetPath = it.plan?.tasks.find((t) => t.operation === 'create-dir')?.target;
+  it.status = isAlreadyOrganized(it.plan) ? 'organized' : candidateId ? 'auto' : 'nomatch';
+  saveBatchCache(batch.parentPath, batch.cache);
+  return lightItem(it);
+});
+
+// IPC: set (or clear) per-item option overrides. null = inherit global defaults.
+ipcMain.handle('batch:setItemOptions', async (_event, id: string, options: Partial<BatchOptions> | null) => {
+  const it = batch?.items.get(id);
+  if (!it || !batch) return null;
+  if (options && Object.keys(options).length > 0) it.options = options;
+  else delete it.options;
+  saveBatchCache(batch.parentPath, batch.cache);
+  return lightItem(it);
+});
+
+// IPC: mark an item skipped / unskipped
+ipcMain.handle('batch:setSkip', async (_event, id: string, skipped: boolean) => {
+  const it = batch?.items.get(id);
+  if (!it) return null;
+  it.status = skipped
+    ? 'skipped'
+    : isAlreadyOrganized(it.plan)
+      ? 'organized'
+      : it.chosenId
+        ? 'auto'
+        : 'nomatch';
+  return lightItem(it);
+});
+
+// IPC: execute the chosen items (sequential, never overwrites; records history)
+ipcMain.handle('batch:execute', async (_event, ids: string[]) => {
+  if (!batch || batch.running) return;
+  const session = batch;
+  session.phase = 'executing';
+  session.running = true;
+  session.cancel = false;
+  session.executeTotal = ids.length;
+  session.executeDone = 0;
+  const trashItem = makeTrashItem();
+  const cfg = getAllConfig();
+  const globalOpts: BatchOptions = { ...DEFAULT_BATCH_OPTIONS, ...((cfg.batchOptions as Partial<BatchOptions>) ?? {}) };
+  const subOpts = {
+    subdlApiKey: (cfg.subdlApiKey as string) || undefined,
+    assrtToken: (cfg.assrtToken as string) || undefined,
+    languages: (cfg.subtitleLanguages as string[]) ?? [],
+  };
+  // Subtitles need a configured source + at least one language, regardless of the toggle.
+  const subsConfigured = Boolean((subOpts.subdlApiKey || subOpts.assrtToken) && subOpts.languages.length > 0);
+  (async () => {
+    try {
+      for (const id of ids) {
+        if (session.cancel) break;
+        const it = session.items.get(id);
+        if (it?.plan) {
+          try {
+            // Effective options = global defaults overlaid with this item's overrides.
+            const eff: BatchOptions = { ...globalOpts, ...(it.options ?? {}) };
+
+            // Conflicts: 'skip' marks every conflicting task to be skipped; 'overwrite'
+            // leaves resolutions empty so the executor trashes the old target then renames.
+            let resolutions: ConflictResolutionMap | undefined;
+            if (eff.onConflict === 'skip') {
+              const { conflicts } = await checkConflicts(it.plan);
+              resolutions = {};
+              for (const c of conflicts) resolutions[c.taskIndex] = 'skip';
+            }
+            // Unmatched cleanup: trash every file in the source not covered by the plan.
+            const filesToRemove = eff.removeUnmatched
+              ? (await findUnmatchedFiles(it.plan)).map((f) => f.path)
+              : undefined;
+
+            // Last chance to bail before touching files — the item stays untouched.
+            if (session.cancel) break;
+
+            const result = await executeRenamePlan(it.plan, { trashItem, resolutions, filesToRemove });
+            // The rename is now applied. Add-ons (network, slow) are each gated on the
+            // cancel flag so 中断 takes effect as soon as the current request returns.
+            let artworkResult: ArtworkExecutionResult | null = null;
+            let subtitleResult: SubtitleExecutionResult | null = null;
+            const mediaDir = it.plan.tasks.find((t) => t.operation === 'create-dir')?.target;
+            if (eff.scrapeArtwork && !session.cancel && it.kind === 'music' && it.poster && mediaDir) {
+              artworkResult = await executeArtworkPlan([
+                { kind: 'image', type: 'poster', downloadUrl: it.poster, previewUrl: it.poster, targetPath: `${mediaDir}/cover.jpg`, description: 'cover.jpg' },
+              ]);
+            } else if (it.kind === 'video' && it.chosenId) {
+              // Scrape poster/fanart/nfo and download subtitles for the movie/show,
+              // mirroring the single flow. Reuse the plan's resolved destPath so
+              // artwork lands in the same directory the rename created.
+              const match = it.videoMatches?.find((m) => String(m.id) === it.chosenId);
+              if (match) {
+                if (eff.scrapeArtwork && !session.cancel) {
+                  const artworkPlan = await generateArtworkPlan(
+                    match,
+                    { destPath: it.plan.destPath, namingPreset: session.ctx.namingPreset },
+                    session.ctx.tmdbClient,
+                    it.plan,
+                  );
+                  if (!session.cancel) artworkResult = await executeArtworkPlan(artworkPlan.tasks);
+                }
+                if (eff.downloadSubtitles && subsConfigured && !session.cancel) {
+                  const subPlan = await generateSubtitlePlan(match, it.plan, subOpts);
+                  if (!session.cancel) subtitleResult = await executeSubtitlePlan(subPlan.tasks);
+                }
+              }
+            }
+            recordHistory(buildHistoryEntry({ plan: it.plan, result, artworkResult, subtitleResult }));
+            it.status = 'done';
+          } catch (e) {
+            it.status = 'error';
+            it.error = (e as Error).message;
+          }
+        }
+        session.executeDone++;
+      }
+    } finally {
+      saveBatchCache(session.parentPath, session.cache);
+      session.running = false;
+      session.phase = 'done';
+    }
+  })();
+});
 
 app.whenReady().then(createWindow);
 

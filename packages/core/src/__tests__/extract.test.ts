@@ -37,6 +37,26 @@ describe('extractYearCandidates', () => {
 });
 
 describe('extractMedia – title candidates', () => {
+  it('keeps grammar words and strips language tags from a dotted release name', () => {
+    const r = extractMedia('Portrait.of.a.Beauty.2008.KOREAN.1080p.BluRay.x264.DD5.1-NOGRP');
+    expect(r.titleCandidates.find((c) => c.lang === 'en')?.query).toBe('Portrait of a Beauty');
+    expect(r.yearCandidates[0]).toBe(2008);
+  });
+
+  it('preserves interior stopwords (Beauty and the Beast)', () => {
+    const r = extractMedia('Beauty.and.the.Beast.2017.1080p.BluRay.x264-GRP');
+    expect(r.titleCandidates.find((c) => c.lang === 'en')?.query).toBe('Beauty and the Beast');
+  });
+
+  it('strips hyphen-separated audio tags without leaking "MA"', () => {
+    const r = extractMedia(
+      'The.Forbidden.Legend.Sex.And.Chopsticks.1-2.2008-2009.BluRay.1080p.2Audio.DTS-HD.MA.5.1.x264-beAst',
+    );
+    expect(r.titleCandidates.find((c) => c.lang === 'en')?.query).toBe(
+      'The Forbidden Legend Sex And Chopsticks',
+    );
+  });
+
   it('clean English title stays English (not dumped into Chinese)', () => {
     const r = extractMedia('Avatar (2009)');
     const zh = r.titleCandidates.find((c) => c.lang === 'zh');

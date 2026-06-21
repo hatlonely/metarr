@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Eye, EyeOff, Database, FolderTree, Captions, SlidersHorizontal, History } from 'lucide-react';
+import { Eye, EyeOff, Database, FolderTree, Captions, SlidersHorizontal, History, Layers } from 'lucide-react';
 import { Input } from '@/src/renderer/components/ui/input';
 import { Label } from '@/src/renderer/components/ui/label';
 import { Button } from '@/src/renderer/components/ui/button';
@@ -369,6 +369,36 @@ export function SettingsPage({ config, onSave, locale }: SettingsPageProps) {
               value={localConfig.historyMaxAgeDays}
               onChange={(e) =>
                 setLocalConfig((prev) => ({ ...prev, historyMaxAgeDays: Number(e.target.value) || 0 }))
+              }
+            />
+          </Field>
+        </Section>
+
+        {/* Batch cache */}
+        <Section
+          icon={Layers}
+          title={text.settingsSectionBatchCache}
+          description={text.settingsSectionBatchCacheDesc}
+        >
+          <Field label={text.batchCacheMaxEntries} htmlFor="batch-cache-max-entries" hint={text.batchCacheMaxEntriesHint}>
+            <Input
+              id="batch-cache-max-entries"
+              type="number"
+              min={0}
+              value={localConfig.batchCacheMaxEntries}
+              onChange={(e) =>
+                setLocalConfig((prev) => ({ ...prev, batchCacheMaxEntries: Number(e.target.value) || 0 }))
+              }
+            />
+          </Field>
+          <Field label={text.batchCacheMaxAgeDays} htmlFor="batch-cache-max-age" hint={text.batchCacheMaxAgeDaysHint}>
+            <Input
+              id="batch-cache-max-age"
+              type="number"
+              min={0}
+              value={localConfig.batchCacheMaxAgeDays}
+              onChange={(e) =>
+                setLocalConfig((prev) => ({ ...prev, batchCacheMaxAgeDays: Number(e.target.value) || 0 }))
               }
             />
           </Field>

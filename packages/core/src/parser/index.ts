@@ -123,9 +123,11 @@ export async function parseMediaDir(dirPath: string, options?: ParseOptions): Pr
     type = options.type;
   } else {
     const hasEpisodes = episodes.some((ep) => ep.episodes.length > 0);
+    // Only call it a TV show when there's real episode evidence. Multiple video
+    // files without an episode pattern are more likely loose / multi-part movies
+    // (batch organizes them per file); default to movie rather than TV.
     if (hasEpisodes) type = 'tv';
-    else if (scan.videoFiles.length === 1) type = 'movie';
-    else if (scan.videoFiles.length > 1) type = 'tv';
+    else if (scan.videoFiles.length >= 1) type = 'movie';
     else type = extract.mediaType;
   }
 

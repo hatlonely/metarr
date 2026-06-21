@@ -69,6 +69,13 @@ export function detectSeriesEpisodes(fileNames: string[]): Map<string, EpisodeAs
   const numCount = group[0].nums.length;
   if (numCount === 0) return null;
 
+  // If a year field varies across files, these are separate releases (sequels /
+  // different-year editions), not episodes of one season → not a series.
+  for (let i = 0; i < numCount; i++) {
+    const values = group.map((t) => t.nums[i]);
+    if (new Set(values).size > 1 && values.every((v) => v >= 1900 && v <= 2099)) return null;
+  }
+
   // Pick the numeric position that best looks like an episode field:
   // many distinct values, near-continuous (1..N). Constant positions are tags.
   let best = -1;

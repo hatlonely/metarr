@@ -99,11 +99,13 @@ export function parseTags(text: string): MediaTags {
 const STRIP_PATTERNS: RegExp[] = [
   /\b(?:4[kK]|\d{3,4}[pPiI])\b/g, // resolution: 4K / 1080p / 1080i
   /\b(?:H\.?26[45]|HEVC|x26[45]|AVC|VP9|AV1)\b/gi, // codec
-  /\b(?:DDP?[\s.]?[57][\s.]?1|DTS(?:[\s.]?HD)?(?:[\s.]?MA)?(?:[\s.]?[57][\s.]?1)?|DTS[\s.]?X|TrueHD|Atmos|AAC|FLAC|PCM)\b/gi, // audio
+  /\b(?:DDP?[\s._-]?[57][\s._-]?1|DTS(?:[\s._-]?HD)?(?:[\s._-]?MA)?(?:[\s._-]?[57][\s._-]?1)?|DTS[\s._-]?X|TrueHD|Atmos|AAC|FLAC|PCM)\b/gi, // audio (separators: space . _ -)
   /\b(?:WEB[-\s.]?DL|WEB[-\s.]?Rip|Blu[-\s.]?Ray|BDRip|HDTV|HDRip|DVDRip|REMUX)\b/gi, // source
   /\b(?:HDR(?:10)?(?:Plus|\+)?|Dolby[\s.]?Vision|DV|SDR|HQ|IQ|10bit|8bit|DoVi)\b/gi, // hdr/dv/platform/misc
   /\b(?:UHD|HD|SD|BD|WEB)\b/gi, // quality/source shorthands (\bHD\b won't touch HDR/HDTV)
   /\b\d+Audios?\b/gi, // "3Audios"
+  // Release language/region tags (e.g. "...2008.KOREAN.1080p...")
+  /\b(?:KOREAN|JAPANESE|CHINESE|CANTONESE|MANDARIN|FRENCH|GERMAN|SPANISH|ITALIAN|RUSSIAN|PORTUGUESE|HINDI|THAI|VIETNAMESE|MULTI(?:SUBS?)?|DUAL)\b/gi,
 ];
 
 /**

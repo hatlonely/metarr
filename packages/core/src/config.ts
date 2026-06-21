@@ -22,6 +22,12 @@ export interface MetarrConfig {
   historyMaxEntries?: number;
   /** Drop history entries older than this many days (default 365). */
   historyMaxAgeDays?: number;
+  /** Per-run batch execution option defaults (see BatchOptions). */
+  batchOptions?: Record<string, unknown>;
+  /** Keep at most this many cached scans (default 50). */
+  batchCacheMaxEntries?: number;
+  /** Drop cached scans older than this many days (default 30). */
+  batchCacheMaxAgeDays?: number;
 }
 
 function readConfigFile(): MetarrConfig {

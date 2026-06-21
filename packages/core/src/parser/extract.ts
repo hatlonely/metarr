@@ -78,10 +78,14 @@ export function hasEpisodeHint(name: string): boolean {
 const META_CJK =
   /(全\d+集|国语|粤语|中字|双语|字幕|音轨|配音|高清|蓝光|杜比|视界|版本|高码|简体|繁体|简繁|外挂|未删减|导演剪辑|重制|修复)/;
 
-const EN_STOPWORDS = new Set([
-  'the', 'a', 'an', 'and', 'or', 'of', 'for', 'with', 'version', 'complete', 'season',
-  'episode', 'part', 'web', 'dl', 'webrip', 'bluray', 'bdrip', 'hdtv', 'hdrip', 'remux',
-  'hdr', 'dv', 'hq', 'iq', 'sdr', 'extended', 'proper', 'repack', 'internal', 'dovi',
+// Release-noise tokens to drop from an English title — encoding/source/edition
+// words and language tags only. Real grammar words (the/a/of/and/…) are kept,
+// since they're part of titles ("Portrait of a Beauty", "Beauty and the Beast").
+const EN_RELEASE_NOISE = new Set([
+  'web', 'dl', 'webrip', 'bluray', 'bdrip', 'hdtv', 'hdrip', 'dvdrip', 'remux',
+  'hdr', 'dv', 'hq', 'iq', 'sdr', 'dovi', 'extended', 'proper', 'repack', 'internal',
+  'version', 'complete', 'korean', 'japanese', 'chinese', 'cantonese', 'mandarin',
+  'french', 'german', 'spanish', 'italian', 'russian',
 ]);
 
 function normKey(s: string): string {
@@ -103,7 +107,7 @@ function splitToCandidates(text: string, source: TitleCandidate['source'], base:
   const ascii = text.replace(CJK_ANY_RE, ' ').replace(/[._]/g, ' ');
   const tokens = ascii
     .split(/\s+/)
-    .filter((w) => w.length > 1 && !EN_STOPWORDS.has(w.toLowerCase()) && !/^\d+$/.test(w));
+    .filter((w) => /[A-Za-z]/.test(w) && !EN_RELEASE_NOISE.has(w.toLowerCase()));
   const q = tokens.join(' ').trim();
   if (q.length >= 2) push(q, 'en', source, base);
 }

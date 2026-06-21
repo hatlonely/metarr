@@ -17,6 +17,8 @@ export interface AppConfig {
   trashDir: string;
   historyMaxEntries: number;
   historyMaxAgeDays: number;
+  batchCacheMaxEntries: number;
+  batchCacheMaxAgeDays: number;
 }
 
 export const DEFAULT_CUSTOM_NAMING_TEMPLATE: NamingTemplate = {
@@ -40,6 +42,8 @@ const defaultConfig: AppConfig = {
   trashDir: '',
   historyMaxEntries: 1000,
   historyMaxAgeDays: 365,
+  batchCacheMaxEntries: 50,
+  batchCacheMaxAgeDays: 30,
 };
 
 function parseNamingTemplate(raw: unknown): NamingTemplate | null {
@@ -82,6 +86,10 @@ export function useConfig() {
           typeof raw.historyMaxEntries === 'number' ? raw.historyMaxEntries : 1000,
         historyMaxAgeDays:
           typeof raw.historyMaxAgeDays === 'number' ? raw.historyMaxAgeDays : 365,
+        batchCacheMaxEntries:
+          typeof raw.batchCacheMaxEntries === 'number' ? raw.batchCacheMaxEntries : 50,
+        batchCacheMaxAgeDays:
+          typeof raw.batchCacheMaxAgeDays === 'number' ? raw.batchCacheMaxAgeDays : 30,
       });
     } catch {
       // Use defaults if IPC not available (dev mode)

@@ -74,6 +74,35 @@ export type {
 export { getTmdbKey, getConfig, setConfig, getAllConfig, CONFIG_FILE } from './config.js';
 export type { MetarrConfig } from './config.js';
 
+// Batch
+export {
+  findMediaItems,
+  assessVideo,
+  assessMusic,
+  analyzeDir,
+  isAlreadyOrganized,
+  DEFAULT_BATCH_OPTIONS,
+  dirSignature,
+  loadBatchCache,
+  saveBatchCache,
+  listBatchCaches,
+  deleteBatchCache,
+  clearBatchCaches,
+  pruneBatchCaches,
+  DEFAULT_BATCH_CACHE_MAX_AGE_DAYS,
+  DEFAULT_BATCH_CACHE_MAX_ENTRIES,
+} from './batch/index.js';
+export type { AnalyzeContext, BatchCacheInfo } from './batch/index.js';
+export type {
+  BatchKind,
+  BatchStatus,
+  ConfidenceLevel,
+  Assessment,
+  BatchCandidate,
+  BatchItem,
+  BatchOptions,
+} from './batch/index.js';
+
 // History
 export {
   buildHistoryEntry,
