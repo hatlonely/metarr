@@ -1,6 +1,6 @@
 {
   "name": "metarr",
-  "version": "0.1.0",
+  "version": "0.13.0",
   "private": true,
   "description": "Media file renaming tool for Jellyfin-compatible naming conventions",
   "workspaces": [

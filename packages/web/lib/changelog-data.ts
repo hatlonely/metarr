@@ -6,6 +6,16 @@ export interface ChangelogEntry {
 
 export const changelogData: ChangelogEntry[] = [
   {
+    version: '0.13.0',
+    date: '2026-06-22',
+    changes: [
+      { type: 'feature', zh: '音乐库整理：读取内嵌标签、匹配 MusicBrainz，按「艺术家 / 专辑」结构重命名，封面写入 cover.jpg，支持简繁偏好（iTunes / Deezer 补全封面）', en: 'Music library organization: read embedded tags, match MusicBrainz, rename into an Artist / Album structure, write cover.jpg, with Simplified/Traditional preference (covers filled from iTunes / Deezer)' },
+      { type: 'feature', zh: '批量整理：指向一个父目录，递归找出所有媒体项（专辑 / 剧集 / 电影，可混合），自动分析——高置信自动就绪、其余待复核，已规范命名的单独标记', en: 'Batch organize: point at a parent folder, recursively find every media item (albums / shows / movies, mixed), auto-analyze — high-confidence ready, the rest for review, already-correct items flagged separately' },
+      { type: 'feature', zh: '批量执行选项：刮削、字幕、清理未匹配、冲突处理可设全局默认并逐项覆盖；输出路径为全局选项；可中断 / 恢复，扫描结果缓存（保留条数与天数可配置）', en: 'Batch execution options: artwork, subtitles, unmatched cleanup and conflict handling as global defaults with per-item overrides; output path as a global option; cancellable / resumable, with scan caching (configurable retention)' },
+      { type: 'feature', zh: '批量逐项预览：复用重命名预览页（只读）查看每项的目录树「原 → 新」、冲突与未匹配清单', en: 'Per-item batch preview: reuse the rename preview page (read-only) to inspect each item’s source→target tree, conflicts and unmatched files' },
+    ],
+  },
+  {
     version: '0.12.0',
     date: '2026-06-20',
     changes: [
