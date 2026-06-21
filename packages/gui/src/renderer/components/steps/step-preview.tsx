@@ -72,6 +72,8 @@ interface StepPreviewProps {
   step?: number;
   plan: RenamePlan;
   executing: boolean;
+  /** View-only mode: hide the execute footer and all editing controls. */
+  readOnly?: boolean;
   conflictResult: ConflictCheckResult | null;
   conflictResolutions: ConflictResolutionMap;
   unmatchedFiles: UnmatchedFileInfo[];
@@ -199,6 +201,7 @@ export function StepPreview({
   step,
   plan,
   executing,
+  readOnly = false,
   regenerating,
   conflictResult,
   conflictResolutions,
@@ -344,11 +347,13 @@ export function StepPreview({
       step={step}
       width="xl"
       footer={
-        <StepFooter onBack={onBack} backLabel={text.back}>
-          <Button variant="brand" onClick={() => setConfirmOpen(true)} disabled={executing}>
-            {executing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
-            {executing ? text.executing : text.confirmExecute}
-          </Button>
+        <StepFooter onBack={onBack} backLabel={readOnly ? text.close : text.back}>
+          {!readOnly && (
+            <Button variant="brand" onClick={() => setConfirmOpen(true)} disabled={executing}>
+              {executing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
+              {executing ? text.executing : text.confirmExecute}
+            </Button>
+          )}
         </StepFooter>
       }
     >
@@ -459,18 +464,20 @@ export function StepPreview({
             collapsible
             defaultOpen
           >
-            <div className="mb-2 flex justify-end gap-2">
-              <Button variant="outline" size="sm" onClick={() => onSetAllConflictResolutions('skip')}>
-                {text.skipAll}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onSetAllConflictResolutions('overwrite')}
-              >
-                {text.overwriteAll}
-              </Button>
-            </div>
+            {!readOnly && (
+              <div className="mb-2 flex justify-end gap-2">
+                <Button variant="outline" size="sm" onClick={() => onSetAllConflictResolutions('skip')}>
+                  {text.skipAll}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onSetAllConflictResolutions('overwrite')}
+                >
+                  {text.overwriteAll}
+                </Button>
+              </div>
+            )}
             <div className="space-y-1.5">
               {conflictResult.conflicts.map((conflict) => (
                 <div
@@ -489,20 +496,22 @@ export function StepPreview({
                   <span className="shrink-0 text-muted-foreground">
                     {text.target}: {formatFileSize(conflict.targetInfo.size)}
                   </span>
-                  <Select
-                    value={conflictResolutions[conflict.taskIndex] || 'skip'}
-                    onValueChange={(val) =>
-                      onSetConflictResolution(conflict.taskIndex, val as ConflictResolution)
-                    }
-                  >
-                    <SelectTrigger className="h-7 w-24 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="overwrite">{text.overwrite}</SelectItem>
-                      <SelectItem value="skip">{text.skip}</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  {!readOnly && (
+                    <Select
+                      value={conflictResolutions[conflict.taskIndex] || 'skip'}
+                      onValueChange={(val) =>
+                        onSetConflictResolution(conflict.taskIndex, val as ConflictResolution)
+                      }
+                    >
+                      <SelectTrigger className="h-7 w-24 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="overwrite">{text.overwrite}</SelectItem>
+                        <SelectItem value="skip">{text.skip}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
               ))}
             </div>
@@ -519,27 +528,31 @@ export function StepPreview({
             collapsible
             defaultOpen
           >
-            <div className="mb-2 flex items-center justify-end gap-2">
-              <span className="text-xs text-muted-foreground">{text.removeAll}</span>
-              <Switch
-                checked={filesToRemove.length === unmatchedFiles.length && unmatchedFiles.length > 0}
-                onCheckedChange={(checked) => onSetAllFilesToRemove(checked)}
-              />
-            </div>
+            {!readOnly && (
+              <div className="mb-2 flex items-center justify-end gap-2">
+                <span className="text-xs text-muted-foreground">{text.removeAll}</span>
+                <Switch
+                  checked={filesToRemove.length === unmatchedFiles.length && unmatchedFiles.length > 0}
+                  onCheckedChange={(checked) => onSetAllFilesToRemove(checked)}
+                />
+              </div>
+            )}
             <div className="space-y-1.5">
               {unmatchedFiles.map((file) => (
                 <div
                   key={file.path}
                   className="flex items-center gap-3 rounded-md border bg-background p-1.5 text-xs"
                 >
-                  <Switch
-                    checked={filesToRemove.includes(file.path)}
-                    onCheckedChange={() => onToggleFileRemoval(file.path)}
-                  />
+                  {!readOnly && (
+                    <Switch
+                      checked={filesToRemove.includes(file.path)}
+                      onCheckedChange={() => onToggleFileRemoval(file.path)}
+                    />
+                  )}
                   <Badge variant="outline">{file.type}</Badge>
                   <span className="flex-1 truncate font-mono">{file.name}</span>
                   <span className="shrink-0 text-muted-foreground">{formatFileSize(file.size)}</span>
-                  {filesToRemove.includes(file.path) && (
+                  {!readOnly && filesToRemove.includes(file.path) && (
                     <Trash2 className="h-3.5 w-3.5 text-destructive" />
                   )}
                 </div>

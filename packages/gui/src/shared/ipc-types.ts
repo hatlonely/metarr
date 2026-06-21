@@ -22,6 +22,12 @@ import type {
   BatchCacheInfo,
 } from '@metarr/core';
 
+export interface BatchPlanPreview {
+  plan: RenamePlan;
+  conflictResult: ConflictCheckResult;
+  unmatchedFiles: UnmatchedFileInfo[];
+}
+
 export interface BatchState {
   parentPath: string;
   phase: 'scanning' | 'analyzing' | 'done' | 'executing';
@@ -110,6 +116,8 @@ export interface IPCApi {
   batchSetChoice(id: string, candidateId: string | null): Promise<BatchItem | null>;
   batchSetSkip(id: string, skipped: boolean): Promise<BatchItem | null>;
   batchSetItemOptions(id: string, options: Partial<BatchOptions> | null): Promise<BatchItem | null>;
+  batchSetDestPath(destPath: string): Promise<void>;
+  batchGetPlan(id: string): Promise<BatchPlanPreview | null>;
   batchExecute(ids: string[]): Promise<void>;
   batchListCaches(): Promise<BatchCacheInfo[]>;
   batchDeleteCache(id: string): Promise<void>;

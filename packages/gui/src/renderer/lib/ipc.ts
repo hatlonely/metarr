@@ -21,7 +21,7 @@ import type {
   BatchOptions,
   BatchCacheInfo,
 } from '@metarr/core';
-import type { BatchState } from '@/src/shared/ipc-types';
+import type { BatchState, BatchPlanPreview } from '@/src/shared/ipc-types';
 import type { OpenMediaResult } from '@/src/shared/ipc-types';
 
 function getApi() {
@@ -140,6 +140,8 @@ export const ipc = {
     getApi().batchSetChoice(id, candidateId),
   batchSetSkip: (id: string, skipped: boolean): Promise<BatchItem | null> =>
     getApi().batchSetSkip(id, skipped),
+  batchSetDestPath: (destPath: string): Promise<void> => getApi().batchSetDestPath(destPath),
+  batchGetPlan: (id: string): Promise<BatchPlanPreview | null> => getApi().batchGetPlan(id),
   batchSetItemOptions: (id: string, options: Partial<BatchOptions> | null): Promise<BatchItem | null> =>
     getApi().batchSetItemOptions(id, options),
   batchExecute: (ids: string[]): Promise<void> => getApi().batchExecute(ids),

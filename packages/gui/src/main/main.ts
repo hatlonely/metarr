@@ -409,6 +409,30 @@ function lightItem(it: BatchItem) {
   return rest;
 }
 
+/** Rebuild one item's plan from its stored raw analysis (no network) — used when
+ *  the output path (or naming) changes after a scan, so previews/targets update. */
+async function regenerateItemPlan(it: BatchItem, ctx: AnalyzeContext): Promise<void> {
+  if (it.kind === 'video' && it.parsedVideo) {
+    const match = it.chosenId ? it.videoMatches?.find((m) => String(m.id) === it.chosenId) : undefined;
+    if (match) {
+      it.plan = generateRenamePlan(it.parsedVideo, match, {
+        destPath: ctx.destPath, preferImdbId: ctx.preferImdbId ?? true, namingPreset: ctx.namingPreset,
+      });
+    }
+  } else if (it.kind === 'music' && it.parsedAlbum) {
+    const release = it.chosenId ? it.musicReleases?.find((r) => r.mbid === it.chosenId) ?? null : null;
+    const a = ctx.titleScript ? await localizeAlbum(it.parsedAlbum, ctx.titleScript) : it.parsedAlbum;
+    const r = release && ctx.titleScript ? await localizeRelease(release, ctx.titleScript) : release;
+    it.plan = generateMusicRenamePlan(a, r, { destPath: ctx.destPath, namingPreset: ctx.namingPreset });
+  }
+  it.targetPath = it.plan?.tasks.find((t) => t.operation === 'create-dir')?.target;
+  // Only flip across the "organized" boundary; leave confidence-based status intact.
+  if (it.status !== 'done' && it.status !== 'skipped' && it.status !== 'error') {
+    if (isAlreadyOrganized(it.plan)) it.status = 'organized';
+    else if (it.status === 'organized') it.status = it.chosenId ? 'auto' : 'nomatch';
+  }
+}
+
 function buildAnalyzeCtx(): AnalyzeContext {
   const cfg = getAllConfig();
   const { preferLang, titleScript } = musicLangPref();
@@ -447,6 +471,9 @@ ipcMain.handle('batch:scan', async (_event, parentPath: string) => {
         let dirItems: BatchItem[];
         if (cached && cached[0]?.signature === sig && !cached.some((i) => i.status === 'error')) {
           dirItems = cached;
+          // Cached plans were built with whatever output path was active then;
+          // rebuild against the current destPath/naming so previews are accurate.
+          for (const it of dirItems) await regenerateItemPlan(it, session.ctx);
         } else {
           try {
             dirItems = await analyzeDir(dir, session.ctx, sig);
@@ -517,6 +544,25 @@ ipcMain.handle('batch:clearCaches', async () => {
   clearBatchCaches();
 });
 
+// IPC: set the global output path (persists to config) and re-plan the live
+// session so target previews reflect it. Empty = next to each source folder.
+ipcMain.handle('batch:setDestPath', async (_event, destPath: string) => {
+  coreSetConfig('destPath', destPath);
+  if (!batch) return;
+  batch.ctx.destPath = destPath;
+  for (const it of batch.items.values()) await regenerateItemPlan(it, batch.ctx);
+  saveBatchCache(batch.parentPath, batch.cache);
+});
+
+// IPC: full plan + conflict/unmatched detail for one item, for the read-only preview.
+ipcMain.handle('batch:getPlan', async (_event, id: string) => {
+  const it = batch?.items.get(id);
+  if (!it?.plan) return null;
+  const conflictResult = await checkConflicts(it.plan);
+  const unmatchedFiles = await findUnmatchedFiles(it.plan);
+  return { plan: it.plan, conflictResult, unmatchedFiles };
+});
+
 // IPC: re-pick a candidate for one item (or null = local tags / fallback)
 ipcMain.handle('batch:setChoice', async (_event, id: string, candidateId: string | null) => {
   const it = batch?.items.get(id);
@@ -527,6 +573,15 @@ ipcMain.handle('batch:setChoice', async (_event, id: string, candidateId: string
     if (candidateId) {
       release = await ctx.mbClient.getRelease(candidateId);
       release.coverUrl = await fetchAlbumCover(release.artist, release.title);
+      // Keep the full release (with tracks) so a later destPath change can re-plan
+      // without re-fetching.
+      if (it.musicReleases) {
+        const i = it.musicReleases.findIndex((r) => r.mbid === candidateId);
+        if (i >= 0) it.musicReleases[i] = release;
+        else it.musicReleases.unshift(release);
+      } else {
+        it.musicReleases = [release];
+      }
     }
     const a = ctx.titleScript ? await localizeAlbum(it.parsedAlbum, ctx.titleScript) : it.parsedAlbum;
     const r = release && ctx.titleScript ? await localizeRelease(release, ctx.titleScript) : release;

@@ -265,6 +265,10 @@ const zh = {
   batchResult: '完成 {done} 项{failed},已记录到历史,可在历史页撤销',
   batchResultFailed: ',{n} 项失败',
   batchOptGlobal: '附加项',
+  batchOptOutput: '输出路径',
+  batchOptOutputDefault: '(留空:输出到各自原目录旁)',
+  batchOptOutputPick: '选择',
+  batchOptOutputClear: '清除',
   batchOptScrape: '刮削',
   batchOptSubtitle: '字幕',
   batchOptSubtitleHint: '需先在设置中配置字幕源和语言',
@@ -287,6 +291,7 @@ const zh = {
   batchCacheDelete: '删除',
   batchCacheItems: '{n} 项',
   batchCacheUnknown: '(未知目录)',
+  batchPreview: '预览变化',
 } as const;
 
 const en = {
@@ -556,6 +561,10 @@ const en = {
   batchResult: 'Done {done}{failed} — recorded to history, undoable there',
   batchResultFailed: ', {n} failed',
   batchOptGlobal: 'Add-ons',
+  batchOptOutput: 'Output',
+  batchOptOutputDefault: '(empty: next to each source folder)',
+  batchOptOutputPick: 'Choose',
+  batchOptOutputClear: 'Clear',
   batchOptScrape: 'Artwork',
   batchOptSubtitle: 'Subtitles',
   batchOptSubtitleHint: 'Configure a subtitle source and languages in Settings first',
@@ -578,6 +587,7 @@ const en = {
   batchCacheDelete: 'Delete',
   batchCacheItems: '{n} items',
   batchCacheUnknown: '(unknown folder)',
+  batchPreview: 'Preview',
 } as const;
 
 export type Locale = 'zh' | 'en';

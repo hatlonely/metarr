@@ -49,6 +49,8 @@ contextBridge.exposeInMainWorld('metarrAPI', {
   batchSetChoice: (id: string, candidateId: string | null) =>
     ipcRenderer.invoke('batch:setChoice', id, candidateId),
   batchSetSkip: (id: string, skipped: boolean) => ipcRenderer.invoke('batch:setSkip', id, skipped),
+  batchSetDestPath: (destPath: string) => ipcRenderer.invoke('batch:setDestPath', destPath),
+  batchGetPlan: (id: string) => ipcRenderer.invoke('batch:getPlan', id),
   batchSetItemOptions: (id: string, options: unknown) =>
     ipcRenderer.invoke('batch:setItemOptions', id, options),
   batchExecute: (ids: string[]) => ipcRenderer.invoke('batch:execute', ids),

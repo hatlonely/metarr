@@ -2,12 +2,13 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
-  FolderOpen, Loader2, Play, Ban, Music, Film, ChevronRight, ChevronDown, RotateCw, FolderInput, X, Trash2, History,
+  FolderOpen, Loader2, Play, Ban, Music, Film, ChevronRight, ChevronDown, RotateCw, FolderInput, X, Trash2, History, Eye,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { BatchItem, BatchStatus, BatchOptions, BatchCacheInfo } from '@metarr/core';
-import type { BatchState } from '@/src/shared/ipc-types';
+import type { BatchState, BatchPlanPreview } from '@/src/shared/ipc-types';
 import { PageShell } from '@/src/renderer/components/layout/page-shell';
+import { StepPreview } from '@/src/renderer/components/steps/step-preview';
 import { Button } from '@/src/renderer/components/ui/button';
 import { Switch } from '@/src/renderer/components/ui/switch';
 import {
@@ -72,11 +73,21 @@ export function BatchPage({ locale }: BatchPageProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [globalOpts, setGlobalOpts] = useState<BatchOptions>(DEFAULT_OPTS);
   const [subsConfigured, setSubsConfigured] = useState(false);
+  const [destPath, setDestPath] = useState('');
 
-  // Load global batch options + whether subtitles are configured at all.
+  // Read-only "what will change" preview for one item.
+  const [preview, setPreview] = useState<{ title: string; data: BatchPlanPreview | null } | null>(null);
+  const openPreview = async (it: BatchItem) => {
+    setPreview({ title: it.title || baseName(it.sourcePath), data: null });
+    const data = await ipc.batchGetPlan(it.id);
+    setPreview((p) => (p ? { ...p, data } : p));
+  };
+
+  // Load global batch options + output path + whether subtitles are configured.
   useEffect(() => {
     ipc.getConfig().then((cfg) => {
       setGlobalOpts({ ...DEFAULT_OPTS, ...((cfg.batchOptions as Partial<BatchOptions>) ?? {}) });
+      setDestPath((cfg.destPath as string) || '');
       const langs = cfg.subtitleLanguages as string[] | undefined;
       setSubsConfigured(Boolean((cfg.subdlApiKey || cfg.assrtToken) && langs && langs.length > 0));
     });
@@ -111,6 +122,17 @@ export function BatchPage({ locale }: BatchPageProps) {
   useEffect(() => {
     if (!state) loadCaches();
   }, [state, loadCaches]);
+
+  // Output path is a global, scan-time option; persist + re-plan the live session.
+  const applyDest = async (path: string) => {
+    setDestPath(path);
+    await ipc.batchSetDestPath(path);
+    load();
+  };
+  const pickDest = async () => {
+    const dir = await ipc.openDirectory();
+    if (dir) applyDest(dir);
+  };
 
   const resumeCache = async (parentPath: string) => {
     await ipc.batchScan(parentPath);
@@ -243,6 +265,27 @@ export function BatchPage({ locale }: BatchPageProps) {
     >
       {!state ? (
         <div className="space-y-5">
+          {/* Output path — set before scanning; empty = next to each source folder. */}
+          <div className="flex items-center gap-2 rounded-lg border bg-muted/30 px-3 py-2 text-sm">
+            <span className="shrink-0 text-xs font-medium text-muted-foreground">{text.batchOptOutput}</span>
+            <button
+              onClick={pickDest}
+              title={destPath || text.batchOptOutputDefault}
+              className="min-w-0 flex-1 truncate rounded border bg-background px-2 py-1 text-left text-xs hover:border-brand/50"
+            >
+              {destPath || text.batchOptOutputDefault}
+            </button>
+            <Button variant="ghost" size="sm" onClick={pickDest}>
+              <FolderOpen className="mr-1.5 h-3.5 w-3.5" />
+              {text.batchOptOutputPick}
+            </Button>
+            {destPath && (
+              <Button variant="ghost" size="icon" title={text.batchOptOutputClear} onClick={() => applyDest('')}>
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+
           <button
             onClick={selectFolder}
             className="flex h-48 w-full flex-col items-center justify-center gap-3 rounded-xl border border-dashed text-muted-foreground transition-colors hover:border-brand/50 hover:text-foreground"
@@ -289,6 +332,27 @@ export function BatchPage({ locale }: BatchPageProps) {
         </div>
       ) : (
         <div className="space-y-4">
+          {/* Output path (global, scan-time; re-plans the session on change). */}
+          <div className="flex items-center gap-2 rounded-lg border bg-muted/30 px-3 py-2 text-sm">
+            <span className="shrink-0 text-xs font-medium text-muted-foreground">{text.batchOptOutput}</span>
+            <button
+              onClick={pickDest}
+              title={destPath || text.batchOptOutputDefault}
+              className="min-w-0 flex-1 truncate rounded border bg-background px-2 py-1 text-left text-xs hover:border-brand/50"
+            >
+              {destPath || text.batchOptOutputDefault}
+            </button>
+            <Button variant="ghost" size="sm" onClick={pickDest}>
+              <FolderOpen className="mr-1.5 h-3.5 w-3.5" />
+              {text.batchOptOutputPick}
+            </Button>
+            {destPath && (
+              <Button variant="ghost" size="icon" title={text.batchOptOutputClear} onClick={() => applyDest('')}>
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+
           {/* Global execution options (persisted to config). */}
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-lg border bg-muted/30 px-3 py-2.5 text-sm">
             <span className="text-xs font-medium text-muted-foreground">{text.batchOptGlobal}</span>
@@ -494,7 +558,15 @@ export function BatchPage({ locale }: BatchPageProps) {
                           </div>
                         )}
 
-                        <div className="flex items-center justify-end border-t p-3">
+                        <div className="flex items-center justify-between border-t p-3">
+                          {it.targetPath ? (
+                            <Button variant="outline" size="sm" onClick={() => openPreview(it)}>
+                              <Eye className="mr-1.5 h-3.5 w-3.5" />
+                              {text.batchPreview}
+                            </Button>
+                          ) : (
+                            <span />
+                          )}
                           <Button variant="ghost" size="sm" onClick={() => handleSkip(it)}>
                             {it.status === 'skipped' ? text.batchUnskip : text.batchSkip}
                           </Button>
@@ -504,6 +576,33 @@ export function BatchPage({ locale }: BatchPageProps) {
                   </div>
                 );
               })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {preview && (
+        <div className="fixed inset-0 z-50 bg-background">
+          {preview.data ? (
+            <StepPreview
+              readOnly
+              locale={locale}
+              plan={preview.data.plan}
+              executing={false}
+              conflictResult={preview.data.conflictResult}
+              conflictResolutions={{}}
+              unmatchedFiles={preview.data.unmatchedFiles}
+              filesToRemove={[]}
+              onBack={() => setPreview(null)}
+              onExecute={() => {}}
+              onSetConflictResolution={() => {}}
+              onSetAllConflictResolutions={() => {}}
+              onToggleFileRemoval={() => {}}
+              onSetAllFilesToRemove={() => {}}
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center text-muted-foreground">
+              <Loader2 className="h-6 w-6 animate-spin" />
             </div>
           )}
         </div>
